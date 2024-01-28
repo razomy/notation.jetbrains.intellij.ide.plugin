@@ -14,8 +14,9 @@
          Simple HTML elements (text formatting, paragraphs, and lists) can be added inside of <![CDATA[ ]]> tag.
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-description -->
     <description>
-        Its made for ppreview rn data files.
-        rn data file is a type forr free text description that support layering and comsition and key value.
+        Razomy Notation as rn
+        An "rn" data file is a versatile format for free-text descriptions that supports layering, composition, and key-value pairs.
+        Plugin is designed for previewing "rn" data files.
     </description>
 
     <!-- Product and plugin compatibility requirements.

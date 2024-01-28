@@ -1,10 +1,4 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16">
-    <!-- Lightbulb body -->
-    <circle cx="8" cy="8" r="8" fill="#727790"/>
-
-    <!-- Lightbulb filament -->
-<!--    <rect x="0" y="0" width="1" height="30" fill="#ffffff" />-->
-
-    <!-- Text "rn" in the center of the lightbulb -->
-    <text x="8" y="11" font-family="Arial" font-size="12" text-anchor="middle" fill="#000000">rn</text>
+    <rect x="0" y="0" width="16" height="16" rx="3" ry="3" fill="#727790"/>
+    <text x="2" y="12" font-size="9" fill="#000000">RN</text>
 </svg>
