@@ -26,5 +26,14 @@
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
         <fileType name="Rn" implementationClass="com.razomy.notation_idea_plugin.RnFileType" fieldName="INSTANCE" language="Rn" extensions="rn"/>
+        <lang.parserDefinition
+                language="Rn"
+                implementationClass="com.razomy.notation_idea_plugin.RnParserDefinition"/>
+        <lang.syntaxHighlighterFactory
+                language="Rn"
+                implementationClass="com.razomy.notation_idea_plugin.RnSyntaxHighlighterFactory"/>
+        <colorSettingsPage
+                implementation="com.razomy.notation_idea_plugin.RnColorSettingsPage"/>
     </extensions>
+
 </idea-plugin>

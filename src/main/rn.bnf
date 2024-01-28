@@ -1,0 +1,20 @@
+{
+  parserClass="com.razomy.notation_idea_plugin.RnParser"
+
+  extends="com.intellij.extapi.psi.ASTWrapperPsiElement"
+
+  psiClassPrefix="Rn"
+  psiImplClassSuffix="Impl"
+  psiPackage="com.razomy.notation_idea_plugin"
+  psiImplPackage="com.razomy.notation_idea_plugin.impl"
+
+  elementTypeHolderClass="com.razomy.notation_idea_plugin.RnTypes"
+  elementTypeClass="com.razomy.notation_idea_plugin.RnElementType"
+  tokenTypeClass="com.razomy.notation_idea_plugin.RnTokenType"
+}
+
+RnFile ::= item_*
+
+private item_ ::= (property|COMMENT|CRLF)
+
+property ::= (KEY? SEPARATOR VALUE?) | KEY

@@ -20,6 +20,8 @@ intellij {
     plugins.set(listOf(/* Plugin Dependencies */))
 }
 
+sourceSets["main"].java.srcDirs("src/main/gen")
+
 tasks {
     // Set the JVM compatibility versions
     withType<JavaCompile> {
