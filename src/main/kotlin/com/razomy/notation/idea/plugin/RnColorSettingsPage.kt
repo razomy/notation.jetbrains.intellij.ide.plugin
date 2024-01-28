@@ -47,7 +47,7 @@ tab : \u0009"""
     }
 
     override fun getDisplayName(): String {
-        return "Rn"
+        return "Razomy Notation"
     }
 
     private val descriptors = arrayOf(AttributesDescriptor("Key", RnSyntaxHighlighter.KEY),

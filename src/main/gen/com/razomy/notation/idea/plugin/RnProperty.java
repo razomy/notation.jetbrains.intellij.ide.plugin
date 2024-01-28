@@ -7,4 +7,12 @@ import com.intellij.psi.PsiElement;
 
 public interface RnProperty extends PsiElement {
 
+  //WARNING: getKey(...) is skipped
+  //matching getKey(RnProperty, ...)
+  //methods are not found in RnPsiImplUtil
+
+  //WARNING: getValue(...) is skipped
+  //matching getValue(RnProperty, ...)
+  //methods are not found in RnPsiImplUtil
+
 }

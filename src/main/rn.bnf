@@ -11,6 +11,8 @@
   elementTypeHolderClass="com.razomy.notation.idea.plugin.RnTypes"
   elementTypeClass="com.razomy.notation.idea.plugin.RnElementType"
   tokenTypeClass="com.razomy.notation.idea.plugin.RnTokenType"
+  psiImplUtilClass="com.razomy.notation.idea.plugin.RnPsiImplUtil"
+
 }
 
 RnFile ::= item_*
@@ -18,3 +20,6 @@ RnFile ::= item_*
 private item_ ::= (property|COMMENT|CRLF)
 
 property ::= (KEY? SEPARATOR VALUE?) | KEY
+{
+  methods=[getKey getValue]
+}

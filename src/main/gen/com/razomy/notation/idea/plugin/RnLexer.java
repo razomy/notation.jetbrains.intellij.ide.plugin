@@ -19,6 +19,7 @@ class RnLexer implements FlexLexer {
   /** lexical states */
   public static final int YYINITIAL = 0;
   public static final int WAITING_VALUE = 2;
+  public static final int WAITING_SPACE = 4;
 
   /**
    * ZZ_LEXSTATE[l] is the state in the DFA for the lexical state l
@@ -27,7 +28,7 @@ class RnLexer implements FlexLexer {
    * l is of the form l = 2*k, k a non negative integer
    */
   private static final int ZZ_LEXSTATE[] = {
-     0,  0,  1, 1
+     0,  0,  1,  1,  2, 2
   };
 
   /**
@@ -36,7 +37,7 @@ class RnLexer implements FlexLexer {
   private static final int [] ZZ_CMAP_TOP = zzUnpackcmap_top();
 
   private static final String ZZ_CMAP_TOP_PACKED_0 =
-    "\1\0\37\u0100\1\u0200\267\u0100\10\u0300\u1020\u0100";
+    "\1\0\37\u0100\1\u0200\u10df\u0100";
 
   private static int [] zzUnpackcmap_top() {
     int [] result = new int[4352];
@@ -66,10 +67,10 @@ class RnLexer implements FlexLexer {
   private static final String ZZ_CMAP_BLOCKS_PACKED_0 =
     "\11\0\1\1\1\2\1\3\1\4\1\5\22\0\1\6"+
     "\1\7\1\0\1\7\26\0\1\10\2\0\1\10\36\0"+
-    "\1\11\50\0\1\3\u01a2\0\2\3\326\0\u0100\12";
+    "\1\11\50\0\1\3\u01a2\0\2\3\326\0";
 
   private static int [] zzUnpackcmap_blocks() {
-    int [] result = new int[1024];
+    int [] result = new int[768];
     int offset = 0;
     offset = zzUnpackcmap_blocks(ZZ_CMAP_BLOCKS_PACKED_0, offset, result);
     return result;
@@ -93,9 +94,8 @@ class RnLexer implements FlexLexer {
   private static final int [] ZZ_ACTION = zzUnpackAction();
 
   private static final String ZZ_ACTION_PACKED_0 =
-    "\2\0\1\1\1\2\1\1\1\3\1\4\1\5\1\6"+
-    "\2\7\1\6\1\7\1\5\1\0\2\3\1\0\1\6"+
-    "\1\2\1\6";
+    "\3\0\1\1\1\2\1\1\1\3\2\4\1\5\5\4"+
+    "\1\6\1\7\1\0\2\3\1\6";
 
   private static int [] zzUnpackAction() {
     int [] result = new int[21];
@@ -123,9 +123,9 @@ class RnLexer implements FlexLexer {
   private static final int [] ZZ_ROWMAP = zzUnpackRowMap();
 
   private static final String ZZ_ROWMAP_PACKED_0 =
-    "\0\0\0\13\0\26\0\41\0\54\0\67\0\102\0\115"+
-    "\0\130\0\143\0\41\0\156\0\171\0\204\0\115\0\217"+
-    "\0\232\0\204\0\245\0\156\0\260";
+    "\0\0\0\12\0\24\0\36\0\50\0\62\0\74\0\106"+
+    "\0\120\0\132\0\144\0\156\0\170\0\202\0\214\0\226"+
+    "\0\240\0\120\0\252\0\264\0\276";
 
   private static int [] zzUnpackRowMap() {
     int [] result = new int[21];
@@ -151,24 +151,25 @@ class RnLexer implements FlexLexer {
   private static final int [] ZZ_TRANS = zzUnpacktrans();
 
   private static final String ZZ_TRANS_PACKED_0 =
-    "\1\3\2\4\1\5\1\4\1\5\1\4\1\6\1\7"+
-    "\1\10\1\3\1\11\1\12\1\13\1\14\1\13\1\14"+
-    "\1\15\2\11\1\16\1\11\1\3\2\0\1\3\1\0"+
-    "\1\3\1\0\1\3\1\0\1\17\1\3\1\0\6\4"+
-    "\4\0\1\3\2\4\1\5\1\4\1\5\1\4\1\3"+
-    "\1\0\1\17\1\3\1\6\1\20\1\0\1\6\1\20"+
-    "\1\3\1\20\1\6\1\20\1\21\1\6\21\0\1\3"+
-    "\4\0\2\11\1\0\1\11\1\0\4\11\1\22\2\11"+
-    "\1\12\1\15\1\23\1\15\1\23\1\12\2\11\1\22"+
-    "\2\11\1\24\1\4\1\24\1\4\2\24\2\11\1\22"+
-    "\1\11\1\0\2\15\1\4\1\15\1\4\1\15\4\0"+
-    "\5\11\1\25\4\11\1\0\2\20\1\0\2\20\1\0"+
-    "\7\20\1\0\2\20\1\0\1\6\4\20\1\11\1\23"+
-    "\1\4\1\23\1\4\2\23\2\11\1\22\5\11\1\0"+
-    "\4\11\1\22\1\11";
+    "\1\4\2\5\1\6\1\5\1\6\1\5\1\7\1\10"+
+    "\1\11\1\12\1\13\1\14\1\15\1\14\1\16\1\17"+
+    "\1\20\1\12\7\10\1\21\1\10\1\21\1\10\1\4"+
+    "\2\0\1\4\1\0\1\4\1\0\1\4\1\0\1\22"+
+    "\1\0\6\5\3\0\1\4\2\5\1\6\1\5\1\6"+
+    "\1\5\1\4\1\0\1\22\1\7\1\23\1\0\1\7"+
+    "\1\23\1\4\1\23\1\7\1\23\1\24\20\0\1\4"+
+    "\3\0\2\12\1\0\1\12\1\0\4\12\1\0\1\12"+
+    "\1\13\1\14\1\15\1\14\1\16\1\13\2\12\1\0"+
+    "\1\15\2\14\1\15\1\14\1\16\1\14\2\15\1\0"+
+    "\2\15\1\0\1\15\1\0\4\15\1\0\4\15\1\0"+
+    "\4\15\2\0\1\17\1\14\1\15\1\14\1\16\1\17"+
+    "\3\0\2\20\1\0\1\20\1\25\1\12\3\20\1\25"+
+    "\6\0\1\21\1\0\1\21\1\0\2\23\1\0\2\23"+
+    "\1\0\6\23\1\0\2\23\1\0\1\7\3\23\2\25"+
+    "\1\0\2\25\1\0\4\25";
 
   private static int [] zzUnpacktrans() {
-    int [] result = new int[187];
+    int [] result = new int[200];
     int offset = 0;
     offset = zzUnpacktrans(ZZ_TRANS_PACKED_0, offset, result);
     return result;
@@ -206,7 +207,7 @@ class RnLexer implements FlexLexer {
   private static final int [] ZZ_ATTRIBUTE = zzUnpackAttribute();
 
   private static final String ZZ_ATTRIBUTE_PACKED_0 =
-    "\2\0\4\1\1\11\7\1\1\0\2\1\1\0\3\1";
+    "\3\0\4\1\1\11\11\1\1\0\3\1";
 
   private static int [] zzUnpackAttribute() {
     int [] result = new int[21];
@@ -531,7 +532,7 @@ class RnLexer implements FlexLexer {
       else {
         switch (zzAction < 0 ? zzAction : ZZ_ACTION[zzAction]) {
           case 1:
-            { yybegin(YYINITIAL); return RnTypes.KEY;
+            { yybegin(WAITING_SPACE); return RnTypes.KEY;
             }
           // fall through
           case 8: break;
@@ -546,22 +547,22 @@ class RnLexer implements FlexLexer {
           // fall through
           case 10: break;
           case 4:
-            { yybegin(WAITING_VALUE); return RnTypes.SEPARATOR;
+            { return TokenType.BAD_CHARACTER;
             }
           // fall through
           case 11: break;
           case 5:
-            { return TokenType.BAD_CHARACTER;
+            { yybegin(YYINITIAL); return RnTypes.VALUE;
             }
           // fall through
           case 12: break;
           case 6:
-            { yybegin(YYINITIAL); return RnTypes.VALUE;
+            { yybegin(WAITING_VALUE); return RnTypes.COMMENT;
             }
           // fall through
           case 13: break;
           case 7:
-            { yybegin(WAITING_VALUE); return TokenType.WHITE_SPACE;
+            { yybegin(WAITING_VALUE); return RnTypes.SEPARATOR;
             }
           // fall through
           case 14: break;
