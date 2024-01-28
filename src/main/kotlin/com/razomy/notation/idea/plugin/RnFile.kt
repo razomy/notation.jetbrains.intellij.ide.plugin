@@ -1,10 +1,10 @@
-package com.razomy.notation_idea_plugin
+package com.razomy.notation.idea.plugin
 
 import com.intellij.extapi.psi.PsiFileBase
 import com.intellij.openapi.fileTypes.FileType
 import com.intellij.psi.FileViewProvider
 
-class RnFile(viewProvider: FileViewProvider) : PsiFileBase(viewProvider, RnLanguage.INSTANCE) {
+class RnFile(viewProvider: FileViewProvider) : PsiFileBase(viewProvider, RnLanguage) {
     override fun getFileType(): FileType {
         return RnFileType
     }

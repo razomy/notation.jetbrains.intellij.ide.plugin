@@ -1,11 +1,11 @@
 <!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
 <idea-plugin>
     <!-- Unique identifier of the plugin. It should be FQN. It cannot be changed between the plugin versions. -->
-    <id>com.razomy.notation_idea_plugin</id>
+    <id>com.razomy.notation.idea.plugin</id>
 
     <!-- Public plugin name should be written in Title Case.
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-name -->
-    <name>Notation_idea_plugin</name>
+    <name>Razomy Notation</name>
 
     <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
     <vendor email="support@razomy.com" url="https://www.razomy.com">Razomy</vendor>
@@ -26,15 +26,15 @@
     <!-- Extension points defined by the plugin.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
-        <fileType name="Rn" implementationClass="com.razomy.notation_idea_plugin.RnFileType" fieldName="INSTANCE" language="Rn" extensions="rn"/>
+        <fileType name="Rn" implementationClass="com.razomy.notation.idea.plugin.RnFileType" fieldName="INSTANCE" language="Rn" extensions="rn"/>
         <lang.parserDefinition
                 language="Rn"
-                implementationClass="com.razomy.notation_idea_plugin.RnParserDefinition"/>
+                implementationClass="com.razomy.notation.idea.plugin.RnParserDefinition"/>
         <lang.syntaxHighlighterFactory
                 language="Rn"
-                implementationClass="com.razomy.notation_idea_plugin.RnSyntaxHighlighterFactory"/>
+                implementationClass="com.razomy.notation.idea.plugin.RnSyntaxHighlighterFactory"/>
         <colorSettingsPage
-                implementation="com.razomy.notation_idea_plugin.RnColorSettingsPage"/>
+                implementation="com.razomy.notation.idea.plugin.RnColorSettingsPage"/>
     </extensions>
 
 </idea-plugin>

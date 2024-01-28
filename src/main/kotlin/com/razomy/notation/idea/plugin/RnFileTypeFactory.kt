@@ -1,4 +1,4 @@
-package com.razomy.notation_idea_plugin;
+package com.razomy.notation.idea.plugin;
 
 import com.intellij.openapi.fileTypes.FileTypeConsumer
 import com.intellij.openapi.fileTypes.FileTypeFactory

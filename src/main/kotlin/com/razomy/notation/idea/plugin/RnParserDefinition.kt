@@ -1,7 +1,6 @@
-package com.razomy.notation_idea_plugin;
+package com.razomy.notation.idea.plugin;
 
 import com.intellij.lang.*
-import com.intellij.lang.parser.GeneratedParserUtilBase
 import com.intellij.lexer.Lexer
 import com.intellij.openapi.project.Project
 import com.intellij.psi.FileViewProvider
@@ -15,7 +14,7 @@ import org.jetbrains.annotations.NotNull
 class RnParserDefinition : ParserDefinition {
 
     companion object {
-        val FILE = IFileElementType(RnLanguage.INSTANCE)
+        val FILE = IFileElementType(RnLanguage)
     }
 
     @NotNull

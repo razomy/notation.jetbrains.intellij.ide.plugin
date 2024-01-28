@@ -1,10 +1,10 @@
 // This is a generated file. Not intended for manual editing.
-package com.razomy.notation_idea_plugin;
+package com.razomy.notation.idea.plugin;
 
 import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.PsiElement;
 import com.intellij.lang.ASTNode;
-import com.razomy.notation_idea_plugin.impl.*;
+import com.razomy.notation.idea.plugin.impl.*;
 
 public interface RnTypes {
 

@@ -1,5 +1,5 @@
 // This is a generated file. Not intended for manual editing.
-package com.razomy.notation_idea_plugin;
+package com.razomy.notation.idea.plugin;
 
 import java.util.List;
 import org.jetbrains.annotations.*;

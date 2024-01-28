@@ -1,4 +1,4 @@
-package com.razomy.notation_idea_plugin;
+package com.razomy.notation.idea.plugin;
 
 import com.intellij.openapi.util.IconLoader
 import javax.swing.Icon

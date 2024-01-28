@@ -1,8 +1,7 @@
-package com.razomy.notation_idea_plugin;
+package com.razomy.notation.idea.plugin;
 
 import com.intellij.lexer.FlexLexer;
 import com.intellij.psi.tree.IElementType;
-import com.razomy.notation_idea_plugin.RnTypes;
 import com.intellij.psi.TokenType;
 
 %%

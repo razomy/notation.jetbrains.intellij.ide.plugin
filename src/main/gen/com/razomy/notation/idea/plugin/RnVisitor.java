@@ -1,5 +1,5 @@
 // This is a generated file. Not intended for manual editing.
-package com.razomy.notation_idea_plugin;
+package com.razomy.notation.idea.plugin;
 
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElementVisitor;

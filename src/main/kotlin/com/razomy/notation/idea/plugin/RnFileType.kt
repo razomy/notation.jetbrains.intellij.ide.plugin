@@ -1,8 +1,8 @@
-package com.razomy.notation_idea_plugin;
+package com.razomy.notation.idea.plugin;
 
 import com.intellij.openapi.fileTypes.LanguageFileType
 
-object RnFileType : LanguageFileType(RnLanguage.INSTANCE) {
+object RnFileType : LanguageFileType(RnLanguage) {
     override fun getName() = "Rn"
     override fun getDescription() = "Razomy notation file"
     override fun getDefaultExtension() = "rn"

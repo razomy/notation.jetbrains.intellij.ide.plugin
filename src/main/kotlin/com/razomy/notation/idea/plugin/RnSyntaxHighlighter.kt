@@ -1,4 +1,4 @@
-package com.razomy.notation_idea_plugin;
+package com.razomy.notation.idea.plugin;
 
 import com.intellij.lexer.Lexer
 import com.intellij.openapi.editor.DefaultLanguageHighlighterColors
@@ -19,19 +19,19 @@ class RnSyntaxHighlighter : SyntaxHighlighterBase() {
 
     @NotNull
     override fun getTokenHighlights(tokenType: IElementType): Array<TextAttributesKey?> {
-        if (tokenType.equals(RnTypes.SEPARATOR)) {
+        if (tokenType == RnTypes.SEPARATOR) {
             return SEPARATOR_KEYS
         }
-        if (tokenType.equals(RnTypes.KEY)) {
+        if (tokenType == RnTypes.KEY) {
             return KEY_KEYS
         }
-        if (tokenType.equals(RnTypes.VALUE)) {
+        if (tokenType == RnTypes.VALUE) {
             return VALUE_KEYS
         }
-        if (tokenType.equals(RnTypes.COMMENT)) {
+        if (tokenType == RnTypes.COMMENT) {
             return COMMENT_KEYS
         }
-        if (tokenType.equals(TokenType.BAD_CHARACTER)) {
+        if (tokenType == TokenType.BAD_CHARACTER) {
             return BAD_CHAR_KEYS
         }
         return EMPTY_KEYS

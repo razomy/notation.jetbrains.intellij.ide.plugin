@@ -1,4 +1,4 @@
-package com.razomy.notation_idea_plugin
+package com.razomy.notation.idea.plugin
 
 import com.intellij.openapi.editor.colors.TextAttributesKey
 import com.intellij.openapi.fileTypes.SyntaxHighlighter
@@ -10,7 +10,7 @@ import javax.swing.Icon
 
 internal class RnColorSettingsPage : ColorSettingsPage {
     @Nullable
-    override fun getIcon(): Icon? {
+    override fun getIcon(): Icon {
         return RnIcons.FILE
     }
 
@@ -39,7 +39,7 @@ tab : \u0009"""
     }
 
     override fun getAttributeDescriptors(): Array<AttributesDescriptor> {
-        return DESCRIPTORS
+        return descriptors
     }
 
     override fun getColorDescriptors(): Array<ColorDescriptor> {
@@ -50,11 +50,9 @@ tab : \u0009"""
         return "Rn"
     }
 
-    companion object {
-        private val DESCRIPTORS = arrayOf<AttributesDescriptor>(AttributesDescriptor("Key", RnSyntaxHighlighter.KEY),
-                AttributesDescriptor("Separator", RnSyntaxHighlighter.SEPARATOR),
-                AttributesDescriptor("Value", RnSyntaxHighlighter.VALUE),
-                AttributesDescriptor("Bad value", RnSyntaxHighlighter.BAD_CHARACTER)
-        )
-    }
+    private val descriptors = arrayOf(AttributesDescriptor("Key", RnSyntaxHighlighter.KEY),
+            AttributesDescriptor("Separator", RnSyntaxHighlighter.SEPARATOR),
+            AttributesDescriptor("Value", RnSyntaxHighlighter.VALUE),
+            AttributesDescriptor("Bad value", RnSyntaxHighlighter.BAD_CHARACTER)
+    )
 }
