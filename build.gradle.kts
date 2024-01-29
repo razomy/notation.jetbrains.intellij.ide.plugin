@@ -44,5 +44,6 @@ tasks {
 
     publishPlugin {
         token.set(file("certificate/token.txt").readText())
+        channels.set(listOf("alpha"))
     }
 }
