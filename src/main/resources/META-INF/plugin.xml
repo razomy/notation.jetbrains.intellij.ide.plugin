@@ -52,6 +52,9 @@
                 implementationClass="com.razomy.notation.idea.plugin.RnCommenter"/>
         <spellchecker.support language="RN"
                               implementationClass="com.razomy.notation.idea.plugin.RnSpellCheckingStrategy"/>
+        <lang.formatter
+                language="RN"
+                implementationClass="com.razomy.notation.idea.plugin.RnFormattingModelBuilder"/>
     </extensions>
 
 </idea-plugin>

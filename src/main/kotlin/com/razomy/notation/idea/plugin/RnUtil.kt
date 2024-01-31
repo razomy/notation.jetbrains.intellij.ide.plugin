@@ -64,7 +64,7 @@ object RnUtil {
     @NotNull
     fun findDocumentationComment(property: RnProperty): String {
         val result: MutableList<String> = LinkedList()
-        var element: PsiElement = property.getPrevSibling()
+        var element: PsiElement = property.prevSibling
         while (element is PsiComment || element is PsiWhiteSpace) {
             if (element is PsiComment) {
                 val commentText = element.getText().replaceFirst("[!# ]+".toRegex(), "")

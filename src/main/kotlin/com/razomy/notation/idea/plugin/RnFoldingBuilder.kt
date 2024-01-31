@@ -8,7 +8,7 @@ import com.intellij.openapi.util.TextRange
 
 
 class RnFoldingBuilder : FoldingBuilder {
-    override fun buildFoldRegions(node: ASTNode, document: Document): Array<FoldingDescriptor> {
+    override fun buildFoldRegions(root: ASTNode, document: Document): Array<FoldingDescriptor> {
         val descriptors: MutableList<FoldingDescriptor> = ArrayList()
 
         var lastNode: ASTNode? = null
@@ -17,17 +17,29 @@ class RnFoldingBuilder : FoldingBuilder {
             if (nodeTo.textRange.endOffset == 0) {
                 return
             }
-            descriptors.add(FoldingDescriptor(
+
+            val text = nodeFrom.text.substring(0, Math.min(120, nodeFrom.text.length))
+            val start = nodeFrom.startOffset
+            val end = nodeTo.textRange.endOffset - 1
+            if (end <= start) {
+                return
+            }
+            val range = TextRange(start, end)
+
+            val descriptor = FoldingDescriptor(
                     nodeFrom,
-                    TextRange(nodeFrom.startOffset, nodeTo.textRange.endOffset - 1),
+                    range,
                     null,
-                    nodeFrom.text.substring(0, Math.min(100, nodeFrom.text.length))))
+                    text
+            )
+
+            descriptors.add(descriptor)
         }
 
 
         fun processNode(node: ASTNode, descriptors: MutableList<FoldingDescriptor>) {
             if (node.treePrev != null) {
-                if (node.treePrev.text.endsWith('\n')) {
+                if (node.elementType != RnTypes.DEEP && node.treePrev.text.endsWith('\n')) {
                     if (lastNode is ASTNode) {
                         add(lastNode!!, node.treePrev)
                     }
@@ -40,10 +52,16 @@ class RnFoldingBuilder : FoldingBuilder {
             }
         }
 
-        processNode(node, descriptors)
+        for (child in root.getChildren(null)) {
+            if (child == root.firstChildNode) {
+                lastNode = child
+                continue
+            };
+            processNode(child, descriptors)
+        }
 
-        if (lastNode != null) {
-            add(lastNode!!, node)
+        if (lastNode != null && lastNode != root.lastChildNode) {
+            add(lastNode!!, root.lastChildNode)
         }
 
         return descriptors.toTypedArray<FoldingDescriptor>()

@@ -17,7 +17,7 @@
 
 RnFile ::= item_*
 
-private item_ ::= (property|COMMENT|CRLF)
+private item_ ::= (property|COMMENT|CRLF|DEEP|SPACE|ERROR)
 
 property ::= (KEY? SEPARATOR VALUE?) | KEY
 {

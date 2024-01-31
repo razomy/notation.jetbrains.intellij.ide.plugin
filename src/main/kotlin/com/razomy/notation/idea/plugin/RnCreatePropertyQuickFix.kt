@@ -55,15 +55,15 @@ internal class RnCreatePropertyQuickFix(private val key: String) : BaseIntention
     private fun createProperty(project: Project, file: VirtualFile) {
         WriteCommandAction.writeCommandAction(project).run<RuntimeException> {
             val RnFile: RnFile = (PsiManager.getInstance(project).findFile(file) as RnFile?)!!
-            val lastChildNode: ASTNode = RnFile.getNode().getLastChildNode()
+            val lastChildNode: ASTNode? = RnFile.node.lastChildNode
             // TODO: Add another check for CRLF
             if (lastChildNode != null /* && !lastChildNode.getElementType().equals(RnTypes.CRLF)*/) {
-                RnFile.getNode().addChild(RnElementFactory.createCRLF(project).getNode())
+                RnFile.node.addChild(RnElementFactory.createCRLF(project).node)
             }
             // IMPORTANT: change spaces to escaped spaces or the new node will only have the first word for the key
             val property: RnProperty = RnElementFactory.createProperty(project, key.replace(" ".toRegex(), "\\\\ "), "")
-            RnFile.getNode().addChild(property.getNode())
-            (property.getLastChild().getNavigationElement() as Navigatable).navigate(true)
+            RnFile.node.addChild(property.node)
+            (property.lastChild.navigationElement as Navigatable).navigate(true)
             val editor = FileEditorManager.getInstance(project).selectedTextEditor!!
             editor.caretModel.moveCaretRelatively(2, 0, false, false, false)
         }

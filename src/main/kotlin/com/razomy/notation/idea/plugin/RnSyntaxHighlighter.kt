@@ -3,6 +3,7 @@ package com.razomy.notation.idea.plugin;
 import com.intellij.lexer.Lexer
 import com.intellij.openapi.editor.DefaultLanguageHighlighterColors
 import com.intellij.openapi.editor.HighlighterColors
+import com.intellij.openapi.editor.colors.CodeInsightColors
 import com.intellij.openapi.editor.colors.TextAttributesKey
 import com.intellij.openapi.editor.colors.TextAttributesKey.createTextAttributesKey
 import com.intellij.openapi.fileTypes.SyntaxHighlighterBase
@@ -31,21 +32,26 @@ class RnSyntaxHighlighter : SyntaxHighlighterBase() {
         if (tokenType == RnTypes.COMMENT) {
             return COMMENT_KEYS
         }
-        if (tokenType == TokenType.BAD_CHARACTER) {
-            return BAD_CHAR_KEYS
+        if (tokenType == RnTypes.SPACE) {
+            return SPACE_KEYS
+        }
+        if (tokenType == RnTypes.ERROR) {
+            return ERROR_KEYS
         }
         return EMPTY_KEYS
     }
 
     companion object {
-        val SEPARATOR: TextAttributesKey = createTextAttributesKey("Rn_SEPARATOR", DefaultLanguageHighlighterColors.OPERATION_SIGN)
-        val KEY: TextAttributesKey = createTextAttributesKey("Rn_KEY", DefaultLanguageHighlighterColors.KEYWORD)
-        val VALUE: TextAttributesKey = createTextAttributesKey("Rn_VALUE", DefaultLanguageHighlighterColors.STRING)
-        val COMMENT: TextAttributesKey = createTextAttributesKey("Rn_COMMENT", DefaultLanguageHighlighterColors.LINE_COMMENT)
-        val BAD_CHARACTER: TextAttributesKey = createTextAttributesKey("Rn_BAD_CHARACTER", HighlighterColors.BAD_CHARACTER)
+        val SEPARATOR: TextAttributesKey = createTextAttributesKey("RN_SEPARATOR", DefaultLanguageHighlighterColors.OPERATION_SIGN)
+        val KEY: TextAttributesKey = createTextAttributesKey("RN_KEY", DefaultLanguageHighlighterColors.KEYWORD)
+        val VALUE: TextAttributesKey = createTextAttributesKey("RN_VALUE", DefaultLanguageHighlighterColors.STRING)
+        val COMMENT: TextAttributesKey = createTextAttributesKey("RN_COMMENT", DefaultLanguageHighlighterColors.LINE_COMMENT)
+        val ERROR: TextAttributesKey = createTextAttributesKey("RN_ERROR", HighlighterColors.BAD_CHARACTER)
+        val SPACE: TextAttributesKey = createTextAttributesKey("RN_SPACE", HighlighterColors.TEXT)
 
 
-        private val BAD_CHAR_KEYS = arrayOf<TextAttributesKey?>(BAD_CHARACTER)
+        private val SPACE_KEYS = arrayOf<TextAttributesKey?>(SPACE)
+        private val ERROR_KEYS = arrayOf<TextAttributesKey?>(ERROR)
         private val SEPARATOR_KEYS = arrayOf<TextAttributesKey?>(SEPARATOR)
         private val KEY_KEYS = arrayOf<TextAttributesKey?>(KEY)
         private val VALUE_KEYS = arrayOf<TextAttributesKey?>(VALUE)

@@ -1,11 +1,15 @@
 # into
-hello _
-    iam my name is Jack
-    iam work every day
+hello
+    iam Jack
+    iam work
+        at office
+        at home
+        at park # on sunny days
     say hello
 
-# shake
+# shakes
+shake
     if there anyone
         do shake a hand everyone
-    else _
+    else
         do sit on a couch

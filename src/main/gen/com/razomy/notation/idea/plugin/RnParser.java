@@ -48,13 +48,16 @@ public class RnParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // property|COMMENT|CRLF
+  // property|COMMENT|CRLF|DEEP|SPACE|ERROR
   static boolean item_(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "item_")) return false;
     boolean r;
     r = property(b, l + 1);
     if (!r) r = consumeToken(b, COMMENT);
     if (!r) r = consumeToken(b, CRLF);
+    if (!r) r = consumeToken(b, DEEP);
+    if (!r) r = consumeToken(b, SPACE);
+    if (!r) r = consumeToken(b, ERROR);
     return r;
   }
 

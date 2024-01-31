@@ -53,6 +53,6 @@ tab : \u0009"""
     private val descriptors = arrayOf(AttributesDescriptor("Key", RnSyntaxHighlighter.KEY),
             AttributesDescriptor("Separator", RnSyntaxHighlighter.SEPARATOR),
             AttributesDescriptor("Value", RnSyntaxHighlighter.VALUE),
-            AttributesDescriptor("Bad value", RnSyntaxHighlighter.BAD_CHARACTER)
+            AttributesDescriptor("Bad value", RnSyntaxHighlighter.ERROR)
     )
 }
