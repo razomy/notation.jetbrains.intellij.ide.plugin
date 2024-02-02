@@ -10,14 +10,9 @@ import com.intellij.openapi.util.TextRange
 class RnFoldingBuilder : FoldingBuilder {
     override fun buildFoldRegions(root: ASTNode, document: Document): Array<FoldingDescriptor> {
         val descriptors: MutableList<FoldingDescriptor> = ArrayList()
-
         var lastNode: ASTNode? = null
 
         fun add(nodeFrom: ASTNode, nodeTo: ASTNode) {
-            if (nodeTo.textRange.endOffset == 0) {
-                return
-            }
-
             val text = nodeFrom.text.substring(0, Math.min(120, nodeFrom.text.length))
             val start = nodeFrom.startOffset
             val end = nodeTo.textRange.endOffset - 1
@@ -38,13 +33,15 @@ class RnFoldingBuilder : FoldingBuilder {
 
 
         fun processNode(node: ASTNode, descriptors: MutableList<FoldingDescriptor>) {
-            if (node.treePrev != null) {
-                if (node.elementType != RnTypes.DEEP && node.treePrev.text.endsWith('\n')) {
-                    if (lastNode is ASTNode) {
-                        add(lastNode!!, node.treePrev)
-                    }
-                    lastNode = node
-                }
+            if (lastNode == null && node.text != "\n") {
+                lastNode = node
+            } else if (node == lastNode) {
+                // do nothing
+            } else if (node.textRange.endOffset == 0){
+                // do nothing
+            }else if (lastNode != null && node.text == "\n") {
+                add(lastNode!!, node.treePrev)
+                lastNode = null
             }
 
             for (child in node.getChildren(null)) {

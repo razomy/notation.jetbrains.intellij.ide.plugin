@@ -26,7 +26,7 @@ KEY_CHARACTER=[^\ \n\t\f\\] | "\\ "
 %%
 
 <YYINITIAL> {WHITE_SPACE}                                   { yybegin(YYINITIAL); return RnTypes.ERROR; }
-<YYINITIAL> {END_OF_LINE_COMMENT}                           { yybegin(YYINITIAL); return RnTypes.COMMENT; }
+<YYINITIAL> {END_OF_LINE_COMMENT}{CRLF}?({WHITE_SPACE}*)                           { yybegin(YYINITIAL); return RnTypes.COMMENT; }
 <YYINITIAL> {CRLF}                                          { yybegin(YYINITIAL); return RnTypes.DEEP; }
 <YYINITIAL> {KEY_CHARACTER}+                                { yybegin(WAITING_SEPARATOR); return RnTypes.KEY; }
 
@@ -37,14 +37,14 @@ KEY_CHARACTER=[^\ \n\t\f\\] | "\\ "
 <WAITING_SEPARATOR> {CRLF}                                  { yybegin(YYINITIAL); return RnTypes.DEEP; }
 
 
-<WAITING_VALUE> {END_OF_LINE_COMMENT}                       { yybegin(WAITING_VALUE); return RnTypes.COMMENT; }
+<WAITING_VALUE> {END_OF_LINE_COMMENT}{CRLF}?({WHITE_SPACE}*)                       { yybegin(WAITING_VALUE); return RnTypes.COMMENT; }
 
 <WAITING_VALUE> {WHITE_SPACE}*{CRLF}                        { yybegin(YYINITIAL); return RnTypes.ERROR; }
 <WAITING_VALUE> {WHITE_SPACE}+                              { yybegin(WAITING_VALUE); return RnTypes.SPACE; }
 
 <WAITING_VALUE> {FIRST_VALUE_CHARACTER}{VALUE_CHARACTER}*   { yybegin(WAITING_DEEP); return RnTypes.VALUE; }
 
-<WAITING_DEEP> {END_OF_LINE_COMMENT}                        { yybegin(WAITING_DEEP); return RnTypes.COMMENT; }
+<WAITING_DEEP> {END_OF_LINE_COMMENT}{CRLF}?({WHITE_SPACE}*)                     { yybegin(WAITING_DEEP); return RnTypes.COMMENT; }
 <WAITING_DEEP> {CRLF}({WHITE_SPACE}+)                       { yybegin(YYINITIAL); return RnTypes.DEEP; }
 <WAITING_DEEP> {CRLF}                                       { yybegin(YYINITIAL); return RnTypes.DEEP; }
 
