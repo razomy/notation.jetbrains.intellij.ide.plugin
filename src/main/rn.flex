@@ -13,39 +13,32 @@ import com.intellij.psi.tree.IElementType;
 %eof{  return;
 %eof}
 
-CRLF=\R|\n
+
+COMMENT=("#")[^\R\n]* // not END
 WHITE_SPACE=[\ \t\f]
-FIRST_VALUE_CHARACTER=[^\ \n\f\\]
-VALUE_CHARACTER=[^\n\f\\#] | "\\#"
-END_OF_LINE_COMMENT=("#")[^\r\n]*
+END=[\R\n]
+KEY_CHARACTER=[^\ \t\f\R\n] // not WHITE_SPACE and not END
 SEPARATOR=[ ]
-KEY_CHARACTER=[^\ \n\t\f\\] | "\\ "
+FIRST_VALUE_CHARACTER=[^\ \t\f\R\n] // not WHITE_SPACE and not END
+VALUE=[^\R\n] // not END
 
-%state WAITING_VALUE, WAITING_SEPARATOR, WAITING_DEEP
 
+%state WAITING_VALUE, WAITING_SEPARATOR, WAITING_VALUE_END, WAITING_CHILD_DEEP
 %%
 
-<YYINITIAL> {WHITE_SPACE}                                   { yybegin(YYINITIAL); return RnTypes.ERROR; }
-<YYINITIAL> {END_OF_LINE_COMMENT}{CRLF}?({WHITE_SPACE}*)                           { yybegin(YYINITIAL); return RnTypes.COMMENT; }
-<YYINITIAL> {CRLF}                                          { yybegin(YYINITIAL); return RnTypes.DEEP; }
-<YYINITIAL> {KEY_CHARACTER}+                                { yybegin(WAITING_SEPARATOR); return RnTypes.KEY; }
+<YYINITIAL> ({WHITE_SPACE}*){COMMENT}{END}                 { yybegin(YYINITIAL); return RnTypes.COMMENT; }
+<YYINITIAL> {KEY_CHARACTER}+                               { yybegin(WAITING_SEPARATOR); return RnTypes.KEY; }
 
+<WAITING_SEPARATOR> {SEPARATOR}                            { yybegin(WAITING_VALUE); return RnTypes.SEPARATOR; }
+<WAITING_SEPARATOR> {END}({WHITE_SPACE}+)                  { yybegin(WAITING_CHILD_DEEP); return RnTypes.DEEP; }
+<WAITING_SEPARATOR> {END}                                  { yybegin(YYINITIAL); return RnTypes.END; }
 
-<WAITING_SEPARATOR> ({WHITE_SPACE}+){CRLF}                  { yybegin(YYINITIAL); return RnTypes.ERROR; }
-<WAITING_SEPARATOR> {SEPARATOR}                             { yybegin(WAITING_VALUE); return RnTypes.SEPARATOR; }
-<WAITING_SEPARATOR> {CRLF}({WHITE_SPACE}+)                  { yybegin(YYINITIAL); return RnTypes.DEEP; }
-<WAITING_SEPARATOR> {CRLF}                                  { yybegin(YYINITIAL); return RnTypes.DEEP; }
+<WAITING_CHILD_DEEP> {COMMENT}{END}({WHITE_SPACE}+)        { yybegin(WAITING_CHILD_DEEP); return RnTypes.COMMENT; }
+<WAITING_CHILD_DEEP> {KEY_CHARACTER}+                      { yybegin(WAITING_SEPARATOR); return RnTypes.KEY; }
 
+<WAITING_VALUE> {FIRST_VALUE_CHARACTER}({VALUE}*)          { yybegin(WAITING_VALUE_END); return RnTypes.VALUE; }
 
-<WAITING_VALUE> {END_OF_LINE_COMMENT}{CRLF}?({WHITE_SPACE}*)                       { yybegin(WAITING_VALUE); return RnTypes.COMMENT; }
+<WAITING_VALUE_END> {END}({WHITE_SPACE}+)                  { yybegin(WAITING_CHILD_DEEP); return RnTypes.DEEP; }
+<WAITING_VALUE_END> {END}                                  { yybegin(YYINITIAL); return RnTypes.END; }
 
-<WAITING_VALUE> {WHITE_SPACE}*{CRLF}                        { yybegin(YYINITIAL); return RnTypes.ERROR; }
-<WAITING_VALUE> {WHITE_SPACE}+                              { yybegin(WAITING_VALUE); return RnTypes.SPACE; }
-
-<WAITING_VALUE> {FIRST_VALUE_CHARACTER}{VALUE_CHARACTER}*   { yybegin(WAITING_DEEP); return RnTypes.VALUE; }
-
-<WAITING_DEEP> {END_OF_LINE_COMMENT}{CRLF}?({WHITE_SPACE}*)                     { yybegin(WAITING_DEEP); return RnTypes.COMMENT; }
-<WAITING_DEEP> {CRLF}({WHITE_SPACE}+)                       { yybegin(YYINITIAL); return RnTypes.DEEP; }
-<WAITING_DEEP> {CRLF}                                       { yybegin(YYINITIAL); return RnTypes.DEEP; }
-
-[^]                                                         { return RnTypes.ERROR; }
+[^]                                                        { return RnTypes.ERROR; }

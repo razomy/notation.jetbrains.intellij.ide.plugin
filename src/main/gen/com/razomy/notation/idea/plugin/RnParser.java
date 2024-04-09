@@ -48,56 +48,83 @@ public class RnParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // property|COMMENT|CRLF|DEEP|SPACE|ERROR
+  // (COMMENT END)|property|ERROR
   static boolean item_(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "item_")) return false;
     boolean r;
-    r = property(b, l + 1);
-    if (!r) r = consumeToken(b, COMMENT);
-    if (!r) r = consumeToken(b, CRLF);
-    if (!r) r = consumeToken(b, DEEP);
-    if (!r) r = consumeToken(b, SPACE);
-    if (!r) r = consumeToken(b, ERROR);
-    return r;
-  }
-
-  /* ********************************************************** */
-  // (KEY? SEPARATOR VALUE?) | KEY
-  public static boolean property(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "property")) return false;
-    if (!nextTokenIs(b, "<property>", KEY, SEPARATOR)) return false;
-    boolean r;
-    Marker m = enter_section_(b, l, _NONE_, PROPERTY, "<property>");
-    r = property_0(b, l + 1);
-    if (!r) r = consumeToken(b, KEY);
-    exit_section_(b, l, m, r, false, null);
-    return r;
-  }
-
-  // KEY? SEPARATOR VALUE?
-  private static boolean property_0(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "property_0")) return false;
-    boolean r;
     Marker m = enter_section_(b);
-    r = property_0_0(b, l + 1);
-    r = r && consumeToken(b, SEPARATOR);
-    r = r && property_0_2(b, l + 1);
+    r = item__0(b, l + 1);
+    if (!r) r = property(b, l + 1);
+    if (!r) r = consumeToken(b, ERROR);
     exit_section_(b, m, null, r);
     return r;
   }
 
-  // KEY?
-  private static boolean property_0_0(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "property_0_0")) return false;
-    consumeToken(b, KEY);
-    return true;
+  // COMMENT END
+  private static boolean item__0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "item__0")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = consumeTokens(b, 0, COMMENT, END);
+    exit_section_(b, m, null, r);
+    return r;
   }
 
-  // VALUE?
-  private static boolean property_0_2(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "property_0_2")) return false;
-    consumeToken(b, VALUE);
-    return true;
+  /* ********************************************************** */
+  // (KEY END) | (KEY SEPARATOR VALUE END)| (KEY DEEP property) | (KEY SEPARATOR VALUE DEEP property)
+  public static boolean property(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "property")) return false;
+    if (!nextTokenIs(b, KEY)) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = property_0(b, l + 1);
+    if (!r) r = property_1(b, l + 1);
+    if (!r) r = property_2(b, l + 1);
+    if (!r) r = property_3(b, l + 1);
+    exit_section_(b, m, PROPERTY, r);
+    return r;
+  }
+
+  // KEY END
+  private static boolean property_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "property_0")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = consumeTokens(b, 0, KEY, END);
+    exit_section_(b, m, null, r);
+    return r;
+  }
+
+  // KEY SEPARATOR VALUE END
+  private static boolean property_1(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "property_1")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = consumeTokens(b, 0, KEY, SEPARATOR, VALUE, END);
+    exit_section_(b, m, null, r);
+    return r;
+  }
+
+  // KEY DEEP property
+  private static boolean property_2(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "property_2")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = consumeTokens(b, 0, KEY, DEEP);
+    r = r && property(b, l + 1);
+    exit_section_(b, m, null, r);
+    return r;
+  }
+
+  // KEY SEPARATOR VALUE DEEP property
+  private static boolean property_3(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "property_3")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = consumeTokens(b, 0, KEY, SEPARATOR, VALUE, DEEP);
+    r = r && property(b, l + 1);
+    exit_section_(b, m, null, r);
+    return r;
   }
 
 }

@@ -32,7 +32,7 @@ class RnSyntaxHighlighter : SyntaxHighlighterBase() {
         if (tokenType == RnTypes.COMMENT) {
             return COMMENT_KEYS
         }
-        if (tokenType == RnTypes.SPACE) {
+        if (tokenType == RnTypes.END) {
             return SPACE_KEYS
         }
         if (tokenType == RnTypes.ERROR) {
@@ -47,10 +47,10 @@ class RnSyntaxHighlighter : SyntaxHighlighterBase() {
         val VALUE: TextAttributesKey = createTextAttributesKey("RN_VALUE", DefaultLanguageHighlighterColors.STRING)
         val COMMENT: TextAttributesKey = createTextAttributesKey("RN_COMMENT", DefaultLanguageHighlighterColors.LINE_COMMENT)
         val ERROR: TextAttributesKey = createTextAttributesKey("RN_ERROR", HighlighterColors.BAD_CHARACTER)
-        val SPACE: TextAttributesKey = createTextAttributesKey("RN_SPACE", HighlighterColors.TEXT)
+        val END: TextAttributesKey = createTextAttributesKey("RN_END", HighlighterColors.TEXT)
 
 
-        private val SPACE_KEYS = arrayOf<TextAttributesKey?>(SPACE)
+        private val SPACE_KEYS = arrayOf<TextAttributesKey?>(END)
         private val ERROR_KEYS = arrayOf<TextAttributesKey?>(ERROR)
         private val SEPARATOR_KEYS = arrayOf<TextAttributesKey?>(SEPARATOR)
         private val KEY_KEYS = arrayOf<TextAttributesKey?>(KEY)

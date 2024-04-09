@@ -11,12 +11,11 @@ public interface RnTypes {
   IElementType PROPERTY = new RnElementType("PROPERTY");
 
   IElementType COMMENT = new RnTokenType("COMMENT");
-  IElementType CRLF = new RnTokenType("CRLF");
   IElementType DEEP = new RnTokenType("DEEP");
+  IElementType END = new RnTokenType("END");
   IElementType ERROR = new RnTokenType("ERROR");
   IElementType KEY = new RnTokenType("KEY");
   IElementType SEPARATOR = new RnTokenType("SEPARATOR");
-  IElementType SPACE = new RnTokenType("SPACE");
   IElementType VALUE = new RnTokenType("VALUE");
 
   class Factory {

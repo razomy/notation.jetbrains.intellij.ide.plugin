@@ -20,5 +20,7 @@ layer
  property value
 # comment
 layer
+ # comment
+ \# not comment
  property2 value
 ```

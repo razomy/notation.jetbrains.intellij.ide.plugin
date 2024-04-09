@@ -27,4 +27,10 @@ public class RnPropertyImpl extends ASTWrapperPsiElement implements RnProperty {
     else super.accept(visitor);
   }
 
+  @Override
+  @Nullable
+  public RnProperty getProperty() {
+    return findChildByClass(RnProperty.class);
+  }
+
 }

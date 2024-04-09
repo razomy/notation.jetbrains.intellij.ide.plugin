@@ -15,7 +15,7 @@ class RnFoldingBuilder : FoldingBuilder {
         fun add(nodeFrom: ASTNode, nodeTo: ASTNode) {
             val text = nodeFrom.text.substring(0, Math.min(120, nodeFrom.text.length))
             val start = nodeFrom.startOffset
-            val end = nodeTo.textRange.endOffset - 1
+            val end = nodeTo.textRange.endOffset
             if (end <= start) {
                 return
             }
