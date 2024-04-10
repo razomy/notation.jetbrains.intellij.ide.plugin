@@ -16,7 +16,7 @@ object RnElementFactory {
     }
 
     fun createProperty(project: Project?, name: String, value: String): RnProperty {
-        val file: RnFile = createFile(project, "$name = $value")
+        val file: RnFile = createFile(project, "$name $value")
         return file.firstChild as RnProperty
     }
 

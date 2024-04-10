@@ -1,22 +1,3 @@
-key
-key default
-key
-    child
-key default
-    child
-key default
-    child default
-# comment
-\# not comment
-key # not comment
-key \# not comment
-key default \# not comment
-key default \## not comment
-key default
-    # comment
-    \# not comment
-    child
-
 # example
 
 # into

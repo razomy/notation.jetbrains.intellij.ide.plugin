@@ -21,10 +21,12 @@ private item_ ::=   COMMENT
                     | (PROPERTY EMPTY_LINE)
                     | ERROR
 
-PROPERTY ::= (KEY END)
-             | (KEY SEPARATOR VALUE END)
-             | (KEY CHILD_DEEP PROPERTY* END)
+PROPERTY ::= (KEY SEPARATOR VALUE CHILD_DEEP COMMENT PROPERTY* END)
              | (KEY SEPARATOR VALUE CHILD_DEEP PROPERTY* END)
+             | (KEY CHILD_DEEP COMMENT PROPERTY* END)
+             | (KEY CHILD_DEEP PROPERTY* END)
+             | (KEY SEPARATOR VALUE END)
+             | (KEY END)
 {
   methods=[getKey getValue]
 }

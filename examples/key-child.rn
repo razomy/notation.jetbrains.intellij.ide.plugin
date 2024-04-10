@@ -1,15 +1,3 @@
-# Razomy notation `.rn`
-
-- data file
-- free-text descriptions
-- layering
-- composition
-- key-value pairs
-
-
-### Sample
-
-```rn
 key
 key default
 root
@@ -35,4 +23,3 @@ layer
 
 layer
  property2 value
-```
