@@ -10,8 +10,10 @@ public interface RnTypes {
 
   IElementType PROPERTY = new RnElementType("PROPERTY");
 
+  IElementType CHILD_DEEP = new RnTokenType("CHILD_DEEP");
   IElementType COMMENT = new RnTokenType("COMMENT");
   IElementType DEEP = new RnTokenType("DEEP");
+  IElementType EMPTY_LINE = new RnTokenType("EMPTY_LINE");
   IElementType END = new RnTokenType("END");
   IElementType ERROR = new RnTokenType("ERROR");
   IElementType KEY = new RnTokenType("KEY");

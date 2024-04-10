@@ -3,11 +3,10 @@
 
 package com.razomy.notation.idea.plugin;
 
-import com.intellij.lexer.FlexLexer;
 import com.intellij.psi.tree.IElementType;
 
 
-class RnLexer implements FlexLexer {
+class RnLexer extends RnLexerBridge {
 
   /** This character denotes the end of file */
   public static final int YYEOF = -1;
@@ -66,8 +65,8 @@ class RnLexer implements FlexLexer {
   private static final int [] ZZ_CMAP_BLOCKS = zzUnpackcmap_blocks();
 
   private static final String ZZ_CMAP_BLOCKS_PACKED_0 =
-    "\11\0\1\1\1\2\1\0\1\1\23\0\1\3\2\0"+
-    "\1\4\56\0\1\2\u01ad\0";
+    "\11\0\1\1\1\2\1\0\1\1\1\2\22\0\1\3"+
+    "\2\0\1\4\u01dc\0";
 
   private static int [] zzUnpackcmap_blocks() {
     int [] result = new int[512];
@@ -94,11 +93,11 @@ class RnLexer implements FlexLexer {
   private static final int [] ZZ_ACTION = zzUnpackAction();
 
   private static final String ZZ_ACTION_PACKED_0 =
-    "\5\0\1\1\2\2\1\1\1\3\1\4\1\5\1\1"+
-    "\2\0\1\6\1\7\2\0\1\10";
+    "\5\0\1\1\1\2\1\3\1\1\1\4\1\5\1\6"+
+    "\1\1\1\0\1\7\1\10\2\0\1\11";
 
   private static int [] zzUnpackAction() {
-    int [] result = new int[20];
+    int [] result = new int[19];
     int offset = 0;
     offset = zzUnpackAction(ZZ_ACTION_PACKED_0, offset, result);
     return result;
@@ -123,12 +122,12 @@ class RnLexer implements FlexLexer {
   private static final int [] ZZ_ROWMAP = zzUnpackRowMap();
 
   private static final String ZZ_ROWMAP_PACKED_0 =
-    "\0\0\0\5\0\12\0\17\0\24\0\31\0\36\0\43"+
-    "\0\50\0\55\0\62\0\43\0\67\0\36\0\74\0\43"+
-    "\0\62\0\101\0\106\0\106";
+    "\0\0\0\5\0\12\0\17\0\24\0\31\0\36\0\36"+
+    "\0\43\0\50\0\55\0\36\0\62\0\67\0\36\0\55"+
+    "\0\74\0\101\0\101";
 
   private static int [] zzUnpackRowMap() {
-    int [] result = new int[20];
+    int [] result = new int[19];
     int offset = 0;
     offset = zzUnpackRowMap(ZZ_ROWMAP_PACKED_0, offset, result);
     return result;
@@ -151,16 +150,16 @@ class RnLexer implements FlexLexer {
   private static final int [] ZZ_TRANS = zzUnpacktrans();
 
   private static final String ZZ_TRANS_PACKED_0 =
-    "\1\6\1\7\1\10\1\7\1\11\1\12\3\10\1\12"+
-    "\2\10\1\13\1\14\3\10\1\13\2\10\1\6\3\10"+
-    "\1\15\1\6\3\0\1\6\1\0\1\16\1\0\1\16"+
-    "\1\17\5\0\1\11\1\17\1\20\1\17\1\11\2\12"+
-    "\1\0\2\12\1\0\1\21\1\0\1\21\1\0\1\15"+
-    "\1\22\1\23\1\22\1\15\2\17\1\20\2\17\2\22"+
-    "\1\23\2\22\1\0\1\24\1\0\1\24\1\0";
+    "\1\6\1\7\1\10\1\7\1\11\1\12\3\7\1\12"+
+    "\2\7\1\13\1\14\3\7\1\13\2\7\1\6\3\7"+
+    "\1\15\1\6\3\0\1\6\5\0\1\11\1\16\1\17"+
+    "\1\16\1\11\2\12\1\0\2\12\1\0\1\20\1\0"+
+    "\1\20\1\0\1\15\1\21\1\22\1\21\1\15\2\16"+
+    "\1\17\2\16\2\21\1\22\2\21\1\0\1\23\1\0"+
+    "\1\23\1\0";
 
   private static int [] zzUnpacktrans() {
-    int [] result = new int[75];
+    int [] result = new int[70];
     int offset = 0;
     offset = zzUnpacktrans(ZZ_TRANS_PACKED_0, offset, result);
     return result;
@@ -198,11 +197,11 @@ class RnLexer implements FlexLexer {
   private static final int [] ZZ_ATTRIBUTE = zzUnpackAttribute();
 
   private static final String ZZ_ATTRIBUTE_PACKED_0 =
-    "\5\0\2\1\1\11\3\1\1\11\1\1\2\0\1\11"+
+    "\5\0\1\1\2\11\3\1\1\11\1\1\1\0\1\11"+
     "\1\1\2\0\1\1";
 
   private static int [] zzUnpackAttribute() {
-    int [] result = new int[20];
+    int [] result = new int[19];
     int offset = 0;
     offset = zzUnpackAttribute(ZZ_ATTRIBUTE_PACKED_0, offset, result);
     return result;
@@ -527,42 +526,47 @@ class RnLexer implements FlexLexer {
             { yybegin(WAITING_SEPARATOR); return RnTypes.KEY;
             }
           // fall through
-          case 9: break;
+          case 10: break;
           case 2:
             { return RnTypes.ERROR;
             }
           // fall through
-          case 10: break;
-          case 3:
-            { yybegin(WAITING_VALUE_END); return RnTypes.VALUE;
-            }
-          // fall through
           case 11: break;
-          case 4:
-            { yybegin(YYINITIAL); return RnTypes.END;
+          case 3:
+            { yybegin(YYINITIAL); return RnTypes.EMPTY_LINE;
             }
           // fall through
           case 12: break;
-          case 5:
-            { yybegin(WAITING_VALUE); return RnTypes.SEPARATOR;
+          case 4:
+            { yybegin(WAITING_VALUE_END); return RnTypes.VALUE;
             }
           // fall through
           case 13: break;
-          case 6:
-            { yybegin(YYINITIAL); return RnTypes.COMMENT;
+          case 5:
+            { yybegin(YYINITIAL); deep=0; return RnTypes.END;
             }
           // fall through
           case 14: break;
-          case 7:
-            { yybegin(WAITING_CHILD_DEEP); return RnTypes.DEEP;
+          case 6:
+            { yybegin(WAITING_VALUE); return RnTypes.SEPARATOR;
             }
           // fall through
           case 15: break;
-          case 8:
-            { yybegin(WAITING_CHILD_DEEP); return RnTypes.COMMENT;
+          case 7:
+            { yybegin(YYINITIAL); return RnTypes.COMMENT;
             }
           // fall through
           case 16: break;
+          case 8:
+            { yybegin(WAITING_CHILD_DEEP); return tryDeep(yytext().length());
+            }
+          // fall through
+          case 17: break;
+          case 9:
+            { yybegin(WAITING_CHILD_DEEP); deep=0; return RnTypes.COMMENT;
+            }
+          // fall through
+          case 18: break;
           default:
             zzScanError(ZZ_NO_MATCH);
           }

@@ -17,9 +17,9 @@
 
 RnFile ::= item_*
 
-private item_ ::= ((COMMENT END)|property|ERROR)
+private item_ ::= (COMMENT|PROPERTY|EMPTY_LINE|ERROR)
 
-property ::=  (KEY END) | (KEY SEPARATOR VALUE END)| (KEY DEEP property) | (KEY SEPARATOR VALUE DEEP property)
+PROPERTY ::= KEY (SEPARATOR VALUE)? (END | CHILD_DEEP PROPERTY* | DEEP)
 {
   methods=[getKey getValue]
 }

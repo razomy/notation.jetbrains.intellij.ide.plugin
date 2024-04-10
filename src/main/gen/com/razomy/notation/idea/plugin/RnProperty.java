@@ -7,8 +7,8 @@ import com.intellij.psi.PsiElement;
 
 public interface RnProperty extends PsiElement {
 
-  @Nullable
-  RnProperty getProperty();
+  @NotNull
+  List<RnProperty> getPropertyList();
 
   //WARNING: getKey(...) is skipped
   //matching getKey(RnProperty, ...)

@@ -12,11 +12,11 @@ class RnBlock(@NotNull node: ASTNode, @Nullable wrap: Wrap?, @Nullable alignment
         val blocks: MutableList<Block> = ArrayList()
         var child: ASTNode? = myNode.firstChildNode
         while (child != null) {
-            if (child.elementType !== RnTypes.END || child.elementType !== RnTypes.DEEP) {
+//            if (child.elementType !== RnTypes.END || child.elementType !== RnTypes.DEEP) {
                 val block: Block = RnBlock(child, Wrap.createWrap(WrapType.NONE, false), Alignment.createAlignment(),
                         spacingBuilder)
                 blocks.add(block)
-            }
+//            }
             child = child.treeNext
         }
         return blocks

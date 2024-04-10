@@ -28,9 +28,9 @@ public class RnPropertyImpl extends ASTWrapperPsiElement implements RnProperty {
   }
 
   @Override
-  @Nullable
-  public RnProperty getProperty() {
-    return findChildByClass(RnProperty.class);
+  @NotNull
+  public List<RnProperty> getPropertyList() {
+    return PsiTreeUtil.getChildrenOfTypeAsList(this, RnProperty.class);
   }
 
 }

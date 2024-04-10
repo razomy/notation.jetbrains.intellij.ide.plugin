@@ -36,6 +36,71 @@ public class RnParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
+  // KEY (SEPARATOR VALUE)? (END | CHILD_DEEP PROPERTY* | DEEP)
+  public static boolean PROPERTY(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "PROPERTY")) return false;
+    if (!nextTokenIs(b, KEY)) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = consumeToken(b, KEY);
+    r = r && PROPERTY_1(b, l + 1);
+    r = r && PROPERTY_2(b, l + 1);
+    exit_section_(b, m, PROPERTY, r);
+    return r;
+  }
+
+  // (SEPARATOR VALUE)?
+  private static boolean PROPERTY_1(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "PROPERTY_1")) return false;
+    PROPERTY_1_0(b, l + 1);
+    return true;
+  }
+
+  // SEPARATOR VALUE
+  private static boolean PROPERTY_1_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "PROPERTY_1_0")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = consumeTokens(b, 0, SEPARATOR, VALUE);
+    exit_section_(b, m, null, r);
+    return r;
+  }
+
+  // END | CHILD_DEEP PROPERTY* | DEEP
+  private static boolean PROPERTY_2(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "PROPERTY_2")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = consumeToken(b, END);
+    if (!r) r = PROPERTY_2_1(b, l + 1);
+    if (!r) r = consumeToken(b, DEEP);
+    exit_section_(b, m, null, r);
+    return r;
+  }
+
+  // CHILD_DEEP PROPERTY*
+  private static boolean PROPERTY_2_1(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "PROPERTY_2_1")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = consumeToken(b, CHILD_DEEP);
+    r = r && PROPERTY_2_1_1(b, l + 1);
+    exit_section_(b, m, null, r);
+    return r;
+  }
+
+  // PROPERTY*
+  private static boolean PROPERTY_2_1_1(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "PROPERTY_2_1_1")) return false;
+    while (true) {
+      int c = current_position_(b);
+      if (!PROPERTY(b, l + 1)) break;
+      if (!empty_element_parsed_guard_(b, "PROPERTY_2_1_1", c)) break;
+    }
+    return true;
+  }
+
+  /* ********************************************************** */
   // item_*
   static boolean RnFile(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "RnFile")) return false;
@@ -48,82 +113,15 @@ public class RnParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // (COMMENT END)|property|ERROR
+  // COMMENT|PROPERTY|DEEP|EMPTY_LINE|ERROR
   static boolean item_(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "item_")) return false;
     boolean r;
-    Marker m = enter_section_(b);
-    r = item__0(b, l + 1);
-    if (!r) r = property(b, l + 1);
+    r = consumeToken(b, COMMENT);
+    if (!r) r = PROPERTY(b, l + 1);
+    if (!r) r = consumeToken(b, DEEP);
+    if (!r) r = consumeToken(b, EMPTY_LINE);
     if (!r) r = consumeToken(b, ERROR);
-    exit_section_(b, m, null, r);
-    return r;
-  }
-
-  // COMMENT END
-  private static boolean item__0(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "item__0")) return false;
-    boolean r;
-    Marker m = enter_section_(b);
-    r = consumeTokens(b, 0, COMMENT, END);
-    exit_section_(b, m, null, r);
-    return r;
-  }
-
-  /* ********************************************************** */
-  // (KEY END) | (KEY SEPARATOR VALUE END)| (KEY DEEP property) | (KEY SEPARATOR VALUE DEEP property)
-  public static boolean property(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "property")) return false;
-    if (!nextTokenIs(b, KEY)) return false;
-    boolean r;
-    Marker m = enter_section_(b);
-    r = property_0(b, l + 1);
-    if (!r) r = property_1(b, l + 1);
-    if (!r) r = property_2(b, l + 1);
-    if (!r) r = property_3(b, l + 1);
-    exit_section_(b, m, PROPERTY, r);
-    return r;
-  }
-
-  // KEY END
-  private static boolean property_0(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "property_0")) return false;
-    boolean r;
-    Marker m = enter_section_(b);
-    r = consumeTokens(b, 0, KEY, END);
-    exit_section_(b, m, null, r);
-    return r;
-  }
-
-  // KEY SEPARATOR VALUE END
-  private static boolean property_1(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "property_1")) return false;
-    boolean r;
-    Marker m = enter_section_(b);
-    r = consumeTokens(b, 0, KEY, SEPARATOR, VALUE, END);
-    exit_section_(b, m, null, r);
-    return r;
-  }
-
-  // KEY DEEP property
-  private static boolean property_2(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "property_2")) return false;
-    boolean r;
-    Marker m = enter_section_(b);
-    r = consumeTokens(b, 0, KEY, DEEP);
-    r = r && property(b, l + 1);
-    exit_section_(b, m, null, r);
-    return r;
-  }
-
-  // KEY SEPARATOR VALUE DEEP property
-  private static boolean property_3(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "property_3")) return false;
-    boolean r;
-    Marker m = enter_section_(b);
-    r = consumeTokens(b, 0, KEY, SEPARATOR, VALUE, DEEP);
-    r = r && property(b, l + 1);
-    exit_section_(b, m, null, r);
     return r;
   }
 
