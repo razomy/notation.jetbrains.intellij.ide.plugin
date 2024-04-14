@@ -47,6 +47,9 @@
         <annotator
                 language=""
                 implementationClass="com.razomy.notation.idea.plugin.RnAnnotator"/>
+            <lang.findUsagesProvider
+                    language="RN"
+                    implementationClass="com.razomy.notation.idea.plugin.RnFindUsagesProvider"/>
         <psi.referenceContributor language=""
                                   implementation="com.razomy.notation.idea.plugin.RnReferenceContributor"/>
         <lang.refactoringSupport

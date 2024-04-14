@@ -25,10 +25,15 @@ internal class RnReference(element: PsiElement, textRange: TextRange) :
         return results.toArray(arrayOfNulls<ResolveResult>(0))
     }
 
-
     override fun resolve(): PsiElement? {
         val resolveResults: Array<ResolveResult?> = multiResolve(false)
-        return if (resolveResults.size == 1) resolveResults[0]?.element else null
+        if (resolveResults.size == 1) return resolveResults[0]?.element
+        if (resolveResults.size > 1)
+            for (resolveResult in resolveResults) {
+                if (resolveResult?.element?.text?.startsWith(key) == true)
+                    return resolveResult.element
+            }
+        return null
     }
 
     override fun getVariants(): Array<out Any> {

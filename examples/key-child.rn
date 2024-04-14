@@ -13,6 +13,7 @@ key # not comment
 key \# not comment
 key default \# not comment
 key default \## not comment
+key\ with\ spaces
 key default
     # comment
     \# not comment
