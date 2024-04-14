@@ -8,10 +8,14 @@ import com.intellij.psi.PsiElement;
 public class RnVisitor extends PsiElementVisitor {
 
   public void visitProperty(@NotNull RnProperty o) {
-    visitPsiElement(o);
+    visitElement(o);
   }
 
   public void visitValue(@NotNull RnValue o) {
+    visitPsiElement(o);
+  }
+
+  public void visitElement(@NotNull RnElement o) {
     visitPsiElement(o);
   }
 

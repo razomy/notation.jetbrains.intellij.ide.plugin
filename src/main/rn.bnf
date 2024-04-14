@@ -1,5 +1,6 @@
 {
   parserClass="com.razomy.notation.idea.plugin.RnParser"
+  parserUtilClass="com.razomy.notation.idea.plugin.RnParserUtil"
 
   extends="com.intellij.extapi.psi.ASTWrapperPsiElement"
 
@@ -11,7 +12,7 @@
   elementTypeHolderClass="com.razomy.notation.idea.plugin.RnTypes"
   elementTypeClass="com.razomy.notation.idea.plugin.RnElementType"
   tokenTypeClass="com.razomy.notation.idea.plugin.RnTokenType"
-  psiImplUtilClass="com.razomy.notation.idea.plugin.RnPsiImplUtil"
+  psiImplUtilClass="com.razomy.notation.idea.plugin.impl.RnPsiImplUtil"
 
 }
 
@@ -29,7 +30,7 @@ PROPERTY ::= (KEY SEPARATOR VALUE CHILD_DEEP COMMENT PROPERTY* END)
              | (KEY SEPARATOR VALUE END)
              | (KEY END)
 {
-  mixin="com.razomy.notation.idea.plugin.RnElementImpl"
+  mixin="com.razomy.notation.idea.plugin.impl.RnElementImpl"
   implements="com.razomy.notation.idea.plugin.RnElement"
-  methods=[getKey getValue]
+  methods=[getKey getName setName getNameIdentifier]
 }

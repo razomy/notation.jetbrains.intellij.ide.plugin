@@ -2,7 +2,6 @@
 
 import com.google.common.collect.Lists
 import java.util.*;
-import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.psi.PsiComment
 import com.intellij.psi.PsiElement
@@ -11,7 +10,16 @@ import com.intellij.psi.PsiWhiteSpace
 import com.intellij.psi.search.FileTypeIndex
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.util.PsiTreeUtil
-import org.jetbrains.annotations.NotNull
+
+
+ import com.intellij.codeInsight.lookup.LookupElement
+ import com.intellij.codeInsight.lookup.LookupElementBuilder
+ import com.intellij.psi.*
+
+ import com.intellij.openapi.project.Project;
+ import com.intellij.openapi.util.TextRange;
+
+ import java.util.ArrayList;
 
 
 object RnUtil {
@@ -61,7 +69,6 @@ object RnUtil {
     /**
      * Attempts to collect any comment elements above the Rn key/value pair.
      */
-    @NotNull
     fun findDocumentationComment(property: RnProperty): String {
         val result: MutableList<String> = LinkedList()
         var element: PsiElement = property.prevSibling

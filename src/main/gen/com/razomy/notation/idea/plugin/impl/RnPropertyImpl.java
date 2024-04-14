@@ -8,10 +8,9 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.util.PsiTreeUtil;
 import static com.razomy.notation.idea.plugin.RnTypes.*;
-import com.intellij.extapi.psi.ASTWrapperPsiElement;
 import com.razomy.notation.idea.plugin.*;
 
-public class RnPropertyImpl extends ASTWrapperPsiElement implements RnProperty {
+public class RnPropertyImpl extends RnElementImpl implements RnProperty {
 
   public RnPropertyImpl(@NotNull ASTNode node) {
     super(node);
@@ -37,6 +36,26 @@ public class RnPropertyImpl extends ASTWrapperPsiElement implements RnProperty {
   @Nullable
   public RnValue getValue() {
     return findChildByClass(RnValue.class);
+  }
+
+  @Override
+  public String getKey() {
+    return RnPsiImplUtil.getKey(this);
+  }
+
+  @Override
+  public String getName() {
+    return RnPsiImplUtil.getName(this);
+  }
+
+  @Override
+  public PsiElement setName(String newName) {
+    return RnPsiImplUtil.setName(this, newName);
+  }
+
+  @Override
+  public PsiElement getNameIdentifier() {
+    return RnPsiImplUtil.getNameIdentifier(this);
   }
 
 }

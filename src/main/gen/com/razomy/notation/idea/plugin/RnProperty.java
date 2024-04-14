@@ -5,7 +5,7 @@ import java.util.List;
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
 
-public interface RnProperty extends PsiElement {
+public interface RnProperty extends RnElement {
 
   @NotNull
   List<RnProperty> getPropertyList();
@@ -13,12 +13,12 @@ public interface RnProperty extends PsiElement {
   @Nullable
   RnValue getValue();
 
-  //WARNING: getKey(...) is skipped
-  //matching getKey(RnProperty, ...)
-  //methods are not found in RnPsiImplUtil
+  String getKey();
 
-  //WARNING: getValue(...) is skipped
-  //matching getValue(RnProperty, ...)
-  //methods are not found in RnPsiImplUtil
+  String getName();
+
+  PsiElement setName(String newName);
+
+  PsiElement getNameIdentifier();
 
 }

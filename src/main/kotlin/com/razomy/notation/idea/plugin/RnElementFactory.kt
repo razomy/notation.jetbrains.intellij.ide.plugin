@@ -11,7 +11,7 @@ object RnElementFactory {
     }
 
     fun createFile(project: Project?, text: CharSequence): RnFile {
-        val name = "dummy.rn"
+        val name = "scratch.rn"
         return PsiFileFactory.getInstance(project).createFileFromText(name, RnFileType, text) as RnFile
     }
 

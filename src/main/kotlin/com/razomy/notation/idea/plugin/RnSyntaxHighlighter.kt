@@ -29,6 +29,9 @@ class RnSyntaxHighlighter : SyntaxHighlighterBase() {
         if (tokenType == RnTypes.VALUE) {
             return VALUE_KEYS
         }
+        if (tokenType == RnTypes.STRING) {
+            return VALUE_KEYS
+        }
         if (tokenType == RnTypes.COMMENT) {
             return COMMENT_KEYS
         }

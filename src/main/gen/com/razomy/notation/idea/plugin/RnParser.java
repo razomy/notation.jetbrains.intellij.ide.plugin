@@ -4,7 +4,7 @@ package com.razomy.notation.idea.plugin;
 import com.intellij.lang.PsiBuilder;
 import com.intellij.lang.PsiBuilder.Marker;
 import static com.razomy.notation.idea.plugin.RnTypes.*;
-import static com.intellij.lang.parser.GeneratedParserUtilBase.*;
+import static com.razomy.notation.idea.plugin.RnParserUtil.*;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.lang.ASTNode;
 import com.intellij.psi.tree.TokenSet;
