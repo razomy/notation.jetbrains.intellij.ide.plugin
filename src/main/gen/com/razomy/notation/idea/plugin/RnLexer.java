@@ -18,14 +18,14 @@ class RnLexer extends RnLexerBridge {
   public static final int YYINITIAL = 0;
   public static final int WAITING_KEY = 2;
   public static final int WAITING_SEPARATOR_OR_CHILD_OR_END = 4;
-  public static final int WAITING_VALUE = 6;
+  public static final int WAITING_STRING = 6;
   public static final int WAITING_CHILD_OR_END = 8;
   public static final int CHILD_WAITING_KEY = 10;
   public static final int WAITING_END_LINE = 12;
   public static final int CHILD_WAITING_SEPARATOR_OR_CHILD_OR_END = 14;
-  public static final int CHILD_WAITING_VALUE = 16;
-  public static final int CHILD_WAITING_VALUE_CHILD_OR_END = 18;
-  public static final int __CHILD_WAITING_VALUE_CHILD_OR_END = 20;
+  public static final int CHILD_WAITING_STRING = 16;
+  public static final int CHILD_WAITING_STRING_CHILD_OR_END = 18;
+  public static final int __CHILD_WAITING_STRING_CHILD_OR_END = 20;
   public static final int CHILD_WAITING_CHILD_OR_END = 22;
   public static final int __CHILD_WAITING_CHILD_OR_END = 24;
 
@@ -656,12 +656,12 @@ private IElementType waiting_child_end(int __NEXT, int WAITING_END_LINE) {
           // fall through
           case 22: break;
           case 5:
-            { yybegin(WAITING_VALUE); return RnTypes.SEPARATOR;
+            { yybegin(WAITING_STRING); return RnTypes.SEPARATOR;
             }
           // fall through
           case 23: break;
           case 6:
-            { yybegin(WAITING_CHILD_OR_END); return RnTypes.VALUE;
+            { yybegin(WAITING_CHILD_OR_END); return RnTypes.STRING;
             }
           // fall through
           case 24: break;
@@ -681,12 +681,12 @@ private IElementType waiting_child_end(int __NEXT, int WAITING_END_LINE) {
           // fall through
           case 27: break;
           case 10:
-            { yybegin(CHILD_WAITING_VALUE); return RnTypes.SEPARATOR;
+            { yybegin(CHILD_WAITING_STRING); return RnTypes.SEPARATOR;
             }
           // fall through
           case 28: break;
           case 11:
-            { yybegin(CHILD_WAITING_VALUE_CHILD_OR_END); return RnTypes.VALUE;
+            { yybegin(CHILD_WAITING_STRING_CHILD_OR_END); return RnTypes.STRING;
             }
           // fall through
           case 29: break;
@@ -696,7 +696,7 @@ private IElementType waiting_child_end(int __NEXT, int WAITING_END_LINE) {
           // fall through
           case 30: break;
           case 13:
-            { return waiting_child_end(CHILD_WAITING_VALUE_CHILD_OR_END, WAITING_END_LINE);
+            { return waiting_child_end(CHILD_WAITING_STRING_CHILD_OR_END, WAITING_END_LINE);
             }
           // fall through
           case 31: break;
@@ -716,12 +716,12 @@ private IElementType waiting_child_end(int __NEXT, int WAITING_END_LINE) {
           // fall through
           case 34: break;
           case 17:
-            { return waiting_child_or_end(__CHILD_WAITING_VALUE_CHILD_OR_END, CHILD_WAITING_KEY);
+            { return waiting_child_or_end(__CHILD_WAITING_STRING_CHILD_OR_END, CHILD_WAITING_KEY);
             }
           // fall through
           case 35: break;
           case 18:
-            { return waiting_child_or_end(CHILD_WAITING_VALUE_CHILD_OR_END, CHILD_WAITING_KEY);
+            { return waiting_child_or_end(CHILD_WAITING_STRING_CHILD_OR_END, CHILD_WAITING_KEY);
             }
           // fall through
           case 36: break;

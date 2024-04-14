@@ -11,6 +11,10 @@ public class RnVisitor extends PsiElementVisitor {
     visitPsiElement(o);
   }
 
+  public void visitValue(@NotNull RnValue o) {
+    visitPsiElement(o);
+  }
+
   public void visitPsiElement(@NotNull PsiElement o) {
     visitElement(o);
   }

@@ -62,7 +62,9 @@ public class RnParser implements PsiParser, LightPsiParser {
     if (!recursion_guard_(b, l, "PROPERTY_0")) return false;
     boolean r;
     Marker m = enter_section_(b);
-    r = consumeTokens(b, 0, KEY, SEPARATOR, VALUE, CHILD_DEEP, COMMENT);
+    r = consumeTokens(b, 0, KEY, SEPARATOR);
+    r = r && VALUE(b, l + 1);
+    r = r && consumeTokens(b, 0, CHILD_DEEP, COMMENT);
     r = r && PROPERTY_0_5(b, l + 1);
     r = r && consumeToken(b, END);
     exit_section_(b, m, null, r);
@@ -85,7 +87,9 @@ public class RnParser implements PsiParser, LightPsiParser {
     if (!recursion_guard_(b, l, "PROPERTY_1")) return false;
     boolean r;
     Marker m = enter_section_(b);
-    r = consumeTokens(b, 0, KEY, SEPARATOR, VALUE, CHILD_DEEP);
+    r = consumeTokens(b, 0, KEY, SEPARATOR);
+    r = r && VALUE(b, l + 1);
+    r = r && consumeToken(b, CHILD_DEEP);
     r = r && PROPERTY_1_4(b, l + 1);
     r = r && consumeToken(b, END);
     exit_section_(b, m, null, r);
@@ -154,7 +158,9 @@ public class RnParser implements PsiParser, LightPsiParser {
     if (!recursion_guard_(b, l, "PROPERTY_4")) return false;
     boolean r;
     Marker m = enter_section_(b);
-    r = consumeTokens(b, 0, KEY, SEPARATOR, VALUE, END);
+    r = consumeTokens(b, 0, KEY, SEPARATOR);
+    r = r && VALUE(b, l + 1);
+    r = r && consumeToken(b, END);
     exit_section_(b, m, null, r);
     return r;
   }
@@ -179,6 +185,18 @@ public class RnParser implements PsiParser, LightPsiParser {
       if (!empty_element_parsed_guard_(b, "RnFile", c)) break;
     }
     return true;
+  }
+
+  /* ********************************************************** */
+  // STRING
+  public static boolean VALUE(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "VALUE")) return false;
+    if (!nextTokenIs(b, STRING)) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = consumeToken(b, STRING);
+    exit_section_(b, m, VALUE, r);
+    return r;
   }
 
   /* ********************************************************** */

@@ -11,32 +11,20 @@ import static com.razomy.notation.idea.plugin.RnTypes.*;
 import com.intellij.extapi.psi.ASTWrapperPsiElement;
 import com.razomy.notation.idea.plugin.*;
 
-public class RnPropertyImpl extends ASTWrapperPsiElement implements RnProperty {
+public class RnValueImpl extends ASTWrapperPsiElement implements RnValue {
 
-  public RnPropertyImpl(@NotNull ASTNode node) {
+  public RnValueImpl(@NotNull ASTNode node) {
     super(node);
   }
 
   public void accept(@NotNull RnVisitor visitor) {
-    visitor.visitProperty(this);
+    visitor.visitValue(this);
   }
 
   @Override
   public void accept(@NotNull PsiElementVisitor visitor) {
     if (visitor instanceof RnVisitor) accept((RnVisitor)visitor);
     else super.accept(visitor);
-  }
-
-  @Override
-  @NotNull
-  public List<RnProperty> getPropertyList() {
-    return PsiTreeUtil.getChildrenOfTypeAsList(this, RnProperty.class);
-  }
-
-  @Override
-  @Nullable
-  public RnValue getValue() {
-    return findChildByClass(RnValue.class);
   }
 
 }

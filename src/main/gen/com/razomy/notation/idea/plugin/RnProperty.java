@@ -10,6 +10,9 @@ public interface RnProperty extends PsiElement {
   @NotNull
   List<RnProperty> getPropertyList();
 
+  @Nullable
+  RnValue getValue();
+
   //WARNING: getKey(...) is skipped
   //matching getKey(RnProperty, ...)
   //methods are not found in RnPsiImplUtil
