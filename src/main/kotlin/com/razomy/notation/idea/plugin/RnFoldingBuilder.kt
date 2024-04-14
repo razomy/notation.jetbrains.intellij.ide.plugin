@@ -7,6 +7,18 @@ import com.intellij.openapi.editor.Document
 import com.intellij.openapi.util.TextRange
 import kotlin.math.min
 
+fun countTrailingSpaces(str: String): Int {
+    var count = 0
+    for (i in str.lastIndex downTo 0) {
+        if (str[i] == ' ' || str[i] == '\n') {
+            count++
+        } else {
+            break
+        }
+    }
+    return count
+}
+
 
 class RnFoldingBuilder : FoldingBuilder {
     override fun buildFoldRegions(root: ASTNode, document: Document): Array<FoldingDescriptor> {
@@ -15,7 +27,8 @@ class RnFoldingBuilder : FoldingBuilder {
         fun add(nodeFrom: ASTNode, nodeTo: ASTNode) {
             val text = nodeFrom.text.substring(0, min(120, nodeFrom.text.length))
             val start = nodeFrom.startOffset
-            val end = nodeTo.textRange.endOffset
+            val trailingSpaces = countTrailingSpaces(nodeTo.text);
+            val end = nodeTo.textRange.endOffset - trailingSpaces;
             if (end <= start) {
                 return
             }

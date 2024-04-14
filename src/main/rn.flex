@@ -104,7 +104,7 @@ private IElementType waiting_child_end(int __NEXT, int WAITING_END_LINE) {
 COMMENT=("#")[^\r\n]* // not END
 WHITE_SPACE=[\ \t\f]
 END=[\r\n]
-KEY_CHARACTER=[^\ \t\f\r\n] // not WHITE_SPACE and not END
+KEY_CHARACTER=[^\ \t\f\r\n] | "\\ " // not WHITE_SPACE and not END
 SEPARATOR=[ ]
 FIRST_VALUE_CHARACTER=[^\ \t\f\r\n] // not WHITE_SPACE and not END
 VALUE=[^\r\n] // not END
