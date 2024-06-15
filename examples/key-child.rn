@@ -1,5 +1,13 @@
 key
-key default
+key default value
+key `default multiline value`
+key `
+default
+multiline
+value
+with quote \`
+`
+not_multiline_value \`default\`
 root
     node leaf
 key default

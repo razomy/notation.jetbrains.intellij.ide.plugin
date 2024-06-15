@@ -44,17 +44,17 @@
         <lang.foldingBuilder
                 language="RN"
                 implementationClass="com.razomy.notation.idea.plugin.RnFoldingBuilder"/>
-        <annotator
-                language=""
-                implementationClass="com.razomy.notation.idea.plugin.RnAnnotator"/>
-            <lang.findUsagesProvider
-                    language="RN"
-                    implementationClass="com.razomy.notation.idea.plugin.RnFindUsagesProvider"/>
-        <psi.referenceContributor language=""
-                                  implementation="com.razomy.notation.idea.plugin.RnReferenceContributor"/>
-        <lang.refactoringSupport
-                language="RN"
-                implementationClass="com.razomy.notation.idea.plugin.RnRefactoringSupportProvider"/>
+<!--        <annotator-->
+<!--                language=""-->
+<!--                implementationClass="com.razomy.notation.idea.plugin.RnAnnotator"/>-->
+<!--        <lang.findUsagesProvider-->
+<!--                language="RN"-->
+<!--                implementationClass="com.razomy.notation.idea.plugin.RnFindUsagesProvider"/>-->
+<!--        <psi.referenceContributor language=""-->
+<!--                                  implementation="com.razomy.notation.idea.plugin.RnReferenceContributor"/>-->
+<!--        <lang.refactoringSupport-->
+<!--                language="RN"-->
+<!--                implementationClass="com.razomy.notation.idea.plugin.RnRefactoringSupportProvider"/>-->
         <lang.commenter
                 language="RN"
                 implementationClass="com.razomy.notation.idea.plugin.RnCommenter"/>

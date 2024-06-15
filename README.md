@@ -11,7 +11,15 @@
 
 ```rn
 key
-key default
+key default value
+key `default multiline value`
+key `
+default
+multiline
+value
+with quote \`
+`
+not_multiline_value \`default\`
 root
     node leaf
 key default
@@ -25,6 +33,7 @@ key # not comment
 key \# not comment
 key default \# not comment
 key default \## not comment
+key\ with\ spaces
 key default
     # comment
     \# not comment
@@ -35,4 +44,5 @@ layer
 
 layer
  property2 value
+
 ```
