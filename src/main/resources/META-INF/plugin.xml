@@ -29,40 +29,40 @@
     <extensions defaultExtensionNs="com.intellij">
         <fileType
                 name="RN"
-                implementationClass="com.razomy.notation.idea.plugin.RnFileType"
+                implementationClass="com.razomy.notation.jetbrains.intellij.ide.plugin.RnFileType"
                 fieldName="INSTANCE"
                 language="RN"
                 extensions="rn"/>
         <lang.parserDefinition
                 language="RN"
-                implementationClass="com.razomy.notation.idea.plugin.RnParserDefinition"/>
+                implementationClass="com.razomy.notation.jetbrains.intellij.ide.plugin.RnParserDefinition"/>
         <lang.syntaxHighlighterFactory
                 language="RN"
-                implementationClass="com.razomy.notation.idea.plugin.RnSyntaxHighlighterFactory"/>
+                implementationClass="com.razomy.notation.jetbrains.intellij.ide.plugin.RnSyntaxHighlighterFactory"/>
         <colorSettingsPage
-                implementation="com.razomy.notation.idea.plugin.RnColorSettingsPage"/>
+                implementation="com.razomy.notation.jetbrains.intellij.ide.plugin.RnColorSettingsPage"/>
         <lang.foldingBuilder
                 language="RN"
-                implementationClass="com.razomy.notation.idea.plugin.RnFoldingBuilder"/>
+                implementationClass="com.razomy.notation.jetbrains.intellij.ide.plugin.RnFoldingBuilder"/>
 <!--        <annotator-->
 <!--                language=""-->
-<!--                implementationClass="com.razomy.notation.idea.plugin.RnAnnotator"/>-->
+<!--                implementationClass="com.razomy.notation.jetbrains.intellij.ide.plugin.RnAnnotator"/>-->
 <!--        <lang.findUsagesProvider-->
 <!--                language="RN"-->
-<!--                implementationClass="com.razomy.notation.idea.plugin.RnFindUsagesProvider"/>-->
+<!--                implementationClass="com.razomy.notation.jetbrains.intellij.ide.plugin.RnFindUsagesProvider"/>-->
 <!--        <psi.referenceContributor language=""-->
-<!--                                  implementation="com.razomy.notation.idea.plugin.RnReferenceContributor"/>-->
+<!--                                  implementation="com.razomy.notation.jetbrains.intellij.ide.plugin.RnReferenceContributor"/>-->
 <!--        <lang.refactoringSupport-->
 <!--                language="RN"-->
-<!--                implementationClass="com.razomy.notation.idea.plugin.RnRefactoringSupportProvider"/>-->
+<!--                implementationClass="com.razomy.notation.jetbrains.intellij.ide.plugin.RnRefactoringSupportProvider"/>-->
         <lang.commenter
                 language="RN"
-                implementationClass="com.razomy.notation.idea.plugin.RnCommenter"/>
+                implementationClass="com.razomy.notation.jetbrains.intellij.ide.plugin.RnCommenter"/>
         <spellchecker.support language="RN"
-                              implementationClass="com.razomy.notation.idea.plugin.RnSpellCheckingStrategy"/>
+                              implementationClass="com.razomy.notation.jetbrains.intellij.ide.plugin.RnSpellCheckingStrategy"/>
         <lang.formatter
                 language="RN"
-                implementationClass="com.razomy.notation.idea.plugin.RnFormattingModelBuilder"/>
+                implementationClass="com.razomy.notation.jetbrains.intellij.ide.plugin.RnFormattingModelBuilder"/>
     </extensions>
 
 </idea-plugin>

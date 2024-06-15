@@ -1,4 +1,4 @@
-package com.razomy.notation.idea.plugin;
+package com.razomy.notation.jetbrains.intellij.ide.plugin;
 
 import com.intellij.psi.tree.IElementType;
 import java.util.Stack;

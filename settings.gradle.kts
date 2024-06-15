@@ -5,4 +5,4 @@ pluginManagement {
     }
 }
 
-rootProject.name = "notation.idea.plugin"
+rootProject.name = "notation.jetbrains.intellij.ide.plugin"

@@ -1,18 +1,18 @@
 {
-  parserClass="com.razomy.notation.idea.plugin.RnParser"
-  parserUtilClass="com.razomy.notation.idea.plugin.RnParserUtil"
+  parserClass="com.razomy.notation.jetbrains.intellij.ide.plugin.RnParser"
+  parserUtilClass="com.razomy.notation.jetbrains.intellij.ide.plugin.RnParserUtil"
 
   extends="com.intellij.extapi.psi.ASTWrapperPsiElement"
 
   psiClassPrefix="Rn"
   psiImplClassSuffix="Impl"
-  psiPackage="com.razomy.notation.idea.plugin"
-  psiImplPackage="com.razomy.notation.idea.plugin.impl"
+  psiPackage="com.razomy.notation.jetbrains.intellij.ide.plugin"
+  psiImplPackage="com.razomy.notation.jetbrains.intellij.ide.plugin.impl"
 
-  elementTypeHolderClass="com.razomy.notation.idea.plugin.RnTypes"
-  elementTypeClass="com.razomy.notation.idea.plugin.RnElementType"
-  tokenTypeClass="com.razomy.notation.idea.plugin.RnTokenType"
-  psiImplUtilClass="com.razomy.notation.idea.plugin.impl.RnPsiImplUtil"
+  elementTypeHolderClass="com.razomy.notation.jetbrains.intellij.ide.plugin.RnTypes"
+  elementTypeClass="com.razomy.notation.jetbrains.intellij.ide.plugin.RnElementType"
+  tokenTypeClass="com.razomy.notation.jetbrains.intellij.ide.plugin.RnTokenType"
+  psiImplUtilClass="com.razomy.notation.jetbrains.intellij.ide.plugin.impl.RnPsiImplUtil"
 
 }
 
@@ -30,7 +30,7 @@ PROPERTY ::= (KEY SEPARATOR VALUE CHILD_DEEP COMMENT PROPERTY* END)
              | (KEY SEPARATOR VALUE END)
              | (KEY END)
 {
-  mixin="com.razomy.notation.idea.plugin.impl.RnElementImpl"
-  implements="com.razomy.notation.idea.plugin.RnElement"
+  mixin="com.razomy.notation.jetbrains.intellij.ide.plugin.impl.RnElementImpl"
+  implements="com.razomy.notation.jetbrains.intellij.ide.plugin.RnElement"
   methods=[getKey getName setName getNameIdentifier]
 }
