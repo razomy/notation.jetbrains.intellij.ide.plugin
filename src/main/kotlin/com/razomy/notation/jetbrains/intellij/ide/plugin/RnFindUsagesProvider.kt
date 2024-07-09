@@ -37,7 +37,7 @@ internal class RnFindUsagesProvider : FindUsagesProvider {
     
     override fun getDescriptiveName( element: PsiElement): String {
         if (element is RnProperty) {
-            return (element as RnProperty).getKey()
+            return (element).getKey()
         }
         return ""
     }
@@ -45,9 +45,9 @@ internal class RnFindUsagesProvider : FindUsagesProvider {
     
     override fun getNodeText( element: PsiElement, useFullName: Boolean): String {
         if (element is RnProperty) {
-            return (element as RnProperty).getKey() +
-                    RnAnnotator.SIMPLE_SEPARATOR_STR +
-                    (element as RnProperty).getValue()
+            return (element).getKey() +
+                    '.' +
+                    (element).getValue()
         }
         return ""
     }

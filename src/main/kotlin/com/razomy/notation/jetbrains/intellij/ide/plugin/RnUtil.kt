@@ -1,7 +1,8 @@
- package com.razomy.notation.jetbrains.intellij.ide.plugin
+package com.razomy.notation.jetbrains.intellij.ide.plugin
+
 
 import com.google.common.collect.Lists
-import java.util.*;
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.psi.PsiComment
 import com.intellij.psi.PsiElement
@@ -10,16 +11,7 @@ import com.intellij.psi.PsiWhiteSpace
 import com.intellij.psi.search.FileTypeIndex
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.util.PsiTreeUtil
-
-
- import com.intellij.codeInsight.lookup.LookupElement
- import com.intellij.codeInsight.lookup.LookupElementBuilder
- import com.intellij.psi.*
-
- import com.intellij.openapi.project.Project;
- import com.intellij.openapi.util.TextRange;
-
- import java.util.ArrayList;
+import java.util.*
 
 
 object RnUtil {
@@ -33,7 +25,7 @@ object RnUtil {
     fun findProperties(project: Project, key: String): List<RnProperty> {
         val result: MutableList<RnProperty> = ArrayList<RnProperty>()
         val virtualFiles =
-                FileTypeIndex.getFiles(RnFileType, GlobalSearchScope.allScope(project))
+            FileTypeIndex.getFiles(RnFileType, GlobalSearchScope.allScope(project))
         for (virtualFile in virtualFiles) {
             val RnFile: RnFile? = PsiManager.getInstance(project).findFile(virtualFile!!) as RnFile?
             if (RnFile != null) {
@@ -53,7 +45,7 @@ object RnUtil {
     fun findProperties(project: Project): List<RnProperty> {
         val result: List<RnProperty> = ArrayList<RnProperty>()
         val virtualFiles =
-                FileTypeIndex.getFiles(RnFileType, GlobalSearchScope.allScope(project))
+            FileTypeIndex.getFiles(RnFileType, GlobalSearchScope.allScope(project))
         for (virtualFile in virtualFiles) {
             val RnFile: RnFile? = PsiManager.getInstance(project).findFile(virtualFile!!) as RnFile?
             if (RnFile != null) {

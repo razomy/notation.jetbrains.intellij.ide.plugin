@@ -23,7 +23,7 @@
     <!-- Product and plugin compatibility requirements.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
     <depends>com.intellij.modules.platform</depends>
-<!--    <depends>com.intellij.java</depends>-->
+<!--    <depends>com.intellij.modules.java</depends>-->
     <!-- Extension points defined by the plugin.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
@@ -44,14 +44,9 @@
         <lang.foldingBuilder
                 language="RN"
                 implementationClass="com.razomy.notation.jetbrains.intellij.ide.plugin.RnFoldingBuilder"/>
-<!--        <annotator-->
-<!--                language=""-->
-<!--                implementationClass="com.razomy.notation.jetbrains.intellij.ide.plugin.RnAnnotator"/>-->
 <!--        <lang.findUsagesProvider-->
 <!--                language="RN"-->
 <!--                implementationClass="com.razomy.notation.jetbrains.intellij.ide.plugin.RnFindUsagesProvider"/>-->
-<!--        <psi.referenceContributor language=""-->
-<!--                                  implementation="com.razomy.notation.jetbrains.intellij.ide.plugin.RnReferenceContributor"/>-->
 <!--        <lang.refactoringSupport-->
 <!--                language="RN"-->
 <!--                implementationClass="com.razomy.notation.jetbrains.intellij.ide.plugin.RnRefactoringSupportProvider"/>-->
