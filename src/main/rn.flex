@@ -104,12 +104,12 @@ private IElementType waiting_child_end(int __NEXT, int WAITING_END_LINE) {
 COMMENT=("#")[^\r\n]* // not END
 WHITE_SPACE=[\ \t\f]
 END=[\r\n]
-KEY_CHARACTER=[^\ \t\f\r\n] | "\\ " // not WHITE_SPACE and not END
-SEPARATOR=[ ]
+KEY_CHARACTER=[^\:\;\r\n] | "\\:" // not WHITE_SPACE and not END
+SEPARATOR=[:]
 FIRST_MUILTILINE_STRING_CHARACTER=`
 MUILTILINE_STRING=[^\`] | "\\`"
 LAST_MUILTILINE_STRING_CHARACTER=`
-FIRST_STRING_CHARACTER=[^\ \t\f\r\n] // not WHITE_SPACE and not END
+FIRST_STRING_CHARACTER=[^\:\;\r\n] // not WHITE_SPACE and not END
 STRING=[^\r\n] // not END
 
 
@@ -135,6 +135,7 @@ STRING=[^\r\n] // not END
 // ROOT
 
 <WAITING_KEY> {COMMENT}{END}                                {yybegin(WAITING_KEY); return RnTypes.COMMENT; }
+<WAITING_KEY> {FIRST_MUILTILINE_STRING_CHARACTER}({MUILTILINE_STRING}*){LAST_MUILTILINE_STRING_CHARACTER} { yybegin(WAITING_SEPARATOR_OR_CHILD_OR_END); return RnTypes.KEY; }
 <WAITING_KEY> {KEY_CHARACTER}+                              {yybegin(WAITING_SEPARATOR_OR_CHILD_OR_END); return RnTypes.KEY; }
 
 
@@ -153,6 +154,7 @@ STRING=[^\r\n] // not END
 // CHILD
 
 <CHILD_WAITING_KEY> {COMMENT}{END}{WHITE_SPACE}*               {yybegin(CHILD_WAITING_KEY); return RnTypes.COMMENT; }
+<CHILD_WAITING_KEY> {FIRST_MUILTILINE_STRING_CHARACTER}({MUILTILINE_STRING}*){LAST_MUILTILINE_STRING_CHARACTER} { yybegin(CHILD_WAITING_SEPARATOR_OR_CHILD_OR_END); return RnTypes.KEY; }
 <CHILD_WAITING_KEY>{KEY_CHARACTER}+                            {yybegin(CHILD_WAITING_SEPARATOR_OR_CHILD_OR_END); return RnTypes.KEY; }
 
 <CHILD_WAITING_SEPARATOR_OR_CHILD_OR_END> {SEPARATOR}          { yybegin(CHILD_WAITING_STRING); return RnTypes.SEPARATOR; }
