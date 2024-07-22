@@ -10,19 +10,22 @@ internal class RnFormattingModelBuilder : FormattingModelBuilder {
     override fun createModel(@NotNull formattingContext: FormattingContext): FormattingModel {
         val codeStyleSettings = formattingContext.codeStyleSettings
         return FormattingModelProvider
-                .createFormattingModelForPsiFile(formattingContext.containingFile,
-                        RnBlock(formattingContext.node,
-                                Wrap.createWrap(WrapType.NONE, false),
-                                Alignment.createAlignment(),
-                                createSpaceBuilder(codeStyleSettings)),
-                        codeStyleSettings)
+            .createFormattingModelForPsiFile(
+                formattingContext.containingFile,
+                RnBlock(
+                    formattingContext.node,
+                    Wrap.createWrap(WrapType.NONE, false),
+                    Alignment.createAlignment(),
+                    createSpaceBuilder(codeStyleSettings)
+                ),
+                codeStyleSettings
+            )
     }
 
 }
 
 private fun createSpaceBuilder(settings: CodeStyleSettings): SpacingBuilder {
-
     return SpacingBuilder(settings, RnLanguage)
-            .after(RnTypes.ASSIGN)
-            .none()
+        .after(RnTypes.ASSIGN)
+        .none()
 }

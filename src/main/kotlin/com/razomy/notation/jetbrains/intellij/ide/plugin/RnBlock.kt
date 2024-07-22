@@ -6,17 +6,35 @@ import com.intellij.psi.formatter.common.AbstractBlock
 import org.jetbrains.annotations.NotNull
 import org.jetbrains.annotations.Nullable
 
-class RnBlock(@NotNull node: ASTNode, @Nullable wrap: Wrap?, @Nullable alignment: Alignment?,
-              private val spacingBuilder: SpacingBuilder) : AbstractBlock(node, wrap, alignment) {
+class RnBlock(
+    @NotNull node: ASTNode, @Nullable wrap: Wrap?, @Nullable alignment: Alignment?,
+    private val spacingBuilder: SpacingBuilder
+) : AbstractBlock(node, wrap, alignment) {
+
+    private var deep: Int = 0;
+
     override fun buildChildren(): List<Block> {
         val blocks: MutableList<Block> = ArrayList()
-        var child: ASTNode? = myNode.firstChildNode
+        var child: ASTNode? = myNode.firstChildNode;
+        var deep = 0;
         while (child != null) {
+            if (child.elementType == RnTypes.CHILD_DEEP) {
+                deep += 1;
+            }
+            if (child.elementType == RnTypes.END) {
+                deep = 0;
+            }
             if (child.elementType !== RnTypes.END
-                    || child.elementType !== RnTypes.CHILD_DEEP
-                    || child.elementType !== RnTypes.EMPTY_LINE) {
-                val block: Block = RnBlock(child, Wrap.createWrap(WrapType.NONE, false), Alignment.createAlignment(),
-                        spacingBuilder)
+                || child.elementType !== RnTypes.CHILD_DEEP
+                || child.elementType !== RnTypes.EMPTY_LINE
+            ) {
+                val block = RnBlock(
+                    child,
+                    Wrap.createWrap(WrapType.NONE, false),
+                    Alignment.createAlignment(),
+                    spacingBuilder
+                )
+                block.deep = deep;
                 blocks.add(block)
             }
             child = child.treeNext

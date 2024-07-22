@@ -16,20 +16,21 @@
 
 }
 
-RnFile ::= item_*
+RnFile ::= START*
 
-private item_ ::=   COMMENT
+private START ::=   COMMENT
                     | (PROPERTY EMPTY_LINE)
                     | ERROR
 
-PROPERTY ::= (KEY ASSIGN VALUE CHILD_DEEP COMMENT PROPERTY* END)
-             | (KEY ASSIGN VALUE CHILD_DEEP PROPERTY* END)
-             | (KEY CHILD_DEEP COMMENT PROPERTY* END)
-             | (KEY CHILD_DEEP PROPERTY* END)
+PROPERTY ::= (KEY CHILD_DEEP PROPERTY+ END)
+             | (VALUE CHILD_DEEP PROPERTY+ END)
              | (KEY END)
-             | (KEY ASSIGN PROPERTY*)
-             | (VALUE ASSIGN PROPERTY*)
+             | (KEY ASSIGN PROPERTY+)
+             | (VALUE BREAK)
              | (VALUE END)
+             | (COMMENT)
+             | (VALUE ASSIGN PROPERTY+ BREAK)
+             | (VALUE ASSIGN PROPERTY+)
 {
   mixin="com.razomy.notation.jetbrains.intellij.ide.plugin.impl.RnElementImpl"
   implements="com.razomy.notation.jetbrains.intellij.ide.plugin.RnElement"

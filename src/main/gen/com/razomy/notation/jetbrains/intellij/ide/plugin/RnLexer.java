@@ -103,16 +103,16 @@ class RnLexer extends RnLexerBridge {
   private static final int [] ZZ_ACTION = zzUnpackAction();
 
   private static final String ZZ_ACTION_PACKED_0 =
-    "\15\0\1\1\1\2\4\3\1\4\1\5\2\6\4\7"+
-    "\1\10\1\11\1\12\2\13\1\14\1\15\1\14\1\11"+
-    "\1\16\1\0\1\16\1\3\1\0\1\3\1\17\1\6"+
-    "\1\0\1\6\1\20\1\0\1\20\1\7\1\0\1\7"+
-    "\1\21\1\13\1\0\1\13\1\22\1\16\1\0\1\3"+
-    "\1\0\1\6\1\20\1\0\1\7\1\0\1\13\1\3"+
-    "\1\6\1\7\1\13";
+    "\15\0\1\1\1\2\4\3\1\4\1\5\1\6\2\7"+
+    "\4\10\1\11\1\12\1\13\1\14\1\15\1\14\1\16"+
+    "\1\17\1\16\1\12\1\20\1\0\1\3\1\0\1\3"+
+    "\1\21\1\7\1\0\1\7\1\22\1\0\1\10\1\0"+
+    "\1\10\1\23\1\14\1\0\1\14\1\24\1\0\1\3"+
+    "\1\0\1\7\1\0\1\10\1\0\1\14\1\3\1\7"+
+    "\1\10\1\14";
 
   private static int [] zzUnpackAction() {
-    int [] result = new int[71];
+    int [] result = new int[69];
     int offset = 0;
     offset = zzUnpackAction(ZZ_ACTION_PACKED_0, offset, result);
     return result;
@@ -139,16 +139,16 @@ class RnLexer extends RnLexerBridge {
   private static final String ZZ_ROWMAP_PACKED_0 =
     "\0\0\0\12\0\24\0\36\0\50\0\62\0\74\0\106"+
     "\0\120\0\132\0\144\0\156\0\170\0\202\0\202\0\214"+
-    "\0\226\0\240\0\252\0\264\0\202\0\276\0\310\0\322"+
-    "\0\334\0\346\0\360\0\202\0\372\0\202\0\u0104\0\u010e"+
-    "\0\372\0\u0118\0\202\0\202\0\202\0\u0122\0\u0122\0\u012c"+
-    "\0\u0136\0\u0140\0\264\0\u014a\0\u0154\0\u015e\0\u0168\0\u0172"+
-    "\0\u017c\0\u0186\0\u0190\0\u019a\0\372\0\u01a4\0\u01ae\0\u01b8"+
-    "\0\u0118\0\226\0\u01c2\0\202\0\u01cc\0\202\0\u01d6\0\u01e0"+
-    "\0\202\0\u01ea\0\202\0\u0136\0\u0154\0\u0190\0\u01ae";
+    "\0\226\0\240\0\252\0\264\0\202\0\202\0\276\0\310"+
+    "\0\322\0\334\0\346\0\360\0\202\0\372\0\202\0\u0104"+
+    "\0\202\0\u010e\0\372\0\u0118\0\202\0\202\0\202\0\u0122"+
+    "\0\u012c\0\u0136\0\u0140\0\264\0\u014a\0\u0154\0\u015e\0\u0168"+
+    "\0\u0172\0\u017c\0\u0186\0\u0190\0\372\0\u019a\0\u01a4\0\u01ae"+
+    "\0\u0118\0\u01b8\0\202\0\u01c2\0\202\0\u01cc\0\202\0\u01d6"+
+    "\0\202\0\u0136\0\u0154\0\u0186\0\u01a4";
 
   private static int [] zzUnpackRowMap() {
-    int [] result = new int[71];
+    int [] result = new int[69];
     int offset = 0;
     offset = zzUnpackRowMap(ZZ_ROWMAP_PACKED_0, offset, result);
     return result;
@@ -172,40 +172,36 @@ class RnLexer extends RnLexerBridge {
 
   private static final String ZZ_TRANS_PACKED_0 =
     "\2\16\3\17\5\16\2\20\1\17\2\20\1\21\2\17"+
-    "\1\22\1\23\2\17\1\24\3\17\1\25\1\24\2\17"+
-    "\2\26\1\17\3\26\2\17\1\26\1\27\12\17\2\30"+
-    "\1\17\2\30\1\31\2\17\1\32\1\33\2\17\1\34"+
-    "\4\17\1\34\4\17\1\35\3\17\1\36\1\35\2\17"+
-    "\2\37\1\17\3\37\2\17\1\37\1\40\2\17\1\41"+
-    "\4\17\1\41\4\17\1\42\4\17\1\42\4\17\1\43"+
-    "\4\17\1\43\4\17\1\44\4\17\1\44\2\17\12\0"+
-    "\2\20\1\0\3\20\2\0\1\22\1\20\2\21\1\45"+
-    "\3\21\1\46\1\47\1\50\1\21\2\20\1\0\5\20"+
-    "\1\22\1\20\2\23\1\51\3\23\2\51\1\52\1\20"+
-    "\1\0\1\53\2\0\1\53\5\0\2\26\1\0\3\26"+
-    "\2\0\1\54\1\26\2\27\1\55\3\27\2\55\1\56"+
-    "\1\26\2\30\1\0\3\30\2\0\1\32\1\30\2\31"+
-    "\1\57\3\31\1\60\1\61\1\62\1\31\2\30\1\0"+
-    "\5\30\1\32\1\30\2\33\1\63\3\33\2\63\1\64"+
-    "\1\30\1\0\1\65\2\0\1\65\5\0\2\37\1\0"+
-    "\3\37\2\0\1\66\1\37\2\40\1\67\3\40\2\67"+
-    "\1\70\1\37\1\0\1\71\2\0\1\71\5\0\2\46"+
-    "\1\45\4\46\1\47\2\46\2\21\1\45\4\21\1\72"+
-    "\1\50\1\21\10\51\1\73\1\74\2\23\1\51\5\23"+
-    "\1\52\1\23\2\26\1\0\5\26\1\54\1\26\10\55"+
-    "\1\75\1\76\2\27\1\55\5\27\1\56\1\27\1\0"+
-    "\1\57\2\0\1\57\5\0\2\60\1\57\4\60\1\61"+
-    "\3\60\1\61\1\57\1\60\1\61\2\60\1\61\2\60"+
-    "\2\31\1\57\4\31\1\77\1\62\1\31\10\63\1\100"+
-    "\1\101\2\33\1\63\5\33\1\64\1\33\2\37\1\0"+
-    "\5\37\1\66\1\37\10\67\1\102\1\103\2\40\1\67"+
-    "\5\40\1\70\1\40\10\51\1\73\1\104\10\55\1\75"+
-    "\1\105\1\31\1\77\1\57\1\31\1\77\1\31\1\60"+
-    "\1\61\1\62\1\31\10\63\1\100\1\106\10\67\1\102"+
-    "\1\107";
+    "\1\22\1\23\2\17\1\24\3\17\1\25\1\26\2\17"+
+    "\2\27\1\17\3\27\1\17\1\26\1\27\1\30\12\17"+
+    "\2\31\1\17\2\31\1\32\2\17\1\33\1\34\2\17"+
+    "\1\35\11\17\1\36\3\17\1\37\3\17\2\40\1\17"+
+    "\3\40\1\17\1\41\1\40\1\42\2\17\1\43\3\17"+
+    "\1\37\1\41\4\17\1\44\11\17\1\45\11\17\1\46"+
+    "\7\17\12\0\2\20\1\0\3\20\2\0\1\22\1\20"+
+    "\2\21\1\47\3\21\2\50\1\51\1\21\2\20\1\0"+
+    "\5\20\1\22\1\20\2\23\1\52\3\23\2\52\1\53"+
+    "\1\20\1\0\1\54\2\0\1\54\5\0\2\27\1\0"+
+    "\3\27\2\0\1\55\1\27\2\30\1\56\3\30\2\56"+
+    "\1\57\1\27\2\31\1\0\3\31\2\0\1\33\1\31"+
+    "\2\32\1\60\3\32\2\61\1\62\1\32\2\31\1\0"+
+    "\5\31\1\33\1\31\2\34\1\63\3\34\2\63\1\64"+
+    "\1\31\1\0\1\65\2\0\1\65\5\0\2\40\1\0"+
+    "\3\40\2\0\1\66\1\40\2\42\1\67\3\42\2\67"+
+    "\1\70\1\40\1\0\1\71\2\0\1\71\5\0\2\50"+
+    "\1\47\7\50\2\21\1\47\5\21\1\51\1\21\10\52"+
+    "\1\72\1\73\2\23\1\52\5\23\1\53\1\23\2\27"+
+    "\1\0\5\27\1\55\1\27\10\56\1\74\1\75\2\30"+
+    "\1\56\5\30\1\57\1\30\1\0\1\60\2\0\1\60"+
+    "\5\0\2\61\1\60\7\61\2\32\1\60\5\32\1\62"+
+    "\1\32\10\63\1\76\1\77\2\34\1\63\5\34\1\64"+
+    "\1\34\2\40\1\0\5\40\1\66\1\40\10\67\1\100"+
+    "\1\101\2\42\1\67\5\42\1\70\1\42\10\52\1\72"+
+    "\1\102\10\56\1\74\1\103\10\63\1\76\1\104\10\67"+
+    "\1\100\1\105";
 
   private static int [] zzUnpacktrans() {
-    int [] result = new int[500];
+    int [] result = new int[480];
     int offset = 0;
     offset = zzUnpacktrans(ZZ_TRANS_PACKED_0, offset, result);
     return result;
@@ -243,13 +239,14 @@ class RnLexer extends RnLexerBridge {
   private static final int [] ZZ_ATTRIBUTE = zzUnpackAttribute();
 
   private static final String ZZ_ATTRIBUTE_PACKED_0 =
-    "\15\0\2\11\5\1\1\11\6\1\1\11\1\1\1\11"+
-    "\4\1\3\11\1\0\2\1\1\0\3\1\1\0\2\1"+
-    "\1\0\2\1\1\0\3\1\1\0\3\1\1\0\1\11"+
-    "\1\0\1\11\1\1\1\0\1\11\1\0\1\11\4\1";
+    "\15\0\2\11\5\1\2\11\6\1\1\11\1\1\1\11"+
+    "\1\1\1\11\3\1\3\11\1\0\1\1\1\0\3\1"+
+    "\1\0\2\1\1\0\1\1\1\0\3\1\1\0\2\1"+
+    "\1\0\1\11\1\0\1\11\1\0\1\11\1\0\1\11"+
+    "\4\1";
 
   private static int [] zzUnpackAttribute() {
-    int [] result = new int[71];
+    int [] result = new int[69];
     int offset = 0;
     offset = zzUnpackAttribute(ZZ_ATTRIBUTE_PACKED_0, offset, result);
     return result;
@@ -662,92 +659,102 @@ private IElementType waiting_child_end(int __NEXT, int WAITING_END_LINE) {
             { yypushback(1); yybegin(WAITING_KEY);
             }
           // fall through
-          case 19: break;
+          case 21: break;
           case 2:
             { return RnTypes.ERROR;
             }
           // fall through
-          case 20: break;
+          case 22: break;
           case 3:
             { yybegin(WAITING_ASSIGN_OR_CHILD_OR_END); return RnTypes.KEY;
             }
           // fall through
-          case 21: break;
+          case 23: break;
           case 4:
             { yypushback(1); yybegin(WAITING_END_LINE); return RnTypes.END;
             }
           // fall through
-          case 22: break;
+          case 24: break;
           case 5:
             { yybegin(WAITING_VALUE); return RnTypes.ASSIGN;
             }
           // fall through
-          case 23: break;
-          case 6:
-            { yybegin(WAITING_ASSIGN_OR_CHILD_OR_END); return RnTypes.VALUE;
-            }
-          // fall through
-          case 24: break;
-          case 7:
-            { yybegin(CHILD_WAITING_ASSIGN_OR_CHILD_OR_END); return RnTypes.KEY;
-            }
-          // fall through
           case 25: break;
-          case 8:
-            { yybegin(WAITING_KEY); return RnTypes.EMPTY_LINE;
+          case 6:
+            { yybegin(WAITING_VALUE); return RnTypes.BREAK;
             }
           // fall through
           case 26: break;
-          case 9:
-            { return waiting_child_end(CHILD_WAITING_CHILD_OR_END, WAITING_END_LINE);
+          case 7:
+            { yybegin(WAITING_ASSIGN_OR_CHILD_OR_END); return RnTypes.VALUE;
             }
           // fall through
           case 27: break;
-          case 10:
-            { yybegin(CHILD_WAITING_VALUE); return RnTypes.ASSIGN;
+          case 8:
+            { yybegin(CHILD_WAITING_ASSIGN_OR_CHILD_OR_END); return RnTypes.KEY;
             }
           // fall through
           case 28: break;
-          case 11:
-            { yybegin(CHILD_WAITING_VALUE_CHILD_OR_END); return RnTypes.VALUE;
+          case 9:
+            { yybegin(WAITING_KEY); return RnTypes.EMPTY_LINE;
             }
           // fall through
           case 29: break;
-          case 12:
-            { return waiting_child_end(__CHILD_WAITING_CHILD_OR_END, WAITING_END_LINE);
+          case 10:
+            { return waiting_child_end(CHILD_WAITING_CHILD_OR_END, WAITING_END_LINE);
             }
           // fall through
           case 30: break;
-          case 13:
-            { return waiting_child_end(CHILD_WAITING_VALUE_CHILD_OR_END, WAITING_END_LINE);
+          case 11:
+            { yybegin(CHILD_WAITING_VALUE); return RnTypes.ASSIGN;
             }
           // fall through
           case 31: break;
-          case 14:
-            { yybegin(WAITING_KEY); return RnTypes.COMMENT;
+          case 12:
+            { yybegin(CHILD_WAITING_VALUE_CHILD_OR_END); return RnTypes.VALUE;
             }
           // fall through
           case 32: break;
-          case 15:
-            { return waiting_child(CHILD_WAITING_KEY);
+          case 13:
+            { yybegin(CHILD_WAITING_VALUE); return RnTypes.BREAK;
             }
           // fall through
           case 33: break;
-          case 16:
-            { yybegin(CHILD_WAITING_KEY); return RnTypes.COMMENT;
+          case 14:
+            { return waiting_child_end(__CHILD_WAITING_CHILD_OR_END, WAITING_END_LINE);
             }
           // fall through
           case 34: break;
-          case 17:
-            { return waiting_child_or_end(__CHILD_WAITING_VALUE_CHILD_OR_END, CHILD_WAITING_KEY);
+          case 15:
+            { return waiting_child_end(CHILD_WAITING_VALUE_CHILD_OR_END, WAITING_END_LINE);
             }
           // fall through
           case 35: break;
-          case 18:
-            { return waiting_child_or_end(CHILD_WAITING_VALUE_CHILD_OR_END, CHILD_WAITING_KEY);
+          case 16:
+            { yybegin(WAITING_KEY); return RnTypes.COMMENT;
             }
           // fall through
           case 36: break;
+          case 17:
+            { return waiting_child(CHILD_WAITING_KEY);
+            }
+          // fall through
+          case 37: break;
+          case 18:
+            { yybegin(CHILD_WAITING_KEY); return RnTypes.COMMENT;
+            }
+          // fall through
+          case 38: break;
+          case 19:
+            { return waiting_child_or_end(__CHILD_WAITING_VALUE_CHILD_OR_END, CHILD_WAITING_KEY);
+            }
+          // fall through
+          case 39: break;
+          case 20:
+            { return waiting_child_or_end(CHILD_WAITING_VALUE_CHILD_OR_END, CHILD_WAITING_KEY);
+            }
+          // fall through
+          case 40: break;
           default:
             zzScanError(ZZ_NO_MATCH);
           }

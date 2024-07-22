@@ -36,6 +36,9 @@ class RnSyntaxHighlighter : SyntaxHighlighterBase() {
         if (tokenType == RnTypes.ERROR) {
             return ERROR_KEYS
         }
+        if (tokenType == RnTypes.BREAK) {
+            return BREAK_KEYS
+        }
         return EMPTY_KEYS
     }
 
@@ -46,6 +49,7 @@ class RnSyntaxHighlighter : SyntaxHighlighterBase() {
         val COMMENT: TextAttributesKey = createTextAttributesKey("RN_COMMENT", DefaultLanguageHighlighterColors.LINE_COMMENT)
         val ERROR: TextAttributesKey = createTextAttributesKey("RN_ERROR", HighlighterColors.BAD_CHARACTER)
         val END: TextAttributesKey = createTextAttributesKey("RN_END", DefaultLanguageHighlighterColors.SEMICOLON)
+        val BREAK: TextAttributesKey = createTextAttributesKey("RN_BREAK", DefaultLanguageHighlighterColors.SEMICOLON)
 
 
         private val SPACE_KEYS = arrayOf<TextAttributesKey?>(END)
@@ -54,6 +58,7 @@ class RnSyntaxHighlighter : SyntaxHighlighterBase() {
         private val KEY_KEYS = arrayOf<TextAttributesKey?>(KEY)
         private val VALUE_KEYS = arrayOf<TextAttributesKey?>(VALUE)
         private val COMMENT_KEYS = arrayOf<TextAttributesKey?>(COMMENT)
+        private val BREAK_KEYS = arrayOf<TextAttributesKey?>(BREAK)
         private val EMPTY_KEYS = arrayOfNulls<TextAttributesKey>(0)
     }
 }

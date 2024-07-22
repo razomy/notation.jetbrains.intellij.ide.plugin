@@ -36,17 +36,17 @@ public class RnParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // (KEY ASSIGN VALUE CHILD_DEEP COMMENT PROPERTY* END)
-  //              | (KEY ASSIGN VALUE CHILD_DEEP PROPERTY* END)
-  //              | (KEY CHILD_DEEP COMMENT PROPERTY* END)
-  //              | (KEY CHILD_DEEP PROPERTY* END)
+  // (KEY CHILD_DEEP PROPERTY+ END)
+  //              | (VALUE CHILD_DEEP PROPERTY+ END)
   //              | (KEY END)
-  //              | (KEY ASSIGN PROPERTY*)
-  //              | (VALUE ASSIGN PROPERTY*)
+  //              | (KEY ASSIGN PROPERTY+)
+  //              | (VALUE BREAK)
   //              | (VALUE END)
+  //              | (COMMENT)
+  //              | (VALUE ASSIGN PROPERTY+ BREAK)
+  //              | (VALUE ASSIGN PROPERTY+)
   public static boolean PROPERTY(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "PROPERTY")) return false;
-    if (!nextTokenIs(b, "<property>", KEY, VALUE)) return false;
     boolean r;
     Marker m = enter_section_(b, l, _NONE_, PROPERTY, "<property>");
     r = PROPERTY_0(b, l + 1);
@@ -55,107 +55,70 @@ public class RnParser implements PsiParser, LightPsiParser {
     if (!r) r = PROPERTY_3(b, l + 1);
     if (!r) r = PROPERTY_4(b, l + 1);
     if (!r) r = PROPERTY_5(b, l + 1);
-    if (!r) r = PROPERTY_6(b, l + 1);
+    if (!r) r = consumeToken(b, COMMENT);
     if (!r) r = PROPERTY_7(b, l + 1);
+    if (!r) r = PROPERTY_8(b, l + 1);
     exit_section_(b, l, m, r, false, null);
     return r;
   }
 
-  // KEY ASSIGN VALUE CHILD_DEEP COMMENT PROPERTY* END
+  // KEY CHILD_DEEP PROPERTY+ END
   private static boolean PROPERTY_0(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "PROPERTY_0")) return false;
     boolean r;
     Marker m = enter_section_(b);
-    r = consumeTokens(b, 0, KEY, ASSIGN, VALUE, CHILD_DEEP, COMMENT);
-    r = r && PROPERTY_0_5(b, l + 1);
+    r = consumeTokens(b, 0, KEY, CHILD_DEEP);
+    r = r && PROPERTY_0_2(b, l + 1);
     r = r && consumeToken(b, END);
     exit_section_(b, m, null, r);
     return r;
   }
 
-  // PROPERTY*
-  private static boolean PROPERTY_0_5(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "PROPERTY_0_5")) return false;
-    while (true) {
+  // PROPERTY+
+  private static boolean PROPERTY_0_2(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "PROPERTY_0_2")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = PROPERTY(b, l + 1);
+    while (r) {
       int c = current_position_(b);
       if (!PROPERTY(b, l + 1)) break;
-      if (!empty_element_parsed_guard_(b, "PROPERTY_0_5", c)) break;
+      if (!empty_element_parsed_guard_(b, "PROPERTY_0_2", c)) break;
     }
-    return true;
+    exit_section_(b, m, null, r);
+    return r;
   }
 
-  // KEY ASSIGN VALUE CHILD_DEEP PROPERTY* END
+  // VALUE CHILD_DEEP PROPERTY+ END
   private static boolean PROPERTY_1(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "PROPERTY_1")) return false;
     boolean r;
     Marker m = enter_section_(b);
-    r = consumeTokens(b, 0, KEY, ASSIGN, VALUE, CHILD_DEEP);
-    r = r && PROPERTY_1_4(b, l + 1);
+    r = consumeTokens(b, 0, VALUE, CHILD_DEEP);
+    r = r && PROPERTY_1_2(b, l + 1);
     r = r && consumeToken(b, END);
     exit_section_(b, m, null, r);
     return r;
   }
 
-  // PROPERTY*
-  private static boolean PROPERTY_1_4(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "PROPERTY_1_4")) return false;
-    while (true) {
-      int c = current_position_(b);
-      if (!PROPERTY(b, l + 1)) break;
-      if (!empty_element_parsed_guard_(b, "PROPERTY_1_4", c)) break;
-    }
-    return true;
-  }
-
-  // KEY CHILD_DEEP COMMENT PROPERTY* END
-  private static boolean PROPERTY_2(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "PROPERTY_2")) return false;
+  // PROPERTY+
+  private static boolean PROPERTY_1_2(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "PROPERTY_1_2")) return false;
     boolean r;
     Marker m = enter_section_(b);
-    r = consumeTokens(b, 0, KEY, CHILD_DEEP, COMMENT);
-    r = r && PROPERTY_2_3(b, l + 1);
-    r = r && consumeToken(b, END);
-    exit_section_(b, m, null, r);
-    return r;
-  }
-
-  // PROPERTY*
-  private static boolean PROPERTY_2_3(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "PROPERTY_2_3")) return false;
-    while (true) {
+    r = PROPERTY(b, l + 1);
+    while (r) {
       int c = current_position_(b);
       if (!PROPERTY(b, l + 1)) break;
-      if (!empty_element_parsed_guard_(b, "PROPERTY_2_3", c)) break;
+      if (!empty_element_parsed_guard_(b, "PROPERTY_1_2", c)) break;
     }
-    return true;
-  }
-
-  // KEY CHILD_DEEP PROPERTY* END
-  private static boolean PROPERTY_3(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "PROPERTY_3")) return false;
-    boolean r;
-    Marker m = enter_section_(b);
-    r = consumeTokens(b, 0, KEY, CHILD_DEEP);
-    r = r && PROPERTY_3_2(b, l + 1);
-    r = r && consumeToken(b, END);
     exit_section_(b, m, null, r);
     return r;
-  }
-
-  // PROPERTY*
-  private static boolean PROPERTY_3_2(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "PROPERTY_3_2")) return false;
-    while (true) {
-      int c = current_position_(b);
-      if (!PROPERTY(b, l + 1)) break;
-      if (!empty_element_parsed_guard_(b, "PROPERTY_3_2", c)) break;
-    }
-    return true;
   }
 
   // KEY END
-  private static boolean PROPERTY_4(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "PROPERTY_4")) return false;
+  private static boolean PROPERTY_2(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "PROPERTY_2")) return false;
     boolean r;
     Marker m = enter_section_(b);
     r = consumeTokens(b, 0, KEY, END);
@@ -163,53 +126,45 @@ public class RnParser implements PsiParser, LightPsiParser {
     return r;
   }
 
-  // KEY ASSIGN PROPERTY*
-  private static boolean PROPERTY_5(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "PROPERTY_5")) return false;
+  // KEY ASSIGN PROPERTY+
+  private static boolean PROPERTY_3(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "PROPERTY_3")) return false;
     boolean r;
     Marker m = enter_section_(b);
     r = consumeTokens(b, 0, KEY, ASSIGN);
-    r = r && PROPERTY_5_2(b, l + 1);
+    r = r && PROPERTY_3_2(b, l + 1);
     exit_section_(b, m, null, r);
     return r;
   }
 
-  // PROPERTY*
-  private static boolean PROPERTY_5_2(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "PROPERTY_5_2")) return false;
-    while (true) {
-      int c = current_position_(b);
-      if (!PROPERTY(b, l + 1)) break;
-      if (!empty_element_parsed_guard_(b, "PROPERTY_5_2", c)) break;
-    }
-    return true;
-  }
-
-  // VALUE ASSIGN PROPERTY*
-  private static boolean PROPERTY_6(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "PROPERTY_6")) return false;
+  // PROPERTY+
+  private static boolean PROPERTY_3_2(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "PROPERTY_3_2")) return false;
     boolean r;
     Marker m = enter_section_(b);
-    r = consumeTokens(b, 0, VALUE, ASSIGN);
-    r = r && PROPERTY_6_2(b, l + 1);
+    r = PROPERTY(b, l + 1);
+    while (r) {
+      int c = current_position_(b);
+      if (!PROPERTY(b, l + 1)) break;
+      if (!empty_element_parsed_guard_(b, "PROPERTY_3_2", c)) break;
+    }
     exit_section_(b, m, null, r);
     return r;
   }
 
-  // PROPERTY*
-  private static boolean PROPERTY_6_2(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "PROPERTY_6_2")) return false;
-    while (true) {
-      int c = current_position_(b);
-      if (!PROPERTY(b, l + 1)) break;
-      if (!empty_element_parsed_guard_(b, "PROPERTY_6_2", c)) break;
-    }
-    return true;
+  // VALUE BREAK
+  private static boolean PROPERTY_4(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "PROPERTY_4")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = consumeTokens(b, 0, VALUE, BREAK);
+    exit_section_(b, m, null, r);
+    return r;
   }
 
   // VALUE END
-  private static boolean PROPERTY_7(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "PROPERTY_7")) return false;
+  private static boolean PROPERTY_5(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "PROPERTY_5")) return false;
     boolean r;
     Marker m = enter_section_(b);
     r = consumeTokens(b, 0, VALUE, END);
@@ -217,13 +172,66 @@ public class RnParser implements PsiParser, LightPsiParser {
     return r;
   }
 
+  // VALUE ASSIGN PROPERTY+ BREAK
+  private static boolean PROPERTY_7(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "PROPERTY_7")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = consumeTokens(b, 0, VALUE, ASSIGN);
+    r = r && PROPERTY_7_2(b, l + 1);
+    r = r && consumeToken(b, BREAK);
+    exit_section_(b, m, null, r);
+    return r;
+  }
+
+  // PROPERTY+
+  private static boolean PROPERTY_7_2(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "PROPERTY_7_2")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = PROPERTY(b, l + 1);
+    while (r) {
+      int c = current_position_(b);
+      if (!PROPERTY(b, l + 1)) break;
+      if (!empty_element_parsed_guard_(b, "PROPERTY_7_2", c)) break;
+    }
+    exit_section_(b, m, null, r);
+    return r;
+  }
+
+  // VALUE ASSIGN PROPERTY+
+  private static boolean PROPERTY_8(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "PROPERTY_8")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = consumeTokens(b, 0, VALUE, ASSIGN);
+    r = r && PROPERTY_8_2(b, l + 1);
+    exit_section_(b, m, null, r);
+    return r;
+  }
+
+  // PROPERTY+
+  private static boolean PROPERTY_8_2(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "PROPERTY_8_2")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = PROPERTY(b, l + 1);
+    while (r) {
+      int c = current_position_(b);
+      if (!PROPERTY(b, l + 1)) break;
+      if (!empty_element_parsed_guard_(b, "PROPERTY_8_2", c)) break;
+    }
+    exit_section_(b, m, null, r);
+    return r;
+  }
+
   /* ********************************************************** */
-  // item_*
+  // START*
   static boolean RnFile(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "RnFile")) return false;
     while (true) {
       int c = current_position_(b);
-      if (!item_(b, l + 1)) break;
+      if (!START(b, l + 1)) break;
       if (!empty_element_parsed_guard_(b, "RnFile", c)) break;
     }
     return true;
@@ -233,20 +241,20 @@ public class RnParser implements PsiParser, LightPsiParser {
   // COMMENT
   //                     | (PROPERTY EMPTY_LINE)
   //                     | ERROR
-  static boolean item_(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "item_")) return false;
+  static boolean START(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "START")) return false;
     boolean r;
     Marker m = enter_section_(b);
     r = consumeToken(b, COMMENT);
-    if (!r) r = item__1(b, l + 1);
+    if (!r) r = START_1(b, l + 1);
     if (!r) r = consumeToken(b, ERROR);
     exit_section_(b, m, null, r);
     return r;
   }
 
   // PROPERTY EMPTY_LINE
-  private static boolean item__1(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "item__1")) return false;
+  private static boolean START_1(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "START_1")) return false;
     boolean r;
     Marker m = enter_section_(b);
     r = PROPERTY(b, l + 1);
