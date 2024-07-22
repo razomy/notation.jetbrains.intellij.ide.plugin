@@ -23,6 +23,6 @@ internal class RnFormattingModelBuilder : FormattingModelBuilder {
 private fun createSpaceBuilder(settings: CodeStyleSettings): SpacingBuilder {
 
     return SpacingBuilder(settings, RnLanguage)
-            .after(RnTypes.SEPARATOR)
+            .after(RnTypes.ASSIGN)
             .none()
 }

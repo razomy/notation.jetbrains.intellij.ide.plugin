@@ -33,14 +33,13 @@ public class RnPropertyImpl extends RnElementImpl implements RnProperty {
   }
 
   @Override
-  @Nullable
-  public RnValue getValue() {
-    return findChildByClass(RnValue.class);
+  public String getKey() {
+    return RnPsiImplUtil.getKey(this);
   }
 
   @Override
-  public String getKey() {
-    return RnPsiImplUtil.getKey(this);
+  public String getValue() {
+    return RnPsiImplUtil.getValue(this);
   }
 
   @Override

@@ -18,16 +18,13 @@ class RnSyntaxHighlighter : SyntaxHighlighterBase() {
 
     @NotNull
     override fun getTokenHighlights(tokenType: IElementType): Array<TextAttributesKey?> {
-        if (tokenType == RnTypes.SEPARATOR) {
+        if (tokenType == RnTypes.ASSIGN) {
             return SEPARATOR_KEYS
         }
         if (tokenType == RnTypes.KEY) {
             return KEY_KEYS
         }
         if (tokenType == RnTypes.VALUE) {
-            return VALUE_KEYS
-        }
-        if (tokenType == RnTypes.STRING) {
             return VALUE_KEYS
         }
         if (tokenType == RnTypes.COMMENT) {
@@ -43,12 +40,12 @@ class RnSyntaxHighlighter : SyntaxHighlighterBase() {
     }
 
     companion object {
-        val SEPARATOR: TextAttributesKey = createTextAttributesKey("RN_SEPARATOR", DefaultLanguageHighlighterColors.OPERATION_SIGN)
+        val SEPARATOR: TextAttributesKey = createTextAttributesKey("RN_ASSIGN", DefaultLanguageHighlighterColors.OPERATION_SIGN)
         val KEY: TextAttributesKey = createTextAttributesKey("RN_KEY", DefaultLanguageHighlighterColors.KEYWORD)
         val VALUE: TextAttributesKey = createTextAttributesKey("RN_VALUE", DefaultLanguageHighlighterColors.STRING)
         val COMMENT: TextAttributesKey = createTextAttributesKey("RN_COMMENT", DefaultLanguageHighlighterColors.LINE_COMMENT)
         val ERROR: TextAttributesKey = createTextAttributesKey("RN_ERROR", HighlighterColors.BAD_CHARACTER)
-        val END: TextAttributesKey = createTextAttributesKey("RN_END", HighlighterColors.TEXT)
+        val END: TextAttributesKey = createTextAttributesKey("RN_END", DefaultLanguageHighlighterColors.SEMICOLON)
 
 
         private val SPACE_KEYS = arrayOf<TextAttributesKey?>(END)

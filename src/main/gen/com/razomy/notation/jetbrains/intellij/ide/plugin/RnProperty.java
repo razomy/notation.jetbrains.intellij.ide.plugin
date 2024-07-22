@@ -10,10 +10,9 @@ public interface RnProperty extends RnElement {
   @NotNull
   List<RnProperty> getPropertyList();
 
-  @Nullable
-  RnValue getValue();
-
   String getKey();
+
+  String getValue();
 
   String getName();
 

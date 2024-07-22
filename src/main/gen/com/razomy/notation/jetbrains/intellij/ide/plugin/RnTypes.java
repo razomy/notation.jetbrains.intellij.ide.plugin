@@ -9,25 +9,21 @@ import com.razomy.notation.jetbrains.intellij.ide.plugin.impl.*;
 public interface RnTypes {
 
   IElementType PROPERTY = new RnElementType("PROPERTY");
-  IElementType VALUE = new RnElementType("VALUE");
 
+  IElementType ASSIGN = new RnTokenType("ASSIGN");
   IElementType CHILD_DEEP = new RnTokenType("CHILD_DEEP");
   IElementType COMMENT = new RnTokenType("COMMENT");
   IElementType EMPTY_LINE = new RnTokenType("EMPTY_LINE");
   IElementType END = new RnTokenType("END");
   IElementType ERROR = new RnTokenType("ERROR");
   IElementType KEY = new RnTokenType("KEY");
-  IElementType SEPARATOR = new RnTokenType("SEPARATOR");
-  IElementType STRING = new RnTokenType("STRING");
+  IElementType VALUE = new RnTokenType("VALUE");
 
   class Factory {
     public static PsiElement createElement(ASTNode node) {
       IElementType type = node.getElementType();
       if (type == PROPERTY) {
         return new RnPropertyImpl(node);
-      }
-      else if (type == VALUE) {
-        return new RnValueImpl(node);
       }
       throw new AssertionError("Unknown element type: " + type);
     }

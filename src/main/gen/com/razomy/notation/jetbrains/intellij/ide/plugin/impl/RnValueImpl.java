@@ -18,7 +18,7 @@ public class RnValueImpl extends ASTWrapperPsiElement implements RnValue {
   }
 
   public void accept(@NotNull RnVisitor visitor) {
-    visitor.visitValue(this);
+    visitor.visitElement(this);
   }
 
   @Override

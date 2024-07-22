@@ -21,16 +21,17 @@ RnFile ::= item_*
 private item_ ::=   COMMENT
                     | (PROPERTY EMPTY_LINE)
                     | ERROR
-VALUE ::= STRING
 
-PROPERTY ::= (KEY SEPARATOR VALUE CHILD_DEEP COMMENT PROPERTY* END)
-             | (KEY SEPARATOR VALUE CHILD_DEEP PROPERTY* END)
+PROPERTY ::= (KEY ASSIGN VALUE CHILD_DEEP COMMENT PROPERTY* END)
+             | (KEY ASSIGN VALUE CHILD_DEEP PROPERTY* END)
              | (KEY CHILD_DEEP COMMENT PROPERTY* END)
              | (KEY CHILD_DEEP PROPERTY* END)
-             | (KEY SEPARATOR VALUE END)
              | (KEY END)
+             | (KEY ASSIGN PROPERTY*)
+             | (VALUE ASSIGN PROPERTY*)
+             | (VALUE END)
 {
   mixin="com.razomy.notation.jetbrains.intellij.ide.plugin.impl.RnElementImpl"
   implements="com.razomy.notation.jetbrains.intellij.ide.plugin.RnElement"
-  methods=[getKey getName setName getNameIdentifier]
+  methods=[getKey getValue getName setName getNameIdentifier]
 }
