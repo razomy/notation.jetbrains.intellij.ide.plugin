@@ -22,15 +22,19 @@ private START ::=   COMMENT
                     | (PROPERTY EMPTY_LINE)
                     | ERROR
 
+INLINE_PROPERTY ::= (VALUE CHILD_DEEP INLINE_PROPERTY+)
+             | (VALUE ASSIGN INLINE_PROPERTY+ BREAK)
+             | (VALUE ASSIGN INLINE_PROPERTY+)
+             | (VALUE BREAK)
+             | VALUE
+             | PROPERTY
+
 PROPERTY ::= (KEY CHILD_DEEP PROPERTY+ END)
              | (VALUE CHILD_DEEP PROPERTY+ END)
              | (KEY END)
-             | (KEY ASSIGN PROPERTY+)
-             | (VALUE BREAK)
-             | (VALUE END)
+             | (KEY ASSIGN INLINE_PROPERTY+ END)
              | (COMMENT)
-             | (VALUE ASSIGN PROPERTY+ BREAK)
-             | (VALUE ASSIGN PROPERTY+)
+
 {
   mixin="com.razomy.notation.jetbrains.intellij.ide.plugin.impl.RnElementImpl"
   implements="com.razomy.notation.jetbrains.intellij.ide.plugin.RnElement"

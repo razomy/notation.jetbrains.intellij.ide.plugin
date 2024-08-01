@@ -8,16 +8,17 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.util.PsiTreeUtil;
 import static com.razomy.notation.jetbrains.intellij.ide.plugin.RnTypes.*;
+import com.intellij.extapi.psi.ASTWrapperPsiElement;
 import com.razomy.notation.jetbrains.intellij.ide.plugin.*;
 
-public class RnPropertyImpl extends RnElementImpl implements RnProperty {
+public class RnInlinePropertyImpl extends ASTWrapperPsiElement implements RnInlineProperty {
 
-  public RnPropertyImpl(@NotNull ASTNode node) {
+  public RnInlinePropertyImpl(@NotNull ASTNode node) {
     super(node);
   }
 
   public void accept(@NotNull RnVisitor visitor) {
-    visitor.visitProperty(this);
+    visitor.visitInlineProperty(this);
   }
 
   @Override
@@ -33,34 +34,9 @@ public class RnPropertyImpl extends RnElementImpl implements RnProperty {
   }
 
   @Override
-  @NotNull
-  public List<RnProperty> getPropertyList() {
-    return PsiTreeUtil.getChildrenOfTypeAsList(this, RnProperty.class);
-  }
-
-  @Override
-  public String getKey() {
-    return RnPsiImplUtil.getKey(this);
-  }
-
-  @Override
-  public String getValue() {
-    return RnPsiImplUtil.getValue(this);
-  }
-
-  @Override
-  public String getName() {
-    return RnPsiImplUtil.getName(this);
-  }
-
-  @Override
-  public PsiElement setName(String newName) {
-    return RnPsiImplUtil.setName(this, newName);
-  }
-
-  @Override
-  public PsiElement getNameIdentifier() {
-    return RnPsiImplUtil.getNameIdentifier(this);
+  @Nullable
+  public RnProperty getProperty() {
+    return findChildByClass(RnProperty.class);
   }
 
 }

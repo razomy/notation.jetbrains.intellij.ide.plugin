@@ -134,7 +134,7 @@ VALUE=[^\:\;\r\n] | "\\:" | "\\;" // not WHITE_SPACE and not END
 
 // ROOT
 
-<WAITING_KEY> {COMMENT}{END}                                {yybegin(WAITING_KEY); return RnTypes.COMMENT; }
+<WAITING_KEY> {COMMENT}{END}                                {yybegin(YYINITIAL); return RnTypes.COMMENT; }
 <WAITING_KEY> {FIRST_MUILTILINE_VALUE_CHARACTER}({MUILTILINE_VALUE}*){LAST_MUILTILINE_VALUE_CHARACTER} { yybegin(WAITING_ASSIGN_OR_CHILD_OR_END); return RnTypes.KEY; }
 <WAITING_KEY> {VALUE}+                              {yybegin(WAITING_ASSIGN_OR_CHILD_OR_END); return RnTypes.KEY; }
 
@@ -147,7 +147,7 @@ VALUE=[^\:\;\r\n] | "\\:" | "\\;" // not WHITE_SPACE and not END
 <WAITING_VALUE> {FIRST_MUILTILINE_VALUE_CHARACTER}({MUILTILINE_VALUE}*){LAST_MUILTILINE_VALUE_CHARACTER} { yybegin(WAITING_ASSIGN_OR_CHILD_OR_END); return RnTypes.VALUE; }
 <WAITING_VALUE> {FIRST_VALUE_CHARACTER}({VALUE}*)        { yybegin(WAITING_ASSIGN_OR_CHILD_OR_END); return RnTypes.VALUE; }
 
-<WAITING_END_LINE> {END}                                    { yybegin(WAITING_KEY); return RnTypes.EMPTY_LINE; }
+<WAITING_END_LINE> {END}                                    { yybegin(YYINITIAL); return RnTypes.EMPTY_LINE; }
 
 // CHILD
 

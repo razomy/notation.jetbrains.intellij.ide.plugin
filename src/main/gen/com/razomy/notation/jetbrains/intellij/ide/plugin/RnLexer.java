@@ -696,7 +696,7 @@ private IElementType waiting_child_end(int __NEXT, int WAITING_END_LINE) {
           // fall through
           case 28: break;
           case 9:
-            { yybegin(WAITING_KEY); return RnTypes.EMPTY_LINE;
+            { yybegin(YYINITIAL); return RnTypes.EMPTY_LINE;
             }
           // fall through
           case 29: break;
@@ -731,7 +731,7 @@ private IElementType waiting_child_end(int __NEXT, int WAITING_END_LINE) {
           // fall through
           case 35: break;
           case 16:
-            { yybegin(WAITING_KEY); return RnTypes.COMMENT;
+            { yybegin(YYINITIAL); return RnTypes.COMMENT;
             }
           // fall through
           case 36: break;
