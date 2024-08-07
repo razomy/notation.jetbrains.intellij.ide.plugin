@@ -1,5 +1,4 @@
-# example
-
+# Example
 # into
 hello
     iam Jack
@@ -7,9 +6,8 @@ hello
         at office
         at home
         at central park
-            # on sunny days
+        # on sunny days
     say hello
-
 # shakes
 shake
     if there anyone

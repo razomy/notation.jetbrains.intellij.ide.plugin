@@ -21,10 +21,19 @@ multiline
 value
 `
 # inline key:key1:value
-a:b:c:value
+a:b
+a:b:c
+a:b:c:d
+a:b;a1
+a:b:c;;a1
+a:b:c:d;;;a1
 a:b:c:`
 value
 `
+parent
+ a:b:c:d:value
+  child
+ a:b:c;;a1
 # escape key:key1:value
 key\:
 key\;
@@ -33,8 +42,8 @@ key:`\`
 `
 # tree
 root
-    node:leaf
-key:default
+node:leaf
+key  : default
     child
         key:value
 key:default
