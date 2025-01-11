@@ -1,22 +1,33 @@
 plugins {
     id("java")
     id("org.jetbrains.kotlin.jvm") version "1.9.21"
-    id("org.jetbrains.intellij") version "1.16.1"
+    id("org.jetbrains.intellij.platform") version "2.2.1"
 }
 
 group = "com.razomy"
-version = "0.0-alpha.9"
+version = "0.0-alpha.10"
 
 repositories {
     mavenCentral()
+    intellijPlatform {
+        defaultRepositories()
+    }
 }
 
-// Configure Gradle IntelliJ Plugin
-// Read more: https://plugins.jetbrains.com/docs/intellij/tools-gradle-intellij-plugin.html
-intellij {
-    version.set("2023.1.5")
-    type.set("IC") // Target IDE Platform
-    plugins.set(listOf("com.intellij.java"))
+dependencies {
+    intellijPlatform {
+        intellijIdeaCommunity("2024.3.1.1")
+        bundledPlugin("com.intellij.java")
+        pluginVerifier()
+    }
+}
+
+intellijPlatform {
+    pluginVerification {
+        ides {
+            recommended()
+        }
+    }
 }
 
 sourceSets["main"].java.srcDirs("src/main/gen")
@@ -33,7 +44,7 @@ tasks {
 
     patchPluginXml {
         sinceBuild.set("231")
-        untilBuild.set("250.*")
+        untilBuild.set("243.*")
     }
 
     signPlugin {
