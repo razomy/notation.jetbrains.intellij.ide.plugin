@@ -51,6 +51,15 @@ fun substringWithDots(input: String, maxLength: Int): String {
     return "$start…$end"
 }
 
+fun substringWithDotsEnd(input: String, maxLength: Int): String {
+    if (input.length <= maxLength) return input
+
+    val start = input.substring(0, maxLength - 1)
+
+    return "$start…"
+}
+
+
 fun countTrailingSpacesWithNewLines(str: String): Int {
     var count = 0
     for (i in str.lastIndex downTo 0) {
@@ -91,7 +100,7 @@ class RnFoldingBuilder : FoldingBuilder {
             }
 
             val leadingSpaces = countTrailingSpaces(prevtext);
-            val from_text_in_range_120_with_ellipces = substringWithDots(propertyNode.text, 120 - leadingSpaces)
+            val from_text_in_range_120_with_ellipces = substringWithDotsEnd(propertyNode.text, 120 - leadingSpaces)
             val placeholderText = from_text_in_range_120_with_ellipces
 
             val descriptor = FoldingDescriptor(

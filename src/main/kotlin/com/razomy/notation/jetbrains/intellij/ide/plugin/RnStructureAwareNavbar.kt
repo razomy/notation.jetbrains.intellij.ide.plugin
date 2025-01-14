@@ -10,9 +10,6 @@ internal class RnStructureAwareNavbar() : StructureAwareNavBarModelExtension() {
     override val language: Language = RnLanguage
     override fun getPresentableText(`object`: Any): String? {
         var name = "";
-        if (`object` is RnFile) {
-            name = `object`.getName()
-        }
         if (`object` is RnProperty) {
             name = `object`.getName() ?: ""
         }

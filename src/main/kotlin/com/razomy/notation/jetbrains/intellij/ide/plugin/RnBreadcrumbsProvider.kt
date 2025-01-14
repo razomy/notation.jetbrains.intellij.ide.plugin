@@ -19,6 +19,7 @@ internal class RnBreadcrumbsProvider : BreadcrumbsProvider {
     }
 
     override fun getElementInfo(element: PsiElement): String {
-        return (element as RnProperty).getName() ?: ""
+        val name = (element as RnProperty).getName() ?: ""
+        return substringWithDots(name, 7)
     }
 }
