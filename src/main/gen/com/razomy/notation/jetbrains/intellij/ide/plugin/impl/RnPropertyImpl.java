@@ -9,6 +9,7 @@ import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.util.PsiTreeUtil;
 import static com.razomy.notation.jetbrains.intellij.ide.plugin.RnTypes.*;
 import com.razomy.notation.jetbrains.intellij.ide.plugin.*;
+import com.intellij.navigation.ItemPresentation;
 
 public class RnPropertyImpl extends RnElementImpl implements RnProperty {
 
@@ -61,6 +62,11 @@ public class RnPropertyImpl extends RnElementImpl implements RnProperty {
   @Override
   public PsiElement getNameIdentifier() {
     return RnPsiImplUtil.getNameIdentifier(this);
+  }
+
+  @Override
+  public ItemPresentation getPresentation() {
+    return RnPsiImplUtil.getPresentation(this);
   }
 
 }

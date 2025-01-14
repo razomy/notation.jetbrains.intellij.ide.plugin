@@ -27,6 +27,12 @@
     <!-- Extension points defined by the plugin.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
+        <lang.psiStructureViewFactory
+                language="RN"
+                implementationClass="com.razomy.notation.jetbrains.intellij.ide.plugin.RnStructureViewFactory"/>
+        <gotoSymbolContributor
+                implementation="com.razomy.notation.jetbrains.intellij.ide.plugin.RnChooseByNameContributor"/>
+        <navbar implementation="com.razomy.notation.jetbrains.intellij.ide.plugin.RnStructureAwareNavbar"/>
         <fileType
                 name="RN"
                 implementationClass="com.razomy.notation.jetbrains.intellij.ide.plugin.RnFileType"

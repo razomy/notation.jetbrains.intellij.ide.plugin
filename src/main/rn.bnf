@@ -38,5 +38,5 @@ PROPERTY ::= (KEY CHILD_DEEP PROPERTY+ END)
 {
   mixin="com.razomy.notation.jetbrains.intellij.ide.plugin.impl.RnElementImpl"
   implements="com.razomy.notation.jetbrains.intellij.ide.plugin.RnElement"
-  methods=[getKey getValue getName setName getNameIdentifier]
+  methods=[getKey getValue getName setName getNameIdentifier getPresentation]
 }
