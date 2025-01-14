@@ -7,6 +7,50 @@ import com.intellij.openapi.editor.Document
 import com.intellij.openapi.util.TextRange
 import kotlin.math.min
 
+fun substringWithDots(input: String, maxLength: Int): String {
+    if (input.length <= maxLength) return input
+
+    var f_part: Int
+    var s_part: Int
+    var t_part: Int
+
+    val remainder = maxLength % 3
+    when (remainder) {
+        0 -> {
+            // 120 + 40 / 40 / 40
+            val base = maxLength / 3
+            f_part = base
+            s_part = base
+            t_part = base
+        }
+
+        1 -> {
+            // 118 - 39.3 - 39 - 39  = 1
+            val base = maxLength / 3
+            f_part = base + 1
+            s_part = base
+            t_part = base
+        }
+
+        2 -> {
+            // 119 - 39.6 - 39 - 39 = 2
+            val base = maxLength / 3
+            f_part = base + 2
+            s_part = base
+            t_part = base
+        }
+
+        else -> throw IllegalStateException("Unexpected remainder: $remainder")
+    }
+
+    s_part -= 1
+
+    val start = input.substring(0, f_part + s_part)
+    val end = input.substring(input.length - t_part)
+
+    return "$start…$end"
+}
+
 fun countTrailingSpacesWithNewLines(str: String): Int {
     var count = 0
     for (i in str.lastIndex downTo 0) {
@@ -47,10 +91,7 @@ class RnFoldingBuilder : FoldingBuilder {
             }
 
             val leadingSpaces = countTrailingSpaces(prevtext);
-            val from_text_in_range_120_with_ellipces = propertyNode.text.substring(
-                0,
-                min(120 - 3 - leadingSpaces, propertyNode.text.length)
-            ) + "..."
+            val from_text_in_range_120_with_ellipces = substringWithDots(propertyNode.text, 120 - leadingSpaces)
             val placeholderText = from_text_in_range_120_with_ellipces
 
             val descriptor = FoldingDescriptor(

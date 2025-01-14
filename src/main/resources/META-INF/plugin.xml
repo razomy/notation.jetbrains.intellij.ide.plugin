@@ -23,7 +23,7 @@
     <!-- Product and plugin compatibility requirements.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
     <depends>com.intellij.modules.platform</depends>
-<!--    <depends>com.intellij.modules.java</depends>-->
+    <!--    <depends>com.intellij.modules.java</depends>-->
     <!-- Extension points defined by the plugin.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
@@ -33,6 +33,8 @@
         <gotoSymbolContributor
                 implementation="com.razomy.notation.jetbrains.intellij.ide.plugin.RnChooseByNameContributor"/>
         <navbar implementation="com.razomy.notation.jetbrains.intellij.ide.plugin.RnStructureAwareNavbar"/>
+        <breadcrumbsInfoProvider
+                implementation="com.razomy.notation.jetbrains.intellij.ide.plugin.RnBreadcrumbsProvider"/>
         <fileType
                 name="RN"
                 implementationClass="com.razomy.notation.jetbrains.intellij.ide.plugin.RnFileType"
@@ -50,12 +52,12 @@
         <lang.foldingBuilder
                 language="RN"
                 implementationClass="com.razomy.notation.jetbrains.intellij.ide.plugin.RnFoldingBuilder"/>
-<!--        <lang.findUsagesProvider-->
-<!--                language="RN"-->
-<!--                implementationClass="com.razomy.notation.jetbrains.intellij.ide.plugin.RnFindUsagesProvider"/>-->
-<!--        <lang.refactoringSupport-->
-<!--                language="RN"-->
-<!--                implementationClass="com.razomy.notation.jetbrains.intellij.ide.plugin.RnRefactoringSupportProvider"/>-->
+        <!--        <lang.findUsagesProvider-->
+        <!--                language="RN"-->
+        <!--                implementationClass="com.razomy.notation.jetbrains.intellij.ide.plugin.RnFindUsagesProvider"/>-->
+        <!--        <lang.refactoringSupport-->
+        <!--                language="RN"-->
+        <!--                implementationClass="com.razomy.notation.jetbrains.intellij.ide.plugin.RnRefactoringSupportProvider"/>-->
         <lang.commenter
                 language="RN"
                 implementationClass="com.razomy.notation.jetbrains.intellij.ide.plugin.RnCommenter"/>

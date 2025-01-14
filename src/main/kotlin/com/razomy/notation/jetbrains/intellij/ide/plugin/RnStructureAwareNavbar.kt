@@ -17,7 +17,7 @@ internal class RnStructureAwareNavbar() : StructureAwareNavBarModelExtension() {
             name = `object`.getName() ?: ""
         }
 
-        name = name.substring(0, Math.min(name.length, 6))
+        name = substringWithDots(name, 7)
 
         if (name == "") {
             return null
