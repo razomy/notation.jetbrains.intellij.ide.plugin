@@ -93,7 +93,9 @@ class RnFoldingBuilder : FoldingBuilder {
             val trailingSpaces = countTrailingSpacesWithNewLines(propertyNode.text);
             val removed_last_line_spaces = propertyNode.textRange.endOffset - trailingSpaces;
             val range = TextRange(propertyNode.textRange.startOffset, removed_last_line_spaces)
-
+            if (range.length == 0) {
+                return
+            }
             var prevtext = propertyNode.treePrev?.text;
             if (prevtext == null) {
                 prevtext = ""
