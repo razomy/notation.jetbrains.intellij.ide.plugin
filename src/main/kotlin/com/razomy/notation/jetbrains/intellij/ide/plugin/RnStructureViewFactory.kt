@@ -45,15 +45,15 @@ class RnStructureViewElement(private val myElement: NavigatablePsiElement) : Str
     override fun getChildren(): Array<out TreeElement> {
         if (myElement is RnFile || myElement is RnProperty) {
 
-            var properties = myElement.children;
+            var properties = myElement.children.filterIsInstance<RnPropertyImpl>();
             val treeElements: MutableList<TreeElement> = ArrayList(properties.size)
             for (property in properties) {
                 if (property.elementType == RnTypes.PROPERTY) {
 
-                    treeElements.add(RnStructureViewElement(property as RnPropertyImpl))
+                    treeElements.add(RnStructureViewElement(property))
                 }
                 if (property.elementType == RnTypes.KEY) {
-                    treeElements.add(RnStructureViewElement(property as RnPropertyImpl))
+                    treeElements.add(RnStructureViewElement(property))
                 }
             }
             return treeElements.toTypedArray<TreeElement>()
