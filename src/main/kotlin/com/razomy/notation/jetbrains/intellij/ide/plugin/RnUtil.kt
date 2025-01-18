@@ -27,17 +27,19 @@ object RnUtil {
         val virtualFiles =
             FileTypeIndex.getFiles(RnFileType, GlobalSearchScope.allScope(project))
         for (virtualFile in virtualFiles) {
-            val RnFile: RnFile? = PsiManager.getInstance(project).findFile(virtualFile!!) as RnFile?
-            if (RnFile != null) {
-                val properties: Array<out RnProperty>? = PsiTreeUtil.getChildrenOfType(RnFile, RnProperty::class.java)
-                if (properties != null) {
-                    for (property in properties) {
-                        if (key == property.text) {
-                            result.add(property)
-                        }
+            val RnFile = PsiManager.getInstance(project).findFile(virtualFile!!)
+            if (RnFile !is RnFile) {
+                continue
+            }
+            val properties: Array<out RnProperty>? = PsiTreeUtil.getChildrenOfType(RnFile, RnProperty::class.java)
+            if (properties != null) {
+                for (property in properties) {
+                    if (key == property.text) {
+                        result.add(property)
                     }
                 }
             }
+
         }
         return result
     }
@@ -47,12 +49,13 @@ object RnUtil {
         val virtualFiles =
             FileTypeIndex.getFiles(RnFileType, GlobalSearchScope.allScope(project))
         for (virtualFile in virtualFiles) {
-            val RnFile: RnFile? = PsiManager.getInstance(project).findFile(virtualFile!!) as RnFile?
-            if (RnFile != null) {
-                val properties: Array<out RnProperty>? = PsiTreeUtil.getChildrenOfType(RnFile, RnProperty::class.java)
-                if (properties != null) {
-                    Collections.addAll(result.toMutableList(), properties)
-                }
+            val RnFile = PsiManager.getInstance(project).findFile(virtualFile!!);
+            if (RnFile !is RnFile) {
+                continue
+            }
+            val properties: Array<out RnProperty>? = PsiTreeUtil.getChildrenOfType(RnFile, RnProperty::class.java)
+            if (properties != null) {
+                Collections.addAll(result.toMutableList(), properties)
             }
         }
         return result
