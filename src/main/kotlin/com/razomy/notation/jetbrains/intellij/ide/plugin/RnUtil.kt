@@ -26,15 +26,16 @@ object RnUtil {
         val result: MutableList<RnProperty> = ArrayList<RnProperty>()
         val virtualFiles =
             FileTypeIndex.getFiles(RnFileType, GlobalSearchScope.allScope(project))
+        var manger = PsiManager.getInstance(project);
         for (virtualFile in virtualFiles) {
-            val RnFile = PsiManager.getInstance(project).findFile(virtualFile!!)
+            val RnFile = manger.findFile(virtualFile);
             if (RnFile !is RnFile) {
                 continue
             }
             val properties: Array<out RnProperty>? = PsiTreeUtil.getChildrenOfType(RnFile, RnProperty::class.java)
             if (properties != null) {
                 for (property in properties) {
-                    if (key == property.text) {
+                    if (property.text.startsWith(key)) {
                         result.add(property)
                     }
                 }
@@ -45,17 +46,18 @@ object RnUtil {
     }
 
     fun findProperties(project: Project): List<RnProperty> {
-        val result: List<RnProperty> = ArrayList<RnProperty>()
+        val result: MutableList<RnProperty> = ArrayList<RnProperty>()
         val virtualFiles =
             FileTypeIndex.getFiles(RnFileType, GlobalSearchScope.allScope(project))
+        var manger = PsiManager.getInstance(project);
         for (virtualFile in virtualFiles) {
-            val RnFile = PsiManager.getInstance(project).findFile(virtualFile!!);
+            val RnFile = manger.findFile(virtualFile);
             if (RnFile !is RnFile) {
                 continue
             }
             val properties: Array<out RnProperty>? = PsiTreeUtil.getChildrenOfType(RnFile, RnProperty::class.java)
             if (properties != null) {
-                Collections.addAll(result.toMutableList(), properties)
+                result.addAll(properties)
             }
         }
         return result
