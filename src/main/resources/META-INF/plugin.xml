@@ -66,6 +66,10 @@
         <lang.formatter
                 language="RN"
                 implementationClass="com.razomy.notation.jetbrains.intellij.ide.plugin.RnFormattingModelBuilder"/>
+
+        <multiHostInjector
+                implementation="com.razomy.notation.jetbrains.intellij.ide.plugin.RnMultiHostInjector"
+        />
     </extensions>
 
 </idea-plugin>

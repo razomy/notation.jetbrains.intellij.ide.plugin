@@ -10,7 +10,6 @@ import com.intellij.psi.PsiLanguageInjectionHost;
 
 public interface RnValue extends RnElement {
 
-public interface RnValue extends PsiElement {
   @NotNull String getKey();
 
   @Nullable String getValue();
@@ -22,5 +21,11 @@ public interface RnValue extends PsiElement {
   @Nullable PsiElement getNameIdentifier();
 
   @NotNull ItemPresentation getPresentation();
+
+  boolean isValidHost();
+
+  @NotNull PsiLanguageInjectionHost updateText(@NotNull String text);
+
+  @NotNull LiteralTextEscaper<? extends @Nullable PsiLanguageInjectionHost> createLiteralTextEscaper();
 
 }

@@ -5,6 +5,8 @@ import java.util.List;
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
 import com.intellij.navigation.ItemPresentation;
+import com.intellij.psi.LiteralTextEscaper;
+import com.intellij.psi.PsiLanguageInjectionHost;
 
 public interface RnProperty extends RnElement {
 
@@ -23,8 +25,10 @@ public interface RnProperty extends RnElement {
 
   @NotNull ItemPresentation getPresentation();
 
-  PsiElement getNameIdentifier();
+  boolean isValidHost();
 
-  ItemPresentation getPresentation();
+  @NotNull PsiLanguageInjectionHost updateText(@NotNull String text);
+
+  @NotNull LiteralTextEscaper<? extends @Nullable PsiLanguageInjectionHost> createLiteralTextEscaper();
 
 }

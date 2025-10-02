@@ -8,8 +8,11 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.util.PsiTreeUtil;
 import static com.razomy.notation.jetbrains.intellij.ide.plugin.RnTypes.*;
+import com.intellij.extapi.psi.ASTWrapperPsiElement;
 import com.razomy.notation.jetbrains.intellij.ide.plugin.*;
 import com.intellij.navigation.ItemPresentation;
+import com.intellij.psi.LiteralTextEscaper;
+import com.intellij.psi.PsiLanguageInjectionHost;
 
 public class RnPropertyImpl extends ASTWrapperPsiElement implements RnProperty {
 
@@ -61,6 +64,21 @@ public class RnPropertyImpl extends ASTWrapperPsiElement implements RnProperty {
   @Override
   public @NotNull ItemPresentation getPresentation() {
     return RnPsiImplUtil.getPresentation(this);
+  }
+
+  @Override
+  public boolean isValidHost() {
+    return RnPsiImplUtil.isValidHost(this);
+  }
+
+  @Override
+  public @NotNull PsiLanguageInjectionHost updateText(@NotNull String text) {
+    return RnPsiImplUtil.updateText(this, text);
+  }
+
+  @Override
+  public @NotNull LiteralTextEscaper<? extends @Nullable PsiLanguageInjectionHost> createLiteralTextEscaper() {
+    return RnPsiImplUtil.createLiteralTextEscaper(this);
   }
 
 }
