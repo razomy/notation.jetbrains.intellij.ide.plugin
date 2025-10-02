@@ -32,6 +32,10 @@
                 implementationClass="com.razomy.notation.jetbrains.intellij.ide.plugin.RnStructureViewFactory"/>
         <gotoSymbolContributor
                 implementation="com.razomy.notation.jetbrains.intellij.ide.plugin.RnChooseByNameContributor"/>
+        <completion.contributor
+                implementationClass="com.razomy.notation.jetbrains.intellij.ide.plugin.RnCompletionContributor"
+                language="RN"
+        />
         <navbar implementation="com.razomy.notation.jetbrains.intellij.ide.plugin.RnStructureAwareNavbar"/>
         <breadcrumbsInfoProvider
                 implementation="com.razomy.notation.jetbrains.intellij.ide.plugin.RnBreadcrumbsProvider"/>
