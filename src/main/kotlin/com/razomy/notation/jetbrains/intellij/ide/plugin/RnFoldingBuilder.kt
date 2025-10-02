@@ -54,7 +54,8 @@ fun substringWithDots(input: String, maxLength: Int): String {
 fun substringWithDotsEnd(input: String, maxLength: Int): String {
     if (input.length <= maxLength) return input
 
-    val start = input.substring(0, maxLength - 1)
+    var inline =input.replace("\n +".toRegex(), ":")
+    val start = inline.substring(0, maxLength - 1)
 
     return "$start…"
 }
