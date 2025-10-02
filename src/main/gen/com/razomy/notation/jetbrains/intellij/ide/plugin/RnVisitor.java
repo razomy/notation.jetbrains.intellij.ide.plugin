@@ -7,11 +7,11 @@ import com.intellij.psi.PsiElement;
 
 public class RnVisitor extends PsiElementVisitor {
 
-  public void visitInlineProperty(@NotNull RnInlineProperty o) {
-    visitPsiElement(o);
+  public void visitProperty(@NotNull RnProperty o) {
+    visitElement(o);
   }
 
-  public void visitProperty(@NotNull RnProperty o) {
+  public void visitValue(@NotNull RnValue o) {
     visitElement(o);
   }
 

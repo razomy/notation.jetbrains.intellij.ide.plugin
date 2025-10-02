@@ -11,7 +11,7 @@ import static com.razomy.notation.jetbrains.intellij.ide.plugin.RnTypes.*;
 import com.razomy.notation.jetbrains.intellij.ide.plugin.*;
 import com.intellij.navigation.ItemPresentation;
 
-public class RnPropertyImpl extends RnElementImpl implements RnProperty {
+public class RnPropertyImpl extends ASTWrapperPsiElement implements RnProperty {
 
   public RnPropertyImpl(@NotNull ASTNode node) {
     super(node);
@@ -29,43 +29,37 @@ public class RnPropertyImpl extends RnElementImpl implements RnProperty {
 
   @Override
   @NotNull
-  public List<RnInlineProperty> getInlinePropertyList() {
-    return PsiTreeUtil.getChildrenOfTypeAsList(this, RnInlineProperty.class);
+  public List<RnValue> getValueList() {
+    return PsiTreeUtil.getChildrenOfTypeAsList(this, RnValue.class);
   }
 
   @Override
-  @NotNull
-  public List<RnProperty> getPropertyList() {
-    return PsiTreeUtil.getChildrenOfTypeAsList(this, RnProperty.class);
-  }
-
-  @Override
-  public String getKey() {
+  public @NotNull String getKey() {
     return RnPsiImplUtil.getKey(this);
   }
 
   @Override
-  public String getValue() {
+  public @Nullable String getValue() {
     return RnPsiImplUtil.getValue(this);
   }
 
   @Override
-  public String getName() {
+  public @NotNull String getName() {
     return RnPsiImplUtil.getName(this);
   }
 
   @Override
-  public PsiElement setName(String newName) {
+  public @NotNull PsiElement setName(@NotNull String newName) {
     return RnPsiImplUtil.setName(this, newName);
   }
 
   @Override
-  public PsiElement getNameIdentifier() {
+  public @Nullable PsiElement getNameIdentifier() {
     return RnPsiImplUtil.getNameIdentifier(this);
   }
 
   @Override
-  public ItemPresentation getPresentation() {
+  public @NotNull ItemPresentation getPresentation() {
     return RnPsiImplUtil.getPresentation(this);
   }
 

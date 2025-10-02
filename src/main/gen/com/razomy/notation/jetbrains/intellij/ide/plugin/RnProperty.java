@@ -9,18 +9,19 @@ import com.intellij.navigation.ItemPresentation;
 public interface RnProperty extends RnElement {
 
   @NotNull
-  List<RnInlineProperty> getInlinePropertyList();
+  List<RnValue> getValueList();
 
-  @NotNull
-  List<RnProperty> getPropertyList();
+  @NotNull String getKey();
 
-  String getKey();
+  @Nullable String getValue();
 
-  String getValue();
+  @NotNull String getName();
 
-  String getName();
+  @NotNull PsiElement setName(@NotNull String newName);
 
-  PsiElement setName(String newName);
+  @Nullable PsiElement getNameIdentifier();
+
+  @NotNull ItemPresentation getPresentation();
 
   PsiElement getNameIdentifier();
 

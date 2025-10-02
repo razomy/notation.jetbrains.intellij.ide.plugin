@@ -18,7 +18,7 @@ public class RnValueImpl extends ASTWrapperPsiElement implements RnValue {
   }
 
   public void accept(@NotNull RnVisitor visitor) {
-    visitor.visitElement(this);
+    visitor.visitValue(this);
   }
 
   @Override
@@ -27,4 +27,33 @@ public class RnValueImpl extends ASTWrapperPsiElement implements RnValue {
     else super.accept(visitor);
   }
 
+  @Override
+  public @NotNull String getKey() {
+    return RnPsiImplUtil.getKey(this);
+  }
+
+  @Override
+  public @Nullable String getValue() {
+    return RnPsiImplUtil.getValue(this);
+  }
+
+  @Override
+  public @NotNull String getName() {
+    return RnPsiImplUtil.getName(this);
+  }
+
+  @Override
+  public @NotNull PsiElement setName(@NotNull String newName) {
+    return RnPsiImplUtil.setName(this, newName);
+  }
+
+  @Override
+  public @Nullable PsiElement getNameIdentifier() {
+    return RnPsiImplUtil.getNameIdentifier(this);
+  }
+
+  @Override
+  public @NotNull ItemPresentation getPresentation() {
+    return RnPsiImplUtil.getPresentation(this);
+  }
 }

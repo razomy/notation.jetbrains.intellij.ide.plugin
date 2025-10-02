@@ -1,6 +1,5 @@
 {
   parserClass="com.razomy.notation.jetbrains.intellij.ide.plugin.RnParser"
-  parserUtilClass="com.razomy.notation.jetbrains.intellij.ide.plugin.RnParserUtil"
 
   extends="com.intellij.extapi.psi.ASTWrapperPsiElement"
 
@@ -12,31 +11,37 @@
   elementTypeHolderClass="com.razomy.notation.jetbrains.intellij.ide.plugin.RnTypes"
   elementTypeClass="com.razomy.notation.jetbrains.intellij.ide.plugin.RnElementType"
   tokenTypeClass="com.razomy.notation.jetbrains.intellij.ide.plugin.RnTokenType"
-  psiImplUtilClass="com.razomy.notation.jetbrains.intellij.ide.plugin.impl.RnPsiImplUtil"
+  psiImplUtilClass="com.razomy.notation.jetbrains.intellij.ide.plugin.RnPsiImplUtil"
 
 }
 
-RnFile ::= START*
+RnFile ::= start*
 
-private START ::=   COMMENT
-                    | (PROPERTY EMPTY_LINE)
+private start ::=   COMMENT
+                    | (property EMPTY_LINE)
                     | ERROR
 
-INLINE_PROPERTY ::= (VALUE CHILD_DEEP INLINE_PROPERTY+)
-             | (VALUE ASSIGN INLINE_PROPERTY+ BREAK)
-             | (VALUE ASSIGN INLINE_PROPERTY+)
-             | (VALUE BREAK)
-             | VALUE
-             | PROPERTY
+value ::= VALUE
+{
+  implements="com.razomy.notation.jetbrains.intellij.ide.plugin.RnElement"
+  methods=[getKey getValue getName setName getNameIdentifier getPresentation isValidHost updateText createLiteralTextEscaper]
+}
 
-PROPERTY ::= (KEY CHILD_DEEP PROPERTY+ END)
-             | (VALUE CHILD_DEEP PROPERTY+ END)
+private inline_property ::= (value CHILD_DEEP inline_property+)
+             | (value ASSIGN inline_property+ BREAK)
+             | (value ASSIGN inline_property+)
+             | (value BREAK)
+             | value
+             | multiline_property
+
+private multiline_property ::= (KEY CHILD_DEEP multiline_property+ END)
+             | (value CHILD_DEEP multiline_property+ END)
              | (KEY END)
-             | (KEY ASSIGN INLINE_PROPERTY+ END)
+             | (KEY ASSIGN inline_property+ END)
              | (COMMENT)
 
+property ::= inline_property | multiline_property
 {
-  mixin="com.razomy.notation.jetbrains.intellij.ide.plugin.impl.RnElementImpl"
   implements="com.razomy.notation.jetbrains.intellij.ide.plugin.RnElement"
-  methods=[getKey getValue getName setName getNameIdentifier getPresentation]
+  methods=[getKey getValue getName setName getNameIdentifier getPresentation isValidHost updateText createLiteralTextEscaper]
 }

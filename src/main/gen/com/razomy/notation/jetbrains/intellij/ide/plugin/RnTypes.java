@@ -8,8 +8,8 @@ import com.razomy.notation.jetbrains.intellij.ide.plugin.impl.*;
 
 public interface RnTypes {
 
-  IElementType INLINE_PROPERTY = new RnElementType("INLINE_PROPERTY");
   IElementType PROPERTY = new RnElementType("PROPERTY");
+  IElementType VALUE = new RnElementType("VALUE");
 
   IElementType ASSIGN = new RnTokenType("ASSIGN");
   IElementType BREAK = new RnTokenType("BREAK");
@@ -19,16 +19,15 @@ public interface RnTypes {
   IElementType END = new RnTokenType("END");
   IElementType ERROR = new RnTokenType("ERROR");
   IElementType KEY = new RnTokenType("KEY");
-  IElementType VALUE = new RnTokenType("VALUE");
 
   class Factory {
     public static PsiElement createElement(ASTNode node) {
       IElementType type = node.getElementType();
-      if (type == INLINE_PROPERTY) {
-        return new RnInlinePropertyImpl(node);
-      }
-      else if (type == PROPERTY) {
+      if (type == PROPERTY) {
         return new RnPropertyImpl(node);
+      }
+      else if (type == VALUE) {
+        return new RnValueImpl(node);
       }
       throw new AssertionError("Unknown element type: " + type);
     }
