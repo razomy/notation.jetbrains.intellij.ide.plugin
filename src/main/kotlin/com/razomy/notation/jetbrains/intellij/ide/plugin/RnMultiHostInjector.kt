@@ -103,7 +103,9 @@ fun createLanguageAliases(): MutableMap<String, String> {
 
         // Yaml
         "yaml" to "Yaml",
-        "yml" to "Yaml"
+        "yml" to "Yaml",
+        // My Extension
+        "ts" to "TypeScript"
     )
     var system = Language.getRegisteredLanguages();
     system.remove(Language.ANY)
