@@ -10,20 +10,25 @@
 ### Sample
 
 ```rn
+#comment
 # value
 value
 # multiline value
-`multiline
-value`
+`
+multiline
+value
+`
 # key:value
 key:value
 # key:multiline value
-key:`multiline value`
+key:`
+multiline value
+`
 key:`
 multiline
-value`
+value
+`
 # multiline key:multiline value
-`multiline key`:`default multiline value`
 `
 multiline
 key
@@ -32,16 +37,32 @@ default
 multiline
 value
 `
-# inline key:key1:value
+# multiline recursion
+`
+`1
+`2
+`3
+3`
+2`
+1`
+`
+# iterate inline
+a,b,c,d
+# nesting key:key1:value
 a:b
 a:b:c
-a:b:c:d
+# 1 space nesting
+a
+ b
+  c
+# split nesting
 a:b;a1
 a:b:c;;a1
 a:b:c:d;;;a1
 a:b:c:`
 value
 `
+# mixed
 parent
  a:b:c:d:value
   child
@@ -50,20 +71,22 @@ parent
 key\:
 key\;
 key\,
-key:`\`
+key\'
+key:`
+\`
 `
-# tree
+# in tree terms
 root
-node:leaf
-key  : default
-    child
-        key:value
-key:default
-    child:default
-    `
-    multiline
-    child
-    `:`default`
+ node:leaf
+ key:default
+  child
+   key:value
+ key:default
+  child:default
+   `
+   multiline
+   child
+   `:`default`
 # comment
 \# not comment
 key:# not comment
@@ -79,4 +102,24 @@ layer
  property value
 layer
  property2 value
+# reference
+a:b
+c:.a.b
+# injection
+json_inject:json:`
+{
+ "a": 1,
+ "b": "2"
+}
+`
+js_inject:js:`
+a=1
+`
+rn_recursion_inject:rn:`
+key:rn:`1
+key:json:`2
+{"a":1}
+2`
+1`
+`
 ```
