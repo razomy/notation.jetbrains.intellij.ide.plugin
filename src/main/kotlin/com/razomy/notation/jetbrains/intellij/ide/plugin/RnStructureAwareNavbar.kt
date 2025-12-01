@@ -3,6 +3,7 @@ package com.razomy.notation.jetbrains.intellij.ide.plugin
 import com.intellij.icons.AllIcons
 import com.intellij.ide.navigationToolbar.StructureAwareNavBarModelExtension
 import com.intellij.lang.Language
+import com.razomy.notation.jetbrains.intellij.ide.plugin.lexer.RnProperty
 import javax.swing.Icon
 
 

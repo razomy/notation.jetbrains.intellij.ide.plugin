@@ -2,6 +2,7 @@ package com.razomy.notation.jetbrains.intellij.ide.plugin
 
 import com.intellij.formatting.*
 import com.intellij.psi.codeStyle.CodeStyleSettings
+import com.razomy.notation.jetbrains.intellij.ide.plugin.lexer.RnTypes
 import org.jetbrains.annotations.NotNull
 
 

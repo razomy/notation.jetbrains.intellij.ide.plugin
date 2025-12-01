@@ -8,6 +8,9 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.tree.IFileElementType
 import com.intellij.psi.tree.TokenSet
+import com.razomy.notation.jetbrains.intellij.ide.plugin.lexer.RnLexer
+import com.razomy.notation.jetbrains.intellij.ide.plugin.lexer.RnParser
+import com.razomy.notation.jetbrains.intellij.ide.plugin.lexer.RnTypes
 import org.jetbrains.annotations.NotNull
 
 
@@ -19,7 +22,7 @@ class RnParserDefinition : ParserDefinition {
 
     @NotNull
     override fun createLexer(project: Project): Lexer {
-        return RnLexerAdapter()
+        return RnLexer()
     }
 
     @NotNull

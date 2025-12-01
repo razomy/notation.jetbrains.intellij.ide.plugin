@@ -3,6 +3,7 @@ package com.razomy.notation.jetbrains.intellij.ide.plugin
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFileFactory
+import com.razomy.notation.jetbrains.intellij.ide.plugin.lexer.RnProperty
 
 object RnElementFactory {
     fun createProperty(project: Project?, name: String): RnProperty {

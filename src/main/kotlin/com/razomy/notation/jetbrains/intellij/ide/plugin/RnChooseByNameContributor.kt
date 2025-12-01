@@ -7,6 +7,7 @@ import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.util.containers.ContainerUtil
 import com.intellij.util.indexing.FindSymbolParameters
 import com.intellij.util.indexing.IdFilter
+import com.razomy.notation.jetbrains.intellij.ide.plugin.lexer.RnProperty
 
 import java.util.Objects;
 

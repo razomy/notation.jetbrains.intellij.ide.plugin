@@ -5,6 +5,7 @@ import com.intellij.psi.tree.TokenSet
 import com.intellij.spellchecker.inspections.PlainTextSplitter
 import com.intellij.spellchecker.tokenizer.TokenConsumer
 import com.intellij.spellchecker.tokenizer.Tokenizer
+import com.razomy.notation.jetbrains.intellij.ide.plugin.lexer.RnTypes
 
 class RnCustomTokenizer : Tokenizer<PsiElement>() {
     override fun tokenize(element: PsiElement, consumer: TokenConsumer) {

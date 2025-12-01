@@ -7,13 +7,15 @@ import com.intellij.openapi.editor.colors.TextAttributesKey
 import com.intellij.openapi.editor.colors.TextAttributesKey.createTextAttributesKey
 import com.intellij.openapi.fileTypes.SyntaxHighlighterBase
 import com.intellij.psi.tree.IElementType
+import com.razomy.notation.jetbrains.intellij.ide.plugin.lexer.RnLexer
+import com.razomy.notation.jetbrains.intellij.ide.plugin.lexer.RnTypes
 import org.jetbrains.annotations.NotNull
 
 
 class RnSyntaxHighlighter : SyntaxHighlighterBase() {
     @NotNull
     override fun getHighlightingLexer(): Lexer {
-        return RnLexerAdapter()
+        return RnLexer()
     }
 
     @NotNull
