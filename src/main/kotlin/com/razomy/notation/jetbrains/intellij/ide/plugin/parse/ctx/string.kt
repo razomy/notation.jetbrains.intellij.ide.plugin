@@ -39,7 +39,7 @@ fun create_notation_ctx(string: String): NotationCtx {
 
         )
 
-    ctx.execute = { c -> execute_pipes(c) }
+    ctx.execute = { c -> iterate_pipe(c) }
 
     return create_ctx(ctx)
 }
@@ -47,7 +47,7 @@ fun create_notation_ctx(string: String): NotationCtx {
 fun string_to_lexeme_tree(str: String): NotationCtx {
         val ctx = create_notation_ctx(str)
     try {
-        ctx.execute(ctx)
+        execute_pipes(ctx)
 //        if (ctx.exceptions.isNotEmpty()) {
 //            MultipleException(ctx.exceptions)
 //        }
