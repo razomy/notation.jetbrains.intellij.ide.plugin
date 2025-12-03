@@ -1,4 +1,8 @@
-package com.razomy.notation.jetbrains.intellij.ide.plugin.lexer.v2
+package com.razomy.notation.jetbrains.intellij.ide.plugin.ctx.lexeme
+
+interface WithPrevOffset {
+    var prev_offset: Int
+}
 
 fun <T : WithPrevOffset> create_ctx_prev_offset(ctx: T): T {
     ctx.prev_offset = 0
@@ -6,7 +10,7 @@ fun <T : WithPrevOffset> create_ctx_prev_offset(ctx: T): T {
 }
 
 fun <T, L> create_lexeme_offset(ctx: T, lexeme: L): L
-        where T : WithOffset, T : WithPrevOffset, L : Lexeme, L : WithOffset {
+        where T : WithOffset, T : WithPrevOffset, L : WithLexemeType, L : WithOffset {
     lexeme.offset = ctx.prev_offset
     ctx.prev_offset = ctx.offset
     return lexeme

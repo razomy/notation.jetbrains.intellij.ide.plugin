@@ -1,16 +1,20 @@
-package com.razomy.notation.jetbrains.intellij.ide.plugin.lexer.v2
+package com.razomy.notation.jetbrains.intellij.ide.plugin.ctx
+
+interface WithString {
+    var string: String
+}
 
 
 typealias Pipe<T, R> = (T, R) -> R
 typealias SinglePipe<T> = (T) -> T
 
 open class Exception(message: String) : kotlin.Exception(message)
-class ArgumentException(message: String, val context: Any? = null) : Exception(message)
+open class ArgumentException(message: String, val context: Any? = null) : Exception(message)
 class UnknownTypeArgumentException(val type: Any?) : Exception("Unknown type: $type")
 class MultipleException(val exceptions: List<Exception>) : Exception("Multiple exceptions occurred")
 
 
-class ValueRecursiveDict : HashMap<String, Any>()
+class ValueRecursiveDict : HashMap<String, String?>()
 typealias ValueRecursiveDictOrValue<T> = Any
 
 

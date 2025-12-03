@@ -47,7 +47,7 @@ class RnParser : PsiParser {
         // For a strict line-based parser, we would need to check the whitespace content for '\n'.
         // Here, to match your "key value" vs "key \n value" requirement:
 
-        if (!builder.eof() && builder.tokenType == RnTypes.KEY) {
+        if (!builder.eof() && builder.tokenType == RnTypes.ASSIGN) {
             // Check if the whitespace between Key and Value contained a newline
             // This is tricky in PsiBuilder without raw lookup, but generally:
             // If the parser definition filters whitespace, we can't see it here.

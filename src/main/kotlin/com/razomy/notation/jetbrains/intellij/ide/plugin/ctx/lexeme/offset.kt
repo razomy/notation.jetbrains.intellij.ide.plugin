@@ -1,4 +1,6 @@
-package com.razomy.notation.jetbrains.intellij.ide.plugin.lexer.v2
+package com.razomy.notation.jetbrains.intellij.ide.plugin.ctx.lexeme
+
+import com.razomy.notation.jetbrains.intellij.ide.plugin.ctx.WithString
 
 
 interface WithOffset {
@@ -8,11 +10,6 @@ interface WithOffset {
 fun <T : WithOffset> create_ctx_offset(ctx: T): T {
     ctx.offset = 0
     return ctx
-}
-
-
-interface WithString {
-    var string: String
 }
 
 

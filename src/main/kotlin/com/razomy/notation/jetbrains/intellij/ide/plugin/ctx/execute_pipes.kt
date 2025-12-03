@@ -1,0 +1,59 @@
+package com.razomy.notation.jetbrains.intellij.ide.plugin.ctx
+
+import com.razomy.notation.jetbrains.intellij.ide.plugin.ctx.lexeme.LexemeType
+import com.razomy.notation.jetbrains.intellij.ide.plugin.ctx.lexeme.any_of
+import com.razomy.notation.jetbrains.intellij.ide.plugin.ctx.lexeme.new_line_char
+import com.razomy.notation.jetbrains.intellij.ide.plugin.ctx.lexeme.new_line_p
+import com.razomy.notation.jetbrains.intellij.ide.plugin.ctx.lexeme.tail_p
+import com.razomy.notation.jetbrains.intellij.ide.plugin.ctx.lexeme.try_before_any_of
+import com.razomy.notation.jetbrains.intellij.ide.plugin.ctx.lexeme.try_multiline_value_p
+
+
+const val assign_char = ":"
+const val separate_char = ","
+const val break_char = ";"
+
+val reserved_value_lexemes = listOf(assign_char, separate_char, break_char, new_line_char.toString())
+
+fun assign_p(ctx: NotationCtx) = any_of(ctx, listOf(assign_char), LexemeType.assign)
+fun separate_p(ctx: NotationCtx) = any_of(ctx, listOf(separate_char), LexemeType.separate)
+fun break_p(ctx: NotationCtx) = any_of(ctx, listOf(break_char), LexemeType.break_)
+fun value_p(ctx: NotationCtx) = try_before_any_of(ctx, reserved_value_lexemes, LexemeType.value_)
+
+interface WithExecute<T> {
+    var execute: (T) -> Unit
+}
+
+fun iterate_pipe(ctx: NotationCtx): Boolean {
+    //TODO: research this if
+    if (ctx.offset == ctx.string.length) {
+        return false
+    }
+//    if (ctx.parent_deeps.size === 0) {
+//        return false
+//    }
+
+    if (ctx.exceptions.size !== 0) {
+        return false
+    }
+
+    val anyMatched =
+        try_multiline_value_p(ctx) ||
+                value_p(ctx) ||
+                assign_p(ctx) ||
+                separate_p(ctx) ||
+                break_p(ctx) ||
+                new_line_p(ctx)
+
+    if (!anyMatched) return false
+    return true
+}
+fun execute_pipes(ctx: NotationCtx) {
+    while (true) {
+        if (iterate_pipe(ctx) ) {
+            continue
+        }
+        break
+    }
+    tail_p(ctx)
+}

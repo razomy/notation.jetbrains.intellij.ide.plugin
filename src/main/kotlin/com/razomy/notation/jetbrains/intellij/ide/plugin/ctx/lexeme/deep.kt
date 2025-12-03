@@ -1,4 +1,4 @@
-package com.razomy.notation.jetbrains.intellij.ide.plugin.lexer.v2
+package com.razomy.notation.jetbrains.intellij.ide.plugin.ctx.lexeme
 
 
 interface WithPrevDeep {
@@ -15,7 +15,7 @@ fun <T : WithPrevDeep> create_ctx_deep(ctx: T): T {
 }
 
 fun <T, L> create_lexeme_deep(ctx: T, lexeme: L): L
-        where T : WithOffset, T : WithPrevDeep, L : WithDeep, L : Lexeme {
+        where T : WithOffset, T : WithPrevDeep, L : WithDeep, L : WithLexemeType {
     if (lexeme.type == LexemeType.assign) {
         ctx.prev_deep = ctx.prev_deep + 1
     } else if (lexeme.type == LexemeType.break_) {
