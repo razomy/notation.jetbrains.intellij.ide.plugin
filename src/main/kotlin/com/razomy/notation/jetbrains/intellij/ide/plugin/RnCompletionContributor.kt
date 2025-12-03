@@ -12,7 +12,7 @@ internal class RnCompletionContributor : CompletionContributor() {
     init {
         extend(
             CompletionType.BASIC,
-            PlatformPatterns.psiElement(RnTypes.VALUE),
+            PlatformPatterns.psiElement(RnTypes.VALUE_),
             object : CompletionProvider<CompletionParameters?>() {
                 public override fun addCompletions(
                     parameters: CompletionParameters,

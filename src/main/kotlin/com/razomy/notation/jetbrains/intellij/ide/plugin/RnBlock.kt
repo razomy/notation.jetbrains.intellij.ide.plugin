@@ -19,16 +19,16 @@ class RnBlock(
         var child: ASTNode? = myNode.firstChildNode;
         var deep = 0;
         while (child != null) {
-            if (child.elementType == RnTypes.CHILD_DEEP) {
+            if (child.elementType == RnTypes.PROPERTY) {
                 deep += 1;
-            }
-            if (child.elementType == RnTypes.END) {
-                deep = 0;
-            }
-            if (child.elementType !== RnTypes.END
-                || child.elementType !== RnTypes.CHILD_DEEP
-                || child.elementType !== RnTypes.EMPTY_LINE
-            ) {
+//            }
+//            if (child.elementType == RnTypes.END) {
+//                deep = 0;
+//            }
+//            if (child.elementType !== RnTypes.END
+//                || child.elementType !== RnTypes.CHILD_DEEP
+//                || child.elementType !== RnTypes.EMPTY_LINE
+//            ) {
                 val block = RnBlock(
                     child,
                     Wrap.createWrap(WrapType.NONE, false),

@@ -30,8 +30,8 @@ class RnCustomTokenizer : Tokenizer<PsiElement>() {
         // Example: consider identifiers, strings, and comments as valid tokens
         return TokenSet.create(
                 RnTypes.COMMENT,
-                RnTypes.KEY,
-                RnTypes.VALUE,
+//                RnTypes.VALUE_,
+                RnTypes.VALUE_,
         ).contains(elementType)
     }
 }

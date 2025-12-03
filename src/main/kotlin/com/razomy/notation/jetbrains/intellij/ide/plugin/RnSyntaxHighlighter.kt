@@ -23,24 +23,24 @@ class RnSyntaxHighlighter : SyntaxHighlighterBase() {
         if (tokenType == RnTypes.ASSIGN) {
             return SEPARATOR_KEYS
         }
-        if (tokenType == RnTypes.KEY) {
-            return KEY_KEYS
-        }
-        if (tokenType == RnTypes.VALUE) {
+//        if (tokenType == RnTypes.KEY) {
+//            return KEY_KEYS
+//        }
+        if (tokenType == RnTypes.VALUE_) {
             return VALUE_KEYS
         }
         if (tokenType == RnTypes.COMMENT) {
             return COMMENT_KEYS
         }
-        if (tokenType == RnTypes.END) {
-            return SPACE_KEYS
-        }
+//        if (tokenType == RnTypes.END) {
+//            return SPACE_KEYS
+//        }
         if (tokenType == RnTypes.ERROR) {
             return ERROR_KEYS
         }
-        if (tokenType == RnTypes.BREAK) {
-            return BREAK_KEYS
-        }
+//        if (tokenType == RnTypes.BREAK) {
+//            return BREAK_KEYS
+//        }
         return EMPTY_KEYS
     }
 

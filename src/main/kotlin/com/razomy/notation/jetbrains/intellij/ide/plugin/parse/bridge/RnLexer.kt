@@ -5,6 +5,7 @@ import com.intellij.psi.tree.IElementType
 import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.lexeme.LexemeType
 import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.ctx.NotationCtx
 import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.ctx.NotationLexeme
+import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.ctx.UnknownTypeArgumentException
 import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.ctx.string_to_lexeme_tree
 
 
@@ -40,19 +41,19 @@ class StringToLexeme(var ctx: Ctx) {
         this.ctx.curOffset = offsetLocal;
 
         val message = when (lexeme?.type) {
-            LexemeType.new_line_assign -> RnTypes.CHILD_DEEP
+            LexemeType.new_line_assign -> RnTypes.NEW_LINE_ASSIGN
             LexemeType.comment -> RnTypes.COMMENT
-            LexemeType.multiline_value -> RnTypes.VALUE
-            LexemeType.new_line_break -> RnTypes.BREAK
-            LexemeType.separate -> RnTypes.BREAK
-            LexemeType.value_ -> RnTypes.VALUE
-            LexemeType.tail_value -> RnTypes.VALUE
+            LexemeType.multiline_value -> RnTypes.MULTILINE_VALUE
+            LexemeType.new_line_break -> RnTypes.NEW_LINE_BREAK
+            LexemeType.separate -> RnTypes.SEPARATE
+            LexemeType.value_ -> RnTypes.VALUE_
+            LexemeType.tail_value -> RnTypes.TAIL_VALUE
             LexemeType.assign -> RnTypes.ASSIGN
-            LexemeType.break_ -> RnTypes.BREAK
-            LexemeType.new_line_separate -> RnTypes.BREAK
-            LexemeType.not_closed_error_multiline_value -> RnTypes.ERROR
+            LexemeType.break_ -> RnTypes.BREAK_
+            LexemeType.new_line_separate -> RnTypes.NEW_LINE_SEPARATE
+            LexemeType.not_closed_error_multiline_value -> RnTypes.NOT_CLOSED_ERROR_MULTILINE_VALUE
             LexemeType.error -> RnTypes.ERROR
-            null -> RnTypes.ERROR
+            null -> throw UnknownTypeArgumentException("Unknown lexeme type ${lexeme?.type}")
         }
 
         this.ctx.curTokenType = message;

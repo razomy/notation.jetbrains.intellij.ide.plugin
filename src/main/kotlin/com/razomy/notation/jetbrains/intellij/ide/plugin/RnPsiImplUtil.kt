@@ -11,7 +11,7 @@ import javax.swing.Icon
 object RnPsiImplUtil {
     @JvmStatic
     fun getKey(element: RnElement): String {
-        val keyNode = element.getNode().findChildByType(RnTypes.KEY)
+        val keyNode = element.getNode().findChildByType(RnTypes.VALUE_)
         return if (keyNode != null) keyNode.getText() else ""
     }
 
@@ -22,7 +22,7 @@ object RnPsiImplUtil {
 
     @JvmStatic
     fun setName(element: RnElement, newName: String): PsiElement {
-        val keyNode = element.getNode().findChildByType(RnTypes.KEY)
+        val keyNode = element.getNode().findChildByType(RnTypes.VALUE_)
         if (keyNode != null) {
             val property = createProperty(element.getProject(), newName)
             val newKeyNode = property.getFirstChild().getNode()
@@ -33,13 +33,13 @@ object RnPsiImplUtil {
 
     @JvmStatic
     fun getValue(element: RnElement): String? {
-        val valueNode = element.getNode().findChildByType(RnTypes.VALUE)
+        val valueNode = element.getNode().findChildByType(RnTypes.VALUE_)
         return if (valueNode != null) valueNode.getText() else null
     }
 
     @JvmStatic
     fun getNameIdentifier(element: RnElement): PsiElement? {
-        val keyNode = element.getNode().findChildByType(RnTypes.KEY)
+        val keyNode = element.getNode().findChildByType(RnTypes.VALUE_)
         return if (keyNode != null) keyNode.getPsi() else null
     }
 
@@ -71,7 +71,7 @@ object RnPsiImplUtil {
         if (element.lastChild != null) {
             element.lastChild.delete()
         }
-        element.getNode().addLeaf(RnTypes.VALUE, text, null)
+        element.getNode().addLeaf(RnTypes.VALUE_, text, null)
         return element
     }
 

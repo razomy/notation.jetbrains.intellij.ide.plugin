@@ -15,7 +15,7 @@ interface RnTypes {
             val type = node.getElementType()
             if (type === PROPERTY) {
                 return RnPropertyImpl(node)
-            } else if (type === VALUE) {
+            } else   {
                 return RnValueImpl(node)
             }
             throw AssertionError("Unknown element type: " + type)
@@ -23,16 +23,21 @@ interface RnTypes {
     }
 
     companion object {
-        val PROPERTY: IElementType = RnElementType("PROPERTY")
-        val VALUE: IElementType = RnElementType("VALUE")
+        val NEW_LINE_ASSIGN: IElementType = RnElementType("NEW_LINE_ASSIGN")
+        val COMMENT: IElementType = RnElementType("COMMENT")
+        val MULTILINE_VALUE: IElementType = RnElementType("MULTILINE_VALUE")
+        val NEW_LINE_BREAK: IElementType = RnElementType("NEW_LINE_BREAK")
+        val SEPARATE: IElementType = RnElementType("SEPARATE")
+        val VALUE_: IElementType = RnElementType("VALUE_")
+        val TAIL_VALUE: IElementType = RnElementType("TAIL_VALUE")
+        val ASSIGN: IElementType = RnElementType("ASSIGN")
+        val BREAK_: IElementType = RnElementType("BREAK_")
+        val NEW_LINE_SEPARATE: IElementType = RnElementType("NEW_LINE_SEPARATE")
+        val NOT_CLOSED_ERROR_MULTILINE_VALUE: IElementType = RnElementType("NOT_CLOSED_ERROR_MULTILINE_VALUE")
+        val ERROR: IElementType = RnElementType("ERROR")
 
-        val ASSIGN: IElementType = RnTokenType("ASSIGN")
-        val BREAK: IElementType = RnTokenType("BREAK")
-        val CHILD_DEEP: IElementType = RnTokenType("CHILD_DEEP")
-        val COMMENT: IElementType = RnTokenType("COMMENT")
-        val EMPTY_LINE: IElementType = RnTokenType("EMPTY_LINE")
-        val END: IElementType = RnTokenType("END")
-        val ERROR: IElementType = RnTokenType("ERROR")
-        val KEY: IElementType = RnTokenType("KEY")
+        // parser
+        val KEY: IElementType = RnElementType("KEY")
+        val PROPERTY: IElementType = RnElementType("PROPERTY")
     }
 }

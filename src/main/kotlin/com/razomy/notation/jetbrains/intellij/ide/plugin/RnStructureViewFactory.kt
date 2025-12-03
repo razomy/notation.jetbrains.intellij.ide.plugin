@@ -54,7 +54,7 @@ class RnStructureViewElement(private val myElement: NavigatablePsiElement) : Str
 
                     treeElements.add(RnStructureViewElement(property))
                 }
-                if (property.elementType == RnTypes.KEY) {
+                if (property.elementType == RnTypes.VALUE_) {
                     treeElements.add(RnStructureViewElement(property))
                 }
             }
