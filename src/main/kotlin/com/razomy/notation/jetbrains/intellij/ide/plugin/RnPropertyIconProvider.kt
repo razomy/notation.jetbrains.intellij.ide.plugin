@@ -2,7 +2,7 @@ package com.razomy.notation.jetbrains.intellij.ide.plugin
 
 import com.intellij.ide.IconProvider
 import com.intellij.psi.PsiElement
-import com.razomy.notation.jetbrains.intellij.ide.plugin.lexer.RnProperty
+import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.bridge.RnProperty
 import javax.swing.Icon
 
 internal class RnPropertyIconProvider : IconProvider() {

@@ -3,7 +3,7 @@ package com.razomy.notation.jetbrains.intellij.ide.plugin
 import com.intellij.formatting.*
 import com.intellij.lang.ASTNode
 import com.intellij.psi.formatter.common.AbstractBlock
-import com.razomy.notation.jetbrains.intellij.ide.plugin.lexer.RnTypes
+import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.bridge.RnTypes
 import org.jetbrains.annotations.NotNull
 import org.jetbrains.annotations.Nullable
 

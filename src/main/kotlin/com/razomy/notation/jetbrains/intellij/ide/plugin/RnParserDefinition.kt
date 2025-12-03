@@ -8,9 +8,9 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.tree.IFileElementType
 import com.intellij.psi.tree.TokenSet
-import com.razomy.notation.jetbrains.intellij.ide.plugin.lexer.RnLexer
-import com.razomy.notation.jetbrains.intellij.ide.plugin.lexer.RnParser
-import com.razomy.notation.jetbrains.intellij.ide.plugin.lexer.RnTypes
+import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.bridge.RnLexer
+import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.bridge.RnParser
+import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.bridge.RnTypes
 import org.jetbrains.annotations.NotNull
 
 

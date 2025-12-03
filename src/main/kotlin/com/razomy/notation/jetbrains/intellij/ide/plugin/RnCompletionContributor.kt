@@ -6,7 +6,7 @@ import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.patterns.PlatformPatterns
 import com.intellij.util.ProcessingContext
 import com.intellij.psi.PsiElement
-import com.razomy.notation.jetbrains.intellij.ide.plugin.lexer.RnTypes
+import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.bridge.RnTypes
 
 internal class RnCompletionContributor : CompletionContributor() {
     init {

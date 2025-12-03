@@ -1,7 +1,7 @@
 package com.razomy.notation.jetbrains.intellij.ide.plugin
 
 import com.intellij.psi.tree.TokenSet
-import com.razomy.notation.jetbrains.intellij.ide.plugin.lexer.RnTypes
+import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.bridge.RnTypes
 
 interface RnTokenSets {
     companion object {

@@ -1,5 +1,5 @@
 // This is a generated file. Not intended for manual editing.
-package com.razomy.notation.jetbrains.intellij.ide.plugin.lexer.impl
+package com.razomy.notation.jetbrains.intellij.ide.plugin.parse.bridge.impl
 
 import com.intellij.extapi.psi.ASTWrapperPsiElement
 import com.intellij.lang.ASTNode
@@ -9,7 +9,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementVisitor
 import com.intellij.psi.PsiLanguageInjectionHost
 import com.intellij.psi.util.PsiTreeUtil
-import com.razomy.notation.jetbrains.intellij.ide.plugin.lexer.RnProperty
+import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.bridge.RnProperty
 import com.razomy.notation.jetbrains.intellij.ide.plugin.RnPsiImplUtil.createLiteralTextEscaper
 import com.razomy.notation.jetbrains.intellij.ide.plugin.RnPsiImplUtil.getKey
 import com.razomy.notation.jetbrains.intellij.ide.plugin.RnPsiImplUtil.getName
@@ -19,8 +19,8 @@ import com.razomy.notation.jetbrains.intellij.ide.plugin.RnPsiImplUtil.getValue
 import com.razomy.notation.jetbrains.intellij.ide.plugin.RnPsiImplUtil.isValidHost
 import com.razomy.notation.jetbrains.intellij.ide.plugin.RnPsiImplUtil.setName
 import com.razomy.notation.jetbrains.intellij.ide.plugin.RnPsiImplUtil.updateText
-import com.razomy.notation.jetbrains.intellij.ide.plugin.lexer.RnValue
-import com.razomy.notation.jetbrains.intellij.ide.plugin.lexer.RnVisitor
+import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.bridge.RnValue
+import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.bridge.RnVisitor
 
 class RnPropertyImpl(node: ASTNode) : ASTWrapperPsiElement(node), RnProperty {
     fun accept(visitor: RnVisitor) {

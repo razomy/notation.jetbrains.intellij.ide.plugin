@@ -1,7 +1,7 @@
-package com.razomy.notation.jetbrains.intellij.ide.plugin.ctx.lexeme
+package com.razomy.notation.jetbrains.intellij.ide.plugin.parse.lexeme
 
-import com.razomy.notation.jetbrains.intellij.ide.plugin.ctx.NotationLexeme
-import com.razomy.notation.jetbrains.intellij.ide.plugin.ctx.WithString
+import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.ctx.NotationLexeme
+import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.ctx.WithString
 
 interface WithTail {
     var tail: String
@@ -19,7 +19,7 @@ fun <T> create_ctx_tail(ctx: T): T where T : WithTail, T : WithString {
 }
 
 fun <T> tail_p(ctx: T): Boolean
-        where T : WithCreateLexemePipes<T, NotationLexeme>, T : WithLexemes, T : WithString, T : WithTail, T : WithOffset {
+        where T : WithCreateLexemePipes<T, NotationLexeme>, T : WithString, T : WithTail, T : WithOffset {
     if (is_end(ctx)) {
         return true
     }

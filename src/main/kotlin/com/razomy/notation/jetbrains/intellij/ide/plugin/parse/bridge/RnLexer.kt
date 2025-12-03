@@ -1,11 +1,11 @@
-package com.razomy.notation.jetbrains.intellij.ide.plugin.lexer
+package com.razomy.notation.jetbrains.intellij.ide.plugin.parse.bridge
 
 import com.intellij.lexer.LexerBase
 import com.intellij.psi.tree.IElementType
-import com.razomy.notation.jetbrains.intellij.ide.plugin.ctx.lexeme.LexemeType
-import com.razomy.notation.jetbrains.intellij.ide.plugin.ctx.NotationCtx
-import com.razomy.notation.jetbrains.intellij.ide.plugin.ctx.NotationLexeme
-import com.razomy.notation.jetbrains.intellij.ide.plugin.ctx.string_to_lexeme_tree
+import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.lexeme.LexemeType
+import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.ctx.NotationCtx
+import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.ctx.NotationLexeme
+import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.ctx.string_to_lexeme_tree
 
 
 class Ctx {
@@ -28,14 +28,7 @@ class StringToLexeme(var ctx: Ctx) {
 
         var offsetLocal = 0
         var lexeme: NotationLexeme? = null;
-
-        if (ctx.ctx?.exceptions?.isNotEmpty() == true) {
-            // TODO: create error handler and auto resolve error
-            this.ctx.curTokenType = RnTypes.ERROR;
-            this.ctx.curOffset = this.ctx.endOffset;
-            return this.ctx.curOffset
-        }
-
+        //TODO: make itrable
         for (lexeme_ in ctx.ctx?.lexemes!!) {
             lexeme = lexeme_ as NotationLexeme;
             offsetLocal += lexeme.value.length;

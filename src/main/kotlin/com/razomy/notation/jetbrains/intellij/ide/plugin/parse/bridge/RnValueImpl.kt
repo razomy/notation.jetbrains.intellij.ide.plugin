@@ -1,5 +1,5 @@
 // This is a generated file. Not intended for manual editing.
-package com.razomy.notation.jetbrains.intellij.ide.plugin.lexer.impl
+package com.razomy.notation.jetbrains.intellij.ide.plugin.parse.bridge.impl
 
 import com.intellij.extapi.psi.ASTWrapperPsiElement
 import com.intellij.lang.ASTNode
@@ -17,8 +17,8 @@ import com.razomy.notation.jetbrains.intellij.ide.plugin.RnPsiImplUtil.getValue
 import com.razomy.notation.jetbrains.intellij.ide.plugin.RnPsiImplUtil.isValidHost
 import com.razomy.notation.jetbrains.intellij.ide.plugin.RnPsiImplUtil.setName
 import com.razomy.notation.jetbrains.intellij.ide.plugin.RnPsiImplUtil.updateText
-import com.razomy.notation.jetbrains.intellij.ide.plugin.lexer.RnValue
-import com.razomy.notation.jetbrains.intellij.ide.plugin.lexer.RnVisitor
+import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.bridge.RnValue
+import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.bridge.RnVisitor
 
 class RnValueImpl(node: ASTNode) : ASTWrapperPsiElement(node), RnValue {
     fun accept(visitor: RnVisitor) {

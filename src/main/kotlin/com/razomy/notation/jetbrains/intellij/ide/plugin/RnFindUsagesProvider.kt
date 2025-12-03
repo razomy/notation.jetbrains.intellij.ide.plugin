@@ -6,8 +6,8 @@ import com.intellij.lang.findUsages.FindUsagesProvider
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiNamedElement
 import com.intellij.psi.tree.TokenSet
-import com.razomy.notation.jetbrains.intellij.ide.plugin.lexer.RnLexer
-import com.razomy.notation.jetbrains.intellij.ide.plugin.lexer.RnProperty
+import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.bridge.RnLexer
+import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.bridge.RnProperty
 
 internal class RnFindUsagesProvider : FindUsagesProvider {
     override fun getWordsScanner(): WordsScanner? {

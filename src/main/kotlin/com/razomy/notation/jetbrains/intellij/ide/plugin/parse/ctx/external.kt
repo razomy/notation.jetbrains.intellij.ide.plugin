@@ -1,4 +1,4 @@
-package com.razomy.notation.jetbrains.intellij.ide.plugin.ctx
+package com.razomy.notation.jetbrains.intellij.ide.plugin.parse.ctx
 
 interface WithString {
     var string: String

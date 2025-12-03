@@ -1,6 +1,6 @@
-package com.razomy.notation.jetbrains.intellij.ide.plugin.ctx.lexeme
+package com.razomy.notation.jetbrains.intellij.ide.plugin.parse.lexeme
 
-import com.razomy.notation.jetbrains.intellij.ide.plugin.ctx.WithString
+import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.ctx.WithString
 
 
 interface WithOffset {

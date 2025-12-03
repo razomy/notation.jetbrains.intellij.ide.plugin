@@ -5,7 +5,7 @@ import com.intellij.psi.LiteralTextEscaper
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiLanguageInjectionHost
 import com.razomy.notation.jetbrains.intellij.ide.plugin.RnElementFactory.createProperty
-import com.razomy.notation.jetbrains.intellij.ide.plugin.lexer.RnTypes
+import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.bridge.RnTypes
 import javax.swing.Icon
 
 object RnPsiImplUtil {

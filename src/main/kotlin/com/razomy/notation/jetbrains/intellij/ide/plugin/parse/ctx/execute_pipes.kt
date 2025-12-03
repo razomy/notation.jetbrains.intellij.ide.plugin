@@ -1,12 +1,12 @@
-package com.razomy.notation.jetbrains.intellij.ide.plugin.ctx
+package com.razomy.notation.jetbrains.intellij.ide.plugin.parse.ctx
 
-import com.razomy.notation.jetbrains.intellij.ide.plugin.ctx.lexeme.LexemeType
-import com.razomy.notation.jetbrains.intellij.ide.plugin.ctx.lexeme.any_of
-import com.razomy.notation.jetbrains.intellij.ide.plugin.ctx.lexeme.new_line_char
-import com.razomy.notation.jetbrains.intellij.ide.plugin.ctx.lexeme.new_line_p
-import com.razomy.notation.jetbrains.intellij.ide.plugin.ctx.lexeme.tail_p
-import com.razomy.notation.jetbrains.intellij.ide.plugin.ctx.lexeme.try_before_any_of
-import com.razomy.notation.jetbrains.intellij.ide.plugin.ctx.lexeme.try_multiline_value_p
+import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.lexeme.LexemeType
+import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.lexeme.any_of
+import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.lexeme.new_line_char
+import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.lexeme.new_line_p
+import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.lexeme.tail_p
+import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.lexeme.try_before_any_of
+import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.lexeme.try_multiline_value_p
 
 
 const val assign_char = ":"

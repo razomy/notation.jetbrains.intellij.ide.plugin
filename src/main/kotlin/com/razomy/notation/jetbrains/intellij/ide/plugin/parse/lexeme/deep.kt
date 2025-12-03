@@ -1,4 +1,4 @@
-package com.razomy.notation.jetbrains.intellij.ide.plugin.ctx.lexeme
+package com.razomy.notation.jetbrains.intellij.ide.plugin.parse.lexeme
 
 
 interface WithPrevDeep {

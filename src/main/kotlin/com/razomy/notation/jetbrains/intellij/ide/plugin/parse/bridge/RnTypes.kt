@@ -1,13 +1,13 @@
 // This is a generated file. Not intended for manual editing.
-package com.razomy.notation.jetbrains.intellij.ide.plugin.lexer
+package com.razomy.notation.jetbrains.intellij.ide.plugin.parse.bridge
 
 import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElement
 import com.intellij.psi.tree.IElementType
 import com.razomy.notation.jetbrains.intellij.ide.plugin.RnElementType
 import com.razomy.notation.jetbrains.intellij.ide.plugin.RnTokenType
-import com.razomy.notation.jetbrains.intellij.ide.plugin.lexer.impl.RnPropertyImpl
-import com.razomy.notation.jetbrains.intellij.ide.plugin.lexer.impl.RnValueImpl
+import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.bridge.impl.RnPropertyImpl
+import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.bridge.impl.RnValueImpl
 
 interface RnTypes {
     object Factory {

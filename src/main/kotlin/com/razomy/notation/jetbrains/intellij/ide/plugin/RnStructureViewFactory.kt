@@ -12,9 +12,9 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.psi.NavigatablePsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.elementType
-import com.razomy.notation.jetbrains.intellij.ide.plugin.lexer.impl.RnPropertyImpl
-import com.razomy.notation.jetbrains.intellij.ide.plugin.lexer.RnProperty
-import com.razomy.notation.jetbrains.intellij.ide.plugin.lexer.RnTypes
+import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.bridge.impl.RnPropertyImpl
+import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.bridge.RnProperty
+import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.bridge.RnTypes
 
 class RnStructureViewElement(private val myElement: NavigatablePsiElement) : StructureViewTreeElement,
     SortableTreeElement {

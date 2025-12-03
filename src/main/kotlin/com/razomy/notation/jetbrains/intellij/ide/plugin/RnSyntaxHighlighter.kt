@@ -7,8 +7,8 @@ import com.intellij.openapi.editor.colors.TextAttributesKey
 import com.intellij.openapi.editor.colors.TextAttributesKey.createTextAttributesKey
 import com.intellij.openapi.fileTypes.SyntaxHighlighterBase
 import com.intellij.psi.tree.IElementType
-import com.razomy.notation.jetbrains.intellij.ide.plugin.lexer.RnLexer
-import com.razomy.notation.jetbrains.intellij.ide.plugin.lexer.RnTypes
+import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.bridge.RnLexer
+import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.bridge.RnTypes
 import org.jetbrains.annotations.NotNull
 
 

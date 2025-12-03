@@ -18,7 +18,7 @@ import com.intellij.psi.PsiManager
 import com.intellij.psi.search.FileTypeIndex
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.util.IncorrectOperationException
-import com.razomy.notation.jetbrains.intellij.ide.plugin.lexer.RnProperty
+import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.bridge.RnProperty
 
 
 internal class RnCreatePropertyQuickFix(private val key: String) : BaseIntentionAction() {

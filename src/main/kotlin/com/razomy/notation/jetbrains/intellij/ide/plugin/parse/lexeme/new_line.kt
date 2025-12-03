@@ -1,8 +1,8 @@
-package com.razomy.notation.jetbrains.intellij.ide.plugin.ctx.lexeme
+package com.razomy.notation.jetbrains.intellij.ide.plugin.parse.lexeme
 
-import com.razomy.notation.jetbrains.intellij.ide.plugin.ctx.NotationLexeme
-import com.razomy.notation.jetbrains.intellij.ide.plugin.ctx.WithString
-import com.razomy.notation.jetbrains.intellij.ide.plugin.ctx.last
+import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.ctx.NotationLexeme
+import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.ctx.WithString
+import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.ctx.last
 
 data class SpaceInfo(val spaces: Int, val deep: Int)
 
@@ -27,7 +27,7 @@ fun next_margin_index(str: String, charStr: String, offset: Int): Int {
 }
 
 fun <T> new_line_p(ctx: T): Boolean
-        where T : WithPrevDeep, T : WithCreateLexemePipes<T,NotationLexeme>, T : WithLexemes, T : WithPrevSpaces, T : WithString, T : WithOffset {
+        where T : WithPrevDeep, T : WithCreateLexemePipes<T,NotationLexeme>, T : WithPrevSpaces, T : WithString, T : WithOffset {
     if (!new_lines_list.contains(curr_char(ctx))) {
         return false
     }

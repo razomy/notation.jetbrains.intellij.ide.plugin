@@ -1,7 +1,7 @@
-package com.razomy.notation.jetbrains.intellij.ide.plugin.ctx.lexeme
+package com.razomy.notation.jetbrains.intellij.ide.plugin.parse.lexeme
 
-interface WithLexeme {
-    var lexeme: WithLexemeType
+interface WithLexeme<T:WithLexemeType> {
+    var lexeme: T
 }
 
 typealias LexemePipe<T, L> = (ctx: T, lexeme: L) -> L
@@ -15,7 +15,7 @@ interface WithCreateLexemePipes<T, L> {
 fun <T, L> create_lexeme(
     ctx: T,
     lexeme: L
-): L where T : WithLexeme, T : WithCreateLexemePipes<T, L>, L : WithLexemeType {
+): L where T : WithLexeme<L>, T : WithCreateLexemePipes<T, L>, L : WithLexemeType {
     ctx.lexeme = lexeme
 
     val lexemePiped = ctx.create_lexeme_pipes.fold(lexeme) { acc, pipe ->
@@ -26,7 +26,7 @@ fun <T, L> create_lexeme(
 }
 
 fun <T, L> create_ctx_lexeme(ctx: T): T
-        where T : WithLexeme, T : WithCreateLexemePipes<T, L>, L : WithLexemeType {
+        where T : WithLexeme<L>, T : WithCreateLexemePipes<T, L>, L : WithLexemeType {
 
 // TODO:   ctx.lexeme = null
     ctx.create_lexeme_fn = ::create_lexeme

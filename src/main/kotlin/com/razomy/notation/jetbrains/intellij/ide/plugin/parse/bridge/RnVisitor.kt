@@ -1,5 +1,5 @@
 // This is a generated file. Not intended for manual editing.
-package com.razomy.notation.jetbrains.intellij.ide.plugin.lexer
+package com.razomy.notation.jetbrains.intellij.ide.plugin.parse.bridge
 
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementVisitor

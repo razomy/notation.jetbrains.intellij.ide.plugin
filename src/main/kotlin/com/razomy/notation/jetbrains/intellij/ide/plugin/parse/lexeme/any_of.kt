@@ -1,7 +1,7 @@
-package com.razomy.notation.jetbrains.intellij.ide.plugin.ctx.lexeme
+package com.razomy.notation.jetbrains.intellij.ide.plugin.parse.lexeme
 
-import com.razomy.notation.jetbrains.intellij.ide.plugin.ctx.NotationLexeme
-import com.razomy.notation.jetbrains.intellij.ide.plugin.ctx.WithString
+import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.ctx.NotationLexeme
+import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.ctx.WithString
 
 fun <T> offset_safe_check(ctx: T): Boolean where T : WithString, T : WithOffset {
     return ctx.offset < ctx.string.length

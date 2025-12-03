@@ -3,7 +3,7 @@ package com.razomy.notation.jetbrains.intellij.ide.plugin
 import com.intellij.lang.Language
 import com.intellij.psi.PsiElement
 import com.intellij.ui.breadcrumbs.BreadcrumbsProvider;
-import com.razomy.notation.jetbrains.intellij.ide.plugin.lexer.RnProperty
+import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.bridge.RnProperty
 
 internal class RnBreadcrumbsProvider : BreadcrumbsProvider {
 

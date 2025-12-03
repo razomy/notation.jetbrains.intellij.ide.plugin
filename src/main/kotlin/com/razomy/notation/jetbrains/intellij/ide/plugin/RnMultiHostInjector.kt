@@ -6,7 +6,7 @@ import com.intellij.lang.injection.MultiHostRegistrar
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiLanguageInjectionHost
-import com.razomy.notation.jetbrains.intellij.ide.plugin.lexer.RnValue
+import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.bridge.RnValue
 
 fun getLanguageKey(codeBlock: String): String {
     if (codeBlock.startsWith("`")) {

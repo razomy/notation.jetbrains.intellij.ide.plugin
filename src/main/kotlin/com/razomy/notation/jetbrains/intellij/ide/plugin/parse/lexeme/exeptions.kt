@@ -1,9 +1,9 @@
-package com.razomy.notation.jetbrains.intellij.ide.plugin.ctx.lexeme
+package com.razomy.notation.jetbrains.intellij.ide.plugin.parse.lexeme
 
-import com.razomy.notation.jetbrains.intellij.ide.plugin.ctx.ArgumentException
-import com.razomy.notation.jetbrains.intellij.ide.plugin.ctx.Exception
-import com.razomy.notation.jetbrains.intellij.ide.plugin.ctx.NotationLexeme
-import com.razomy.notation.jetbrains.intellij.ide.plugin.ctx.WithString
+import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.ctx.ArgumentException
+import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.ctx.Exception
+import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.ctx.NotationLexeme
+import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.ctx.WithString
 
 interface WithExceptions {
     var exceptions: MutableList<Exception>
