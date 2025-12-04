@@ -34,12 +34,6 @@ fun <T> try_before_any_of(ctx: T, chars: List<String>, type: LexemeType): Boolea
         where T : WithCreateLexemePipes<T,NotationLexeme>,  T : WithString, T : WithOffset {
     val match = strings_any_index(ctx.string, chars, ctx.offset)
     if (match != -1 && match - ctx.offset > 0) {
-//        TODO:create seperate comment handler
-        if (ctx.string[ctx.offset] == '#') {
-            ctx.offset = match
-            ctx.create_lexeme_fn(ctx, NotationLexeme(LexemeType.comment))
-            return true
-        }
         ctx.offset = match
         ctx.create_lexeme_fn(ctx, NotationLexeme(type))
         return true

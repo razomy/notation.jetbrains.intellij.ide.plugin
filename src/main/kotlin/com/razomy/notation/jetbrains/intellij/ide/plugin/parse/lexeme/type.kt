@@ -1,7 +1,6 @@
 package com.razomy.notation.jetbrains.intellij.ide.plugin.parse.lexeme
 
 enum class LexemeType(val value: String) {
-
     value_("value"),
     tail_value("tail_value"),
     multiline_value("multiline_value"),
@@ -13,8 +12,6 @@ enum class LexemeType(val value: String) {
     separate("separate"),
     new_line_separate("new_line_separate"),
     not_closed_error_multiline_value("not_closed_error_multiline_value"),
-    //TODO?
-    comment("comment"),
 }
 
 interface WithLexemeType {

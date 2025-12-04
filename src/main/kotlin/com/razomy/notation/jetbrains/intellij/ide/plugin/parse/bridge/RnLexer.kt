@@ -7,6 +7,8 @@ import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.ctx.NotationCtx
 import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.ctx.NotationLexeme
 import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.ctx.UnknownTypeArgumentException
 import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.ctx.create_notation_ctx
+import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.ctx.pop
+import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.ctx.push
 import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.ctx.string_to_lexeme_tree
 
 fun map_token(type: LexemeType): IElementType {
@@ -31,17 +33,20 @@ class RnLexer : LexerBase() {
     var curTokenType: IElementType? = null
     var endOffset = 0
 
+    var state_: Int = 0
+    private val pendingTokens = ArrayDeque<IElementType>()
+    private val indentLevelStack = ArrayDeque<Int>()
+
     override fun start(buffer: CharSequence, startOffset: Int, endOffset: Int, initialState: Int) {
         this.endOffset = endOffset
         this.ctx = create_notation_ctx(buffer.toString())
+        this.state_ = initialState
         advance()
     }
 
-    override fun getState(): Int = 0
+    override fun getState(): Int = state_
     override fun getTokenType(): IElementType? = curTokenType
-
     override fun getTokenStart(): Int = this.ctx.lexeme.offset
-
     override fun getTokenEnd(): Int = this.ctx.offset
 
     override fun advance() {
@@ -49,8 +54,49 @@ class RnLexer : LexerBase() {
             curTokenType = null
             return
         }
+
+        if (pendingTokens.isNotEmpty()) {
+            val t = pendingTokens.removeFirst()
+            if (t == RnTypes.INDENT) {
+                state_ += 1
+            } else {
+                state_ -= 1
+            }
+            this.ctx.lexeme.offset = this.ctx.offset
+            curTokenType = t
+            return
+        }
+
+
         this.ctx.execute(this.ctx)
         curTokenType = map_token(this.ctx.lexeme.type)
+
+
+        if (this.ctx.lexeme.type == LexemeType.assign) {
+            indentLevelStack.push(this.ctx.lexeme.deep)
+            pendingTokens.add(RnTypes.INDENT)
+        }
+
+        if (this.ctx.lexeme.type == LexemeType.new_line_assign) {
+            indentLevelStack.push(this.ctx.lexeme.deep)
+            pendingTokens.add(RnTypes.INDENT)
+        }
+
+        if (this.ctx.lexeme.type == LexemeType.break_) {
+            if (indentLevelStack.isEmpty()) {
+                pendingTokens.add(RnTypes.ERROR)
+            } else {
+                indentLevelStack.pop()
+                pendingTokens.add(RnTypes.DEDENT)
+            }
+        }
+
+        if (this.ctx.lexeme.type == LexemeType.new_line_break) {
+            while (indentLevelStack.isNotEmpty() && indentLevelStack.last() >= this.ctx.lexeme.deep) {
+                indentLevelStack.pop()
+                pendingTokens.add(RnTypes.DEDENT)
+            }
+        }
     }
 
     override fun getBufferSequence(): CharSequence = this.ctx.string

@@ -37,7 +37,8 @@ interface RnTypes {
         val ERROR: IElementType = RnElementType("ERROR")
 
         // parser
-        val KEY: IElementType = RnElementType("KEY")
         val PROPERTY: IElementType = RnElementType("PROPERTY")
+        val INDENT: IElementType = RnElementType("INDENT")
+        val DEDENT: IElementType = RnElementType("DEDENT")
     }
 }

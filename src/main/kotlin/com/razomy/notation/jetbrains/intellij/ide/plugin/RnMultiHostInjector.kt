@@ -6,16 +6,11 @@ import com.intellij.lang.injection.MultiHostRegistrar
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiLanguageInjectionHost
+import com.intellij.psi.util.elementType
+import com.intellij.psi.util.nextLeaf
+import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.bridge.RnProperty
+import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.bridge.RnTypes
 import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.bridge.RnValue
-
-fun getLanguageKey(codeBlock: String): String {
-    if (codeBlock.startsWith("`")) {
-        val firstLine = codeBlock.substringBefore('\n')
-        return firstLine.removePrefix("`")
-    } else {
-        return ""
-    }
-}
 
 fun createLanguageAliases(): MutableMap<String, String> {
 // TODO: copy from https://github.com/JetBrains/intellij-community/blob/894f26c7e910695bc75eaf10dddced1444ba9214/plugins/markdown/core/src/org/intellij/plugins/markdown/injection/aliases/CodeFenceLanguageAliases.kt
@@ -128,25 +123,47 @@ fun langAliases(codeBlock: String): Language? {
 
 class RnMultiHostInjector : MultiHostInjector {
     override fun getLanguagesToInject(registrar: MultiHostRegistrar, context: PsiElement) {
-        if (context !is RnValue) {
+        if (context !is RnProperty) {
             return
         }
         if (context.textRange.length == 0) {
             return
         }
         val host = context as PsiLanguageInjectionHost
-        val hostText = host.text
-        val languageId = getLanguageKey(hostText);
+
+        if (host.elementType !== RnTypes.PROPERTY) {
+            return
+        }
+        val key = host.node.firstChildNode
+        val assign = key?.treeNext
+        val value = assign?.treeNext
+        if (key == null || assign == null || value == null) {
+            return
+        }
+
+        if (value.elementType !== RnTypes.VALUE_
+            && value.elementType !== RnTypes.TAIL_VALUE
+            && value.elementType !== RnTypes.MULTILINE_VALUE
+        ) {
+            return
+        }
+
+        val languageId = key.text
         if (languageId == "") {
             return
         }
+
         val language = langAliases(languageId)
         if (language == null) {
             return
         }
+
+        var innerStartOffset = value.textRange.startOffset - host.textRange.startOffset
+        var innerEndOffset = value.textRange.endOffset - host.textRange.startOffset
+
         val innerRange = TextRange(
-            languageId.length + 2,
-            hostText.length - 1
+            innerStartOffset + 2,//TODO: replace +2-2 with lexer
+            innerEndOffset - 2
         )
 
         if (innerRange.isEmpty) {
@@ -165,6 +182,6 @@ class RnMultiHostInjector : MultiHostInjector {
 
 
     override fun elementsToInjectIn(): List<Class<out PsiElement>> {
-        return listOf(RnValue::class.java)
+        return listOf(RnProperty::class.java)
     }
 }

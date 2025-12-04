@@ -29,6 +29,13 @@ class RnSyntaxHighlighter : SyntaxHighlighterBase() {
         if (tokenType == RnTypes.VALUE_) {
             return VALUE_KEYS
         }
+
+        if (tokenType == RnTypes.MULTILINE_VALUE) {
+            return VALUE_KEYS
+        }
+        if (tokenType == RnTypes.TAIL_VALUE) {
+            return VALUE_KEYS
+        }
         if (tokenType == RnTypes.COMMENT) {
             return COMMENT_KEYS
         }
@@ -48,7 +55,8 @@ class RnSyntaxHighlighter : SyntaxHighlighterBase() {
         val SEPARATOR: TextAttributesKey = createTextAttributesKey("RN_ASSIGN", DefaultLanguageHighlighterColors.OPERATION_SIGN)
         val KEY: TextAttributesKey = createTextAttributesKey("RN_KEY", DefaultLanguageHighlighterColors.KEYWORD)
         val VALUE: TextAttributesKey = createTextAttributesKey("RN_VALUE", DefaultLanguageHighlighterColors.STRING)
-        val COMMENT: TextAttributesKey = createTextAttributesKey("RN_COMMENT", DefaultLanguageHighlighterColors.LINE_COMMENT)
+        val COMMENT: TextAttributesKey =
+            createTextAttributesKey("RN_COMMENT", DefaultLanguageHighlighterColors.LINE_COMMENT)
         val ERROR: TextAttributesKey = createTextAttributesKey("RN_ERROR", HighlighterColors.BAD_CHARACTER)
         val END: TextAttributesKey = createTextAttributesKey("RN_END", DefaultLanguageHighlighterColors.SEMICOLON)
         val BREAK: TextAttributesKey = createTextAttributesKey("RN_BREAK", DefaultLanguageHighlighterColors.SEMICOLON)
