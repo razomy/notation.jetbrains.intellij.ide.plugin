@@ -15,10 +15,13 @@ fun <T : WithPrevDeep> create_ctx_deep(ctx: T): T {
 }
 
 fun <T, L> create_lexeme_deep(ctx: T, lexeme: L): L
-        where T : WithOffset, T : WithPrevDeep, L : WithDeep, L : WithLexemeType {
+        where T : WithOffset, T : WithPrevDeep, L : WithDeep, L : WithLexemeType, T: WithExceptions {
     if (lexeme.type == LexemeType.assign) {
         ctx.prev_deep = ctx.prev_deep + 1
     } else if (lexeme.type == LexemeType.break_) {
+        if (ctx.prev_deep == 0) {
+            ctx.exception_fn(InvalidNotation("break out of context"))
+        }
         ctx.prev_deep = ctx.prev_deep - 1
     }
     lexeme.deep = ctx.prev_deep

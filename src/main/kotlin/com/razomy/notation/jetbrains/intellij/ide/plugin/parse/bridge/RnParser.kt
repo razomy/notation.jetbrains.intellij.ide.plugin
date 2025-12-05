@@ -21,6 +21,14 @@ class RnParser : PsiParser {
             val type = builder.tokenType
 
             when (type) {
+                RnTypes.ERROR -> {
+                    while (stack.isNotEmpty()) {
+                        stack.removeLast().marker.done(RnTypes.PROPERTY)
+                    }
+                    val errorMarker = builder.mark()
+                    builder.advanceLexer()
+                    errorMarker.error("This token is invalid")
+                }
                 RnTypes.INDENT -> {
                     deep += 1
                     builder.advanceLexer()

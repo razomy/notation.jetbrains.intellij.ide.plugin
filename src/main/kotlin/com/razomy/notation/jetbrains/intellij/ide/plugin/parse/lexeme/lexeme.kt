@@ -1,5 +1,7 @@
 package com.razomy.notation.jetbrains.intellij.ide.plugin.parse.lexeme
 
+import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.ctx.NotationLexeme
+
 interface WithLexeme<T:WithLexemeType> {
     var lexeme: T
 }
@@ -28,7 +30,7 @@ fun <T, L> create_lexeme(
 fun <T, L> create_ctx_lexeme(ctx: T): T
         where T : WithLexeme<L>, T : WithCreateLexemePipes<T, L>, L : WithLexemeType {
 
-// TODO:   ctx.lexeme = null
+    ctx.lexeme = NotationLexeme(LexemeType.error) as L
     ctx.create_lexeme_fn = ::create_lexeme
     return ctx
 }

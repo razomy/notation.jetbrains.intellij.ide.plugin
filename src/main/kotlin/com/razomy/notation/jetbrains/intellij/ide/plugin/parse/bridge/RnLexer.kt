@@ -10,7 +10,7 @@ import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.ctx.create_notati
 import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.ctx.pop
 import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.ctx.push
 import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.ctx.string_to_lexeme_tree
-
+import com.intellij.openapi.diagnostic.Logger
 fun map_token(type: LexemeType): IElementType {
     return when (type) {
         LexemeType.new_line_assign -> RnTypes.NEW_LINE_ASSIGN
@@ -36,11 +36,18 @@ class RnLexer : LexerBase() {
     var state_: Int = 0
     private val pendingTokens = ArrayDeque<IElementType>()
     private val indentLevelStack = ArrayDeque<Int>()
+    companion object {
+        private val LOG = Logger.getInstance(RnLexer::class.java)
+    }
 
     override fun start(buffer: CharSequence, startOffset: Int, endOffset: Int, initialState: Int) {
         this.endOffset = endOffset
         this.ctx = create_notation_ctx(buffer.toString())
+        this.ctx.prev_offset = startOffset
+        this.ctx.offset = startOffset
         this.state_ = initialState
+//        LOG.warn("startOffset " +  startOffset)
+//        LOG.warn("endOffset " +  endOffset)
         advance()
     }
 
@@ -50,6 +57,8 @@ class RnLexer : LexerBase() {
     override fun getTokenEnd(): Int = this.ctx.offset
 
     override fun advance() {
+//        LOG.warn("this.ctx.lexeme.offset " +  this.ctx.lexeme.offset)
+//        LOG.warn("this.ctx.offset " +  this.ctx.offset)
         if (this.ctx.offset >= this.endOffset) {
             curTokenType = null
             return
@@ -66,7 +75,6 @@ class RnLexer : LexerBase() {
             curTokenType = t
             return
         }
-
 
         this.ctx.execute(this.ctx)
         curTokenType = map_token(this.ctx.lexeme.type)
@@ -92,7 +100,7 @@ class RnLexer : LexerBase() {
         }
 
         if (this.ctx.lexeme.type == LexemeType.new_line_break) {
-            while (indentLevelStack.isNotEmpty() && indentLevelStack.last() >= this.ctx.lexeme.deep) {
+            while (indentLevelStack.isNotEmpty() && indentLevelStack.last() > this.ctx.lexeme.deep) {
                 indentLevelStack.pop()
                 pendingTokens.add(RnTypes.DEDENT)
             }

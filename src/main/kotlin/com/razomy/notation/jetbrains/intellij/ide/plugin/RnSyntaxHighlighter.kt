@@ -23,9 +23,9 @@ class RnSyntaxHighlighter : SyntaxHighlighterBase() {
         if (tokenType == RnTypes.ASSIGN) {
             return SEPARATOR_KEYS
         }
-//        if (tokenType == RnTypes.KEY) {
-//            return KEY_KEYS
-//        }
+        if (tokenType == RnTypes.KEY) {
+            return KEY_KEYS
+        }
         if (tokenType == RnTypes.VALUE_) {
             return VALUE_KEYS
         }
@@ -39,20 +39,19 @@ class RnSyntaxHighlighter : SyntaxHighlighterBase() {
         if (tokenType == RnTypes.COMMENT) {
             return COMMENT_KEYS
         }
-//        if (tokenType == RnTypes.END) {
-//            return SPACE_KEYS
-//        }
+
         if (tokenType == RnTypes.ERROR) {
             return ERROR_KEYS
         }
-//        if (tokenType == RnTypes.BREAK) {
-//            return BREAK_KEYS
-//        }
+        if (tokenType == RnTypes.BREAK_) {
+            return BREAK_KEYS
+        }
         return EMPTY_KEYS
     }
 
     companion object {
-        val SEPARATOR: TextAttributesKey = createTextAttributesKey("RN_ASSIGN", DefaultLanguageHighlighterColors.OPERATION_SIGN)
+        val SEPARATOR: TextAttributesKey =
+            createTextAttributesKey("RN_ASSIGN", DefaultLanguageHighlighterColors.OPERATION_SIGN)
         val KEY: TextAttributesKey = createTextAttributesKey("RN_KEY", DefaultLanguageHighlighterColors.KEYWORD)
         val VALUE: TextAttributesKey = createTextAttributesKey("RN_VALUE", DefaultLanguageHighlighterColors.STRING)
         val COMMENT: TextAttributesKey =

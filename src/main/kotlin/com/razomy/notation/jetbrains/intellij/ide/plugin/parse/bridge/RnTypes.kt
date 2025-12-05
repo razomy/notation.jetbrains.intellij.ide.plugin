@@ -38,6 +38,7 @@ interface RnTypes {
 
         // parser
         val PROPERTY: IElementType = RnElementType("PROPERTY")
+        val KEY: IElementType = RnElementType("KEY")
         val INDENT: IElementType = RnElementType("INDENT")
         val DEDENT: IElementType = RnElementType("DEDENT")
     }
