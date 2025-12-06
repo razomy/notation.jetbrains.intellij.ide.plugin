@@ -8,11 +8,13 @@ import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.lexeme.create_ctx
 import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.lexeme.create_ctx_prev_offset
 import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.lexeme.create_ctx_prev_spaces
 import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.lexeme.create_ctx_tail
+import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.lexeme.create_ctx_value_recursive_dict
 import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.lexeme.create_lexeme_deep
 import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.lexeme.create_lexeme_deep_new_line
 import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.lexeme.create_lexeme_offset
 import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.lexeme.create_lexeme_tail
 import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.lexeme.create_lexeme_value
+import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.lexeme.create_lexeme_value_recursive_dict
 import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.lexeme.create_lexemes
 
 fun create_notation_ctx(string: String): NotationCtx {
@@ -24,18 +26,20 @@ fun create_notation_ctx(string: String): NotationCtx {
         { c -> create_ctx_prev_offset(c) },
         { c -> create_ctx_prev_spaces(c) },
         { c -> create_ctx_lexeme(c) },
-        { c -> create_ctx_lexemes(c) },
+//        { c -> create_ctx_lexemes(c) },
         { c -> create_ctx_tail(c) },
         { c -> create_ctx_deep(c) },
+        { c -> create_ctx_value_recursive_dict(c) },
     )
 
     ctx.create_lexeme_pipes = listOf(
         { c, l -> create_lexeme_offset(c, l) },
-        { c, l -> create_lexeme_value(c, l) },
-        { c, l -> create_lexemes(c, l) },
+//        { c, l -> create_lexeme_value(c, l) },
+//        { c, l -> create_lexemes(c, l) },
         { c, l -> create_lexeme_tail(c, l) },
         { c, l -> create_lexeme_deep(c, l) },
         { c, l -> create_lexeme_deep_new_line(c, l) },
+        { c, l -> create_lexeme_value_recursive_dict(c, l) },
 
         )
 

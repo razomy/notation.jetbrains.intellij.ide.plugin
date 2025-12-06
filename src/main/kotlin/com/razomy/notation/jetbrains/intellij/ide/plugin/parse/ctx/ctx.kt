@@ -1,6 +1,7 @@
 package com.razomy.notation.jetbrains.intellij.ide.plugin.parse.ctx
 
 import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.lexeme.LexemePipe
+import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.lexeme.ParentValueRecursiveDict
 import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.lexeme.SpaceInfo
 import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.lexeme.WithCreateLexemePipes
 import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.lexeme.WithExceptions
@@ -12,6 +13,7 @@ import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.lexeme.WithPrevDe
 import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.lexeme.WithPrevOffset
 import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.lexeme.WithPrevSpaces
 import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.lexeme.WithTail
+import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.lexeme.WithValueRecursiveDict
 
 interface WithCreateCtxPipes<T> {
     var create_ctx_pipes: List<(T) -> T>
@@ -36,6 +38,7 @@ class NotationCtx(
     WithPrevOffset,
     WithPrevDeep,
     WithPrevSpaces,
+    ParentValueRecursiveDict,
     WithExecute<NotationCtx> {
     override var create_ctx_pipes: List<(NotationCtx) -> NotationCtx> = listOf()
     override var create_lexeme_pipes: List<LexemePipe<NotationCtx, NotationLexeme>> = listOf()
@@ -51,4 +54,5 @@ class NotationCtx(
     override var prev_spaces: MutableList<SpaceInfo> = mutableListOf()
     override var execute: (NotationCtx) -> Unit = {}
     override lateinit var lexeme: NotationLexeme
+    override lateinit var parent_value_recursive: MutableList<WithValueRecursiveDict>
 }
