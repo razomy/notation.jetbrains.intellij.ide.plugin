@@ -4,7 +4,7 @@ package com.razomy.notation.jetbrains.intellij.ide.plugin.parse.bridge
 import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElement
 import com.intellij.psi.tree.IElementType
-import com.razomy.notation.jetbrains.intellij.ide.plugin.RnElementType
+import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.bridge.RnElementType
 import com.razomy.notation.jetbrains.intellij.ide.plugin.RnTokenType
 import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.bridge.impl.RnPropertyImpl
 import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.bridge.impl.RnValueImpl
@@ -39,6 +39,7 @@ interface RnTypes {
         // parser
         val PROPERTY: IElementType = RnElementType("PROPERTY")
         val KEY: IElementType = RnElementType("KEY")
+        val STRING: IElementType = RnElementType("STRING")
         val INDENT: IElementType = RnElementType("INDENT")
         val DEDENT: IElementType = RnElementType("DEDENT")
     }

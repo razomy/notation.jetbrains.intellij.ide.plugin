@@ -50,9 +50,10 @@ tab : \u0009"""
         return "Razomy Notation"
     }
 
-    private val descriptors = arrayOf(AttributesDescriptor("Key", RnSyntaxHighlighter.KEY),
-            AttributesDescriptor("Separator", RnSyntaxHighlighter.SEPARATOR),
-            AttributesDescriptor("Value", RnSyntaxHighlighter.VALUE),
-            AttributesDescriptor("Bad value", RnSyntaxHighlighter.ERROR)
+    private val descriptors = arrayOf(AttributesDescriptor("Key", RnSyntaxHighlighter.RN_KEY),
+            AttributesDescriptor("Separate", RnSyntaxHighlighter.RN_DELIMITER),
+            AttributesDescriptor("Break", RnSyntaxHighlighter.RN_BREAK),
+            AttributesDescriptor("Value", RnSyntaxHighlighter.RN_STRING),
+            AttributesDescriptor("Bad value", RnSyntaxHighlighter.RN_ERROR)
     )
 }

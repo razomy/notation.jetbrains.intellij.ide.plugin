@@ -44,13 +44,16 @@ class RnParser : PsiParser {
 
                 RnTypes.VALUE_, RnTypes.TAIL_VALUE, RnTypes.MULTILINE_VALUE -> {
                     val marker = builder.mark()
-                    builder.advanceLexer()
+                    val keyMarker = builder.mark()
 
+                    builder.advanceLexer()
                     val nextType = builder.tokenType
                     if (nextType == RnTypes.ASSIGN || nextType == RnTypes.NEW_LINE_ASSIGN) {
+                        keyMarker.done(RnTypes.KEY)
                         builder.advanceLexer()
                         stack.addLast(StackFrame(marker))
                     } else {
+                        keyMarker.done(RnTypes.STRING)
                         marker.drop()
                     }
                 }

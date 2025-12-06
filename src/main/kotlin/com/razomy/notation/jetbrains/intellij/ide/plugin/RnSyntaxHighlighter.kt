@@ -11,7 +11,6 @@ import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.bridge.RnLexer
 import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.bridge.RnTypes
 import org.jetbrains.annotations.NotNull
 
-
 class RnSyntaxHighlighter : SyntaxHighlighterBase() {
     @NotNull
     override fun getHighlightingLexer(): Lexer {
@@ -20,56 +19,49 @@ class RnSyntaxHighlighter : SyntaxHighlighterBase() {
 
     @NotNull
     override fun getTokenHighlights(tokenType: IElementType): Array<TextAttributesKey?> {
-        if (tokenType == RnTypes.ASSIGN) {
-            return SEPARATOR_KEYS
-        }
-        if (tokenType == RnTypes.KEY) {
-            return KEY_KEYS
-        }
-        if (tokenType == RnTypes.VALUE_) {
-            return VALUE_KEYS
-        }
+        return when (tokenType) {
+            RnTypes.NEW_LINE_ASSIGN,
+            RnTypes.ASSIGN -> RN_ASSIGN_KEYS
 
-        if (tokenType == RnTypes.MULTILINE_VALUE) {
-            return VALUE_KEYS
-        }
-        if (tokenType == RnTypes.TAIL_VALUE) {
-            return VALUE_KEYS
-        }
-        if (tokenType == RnTypes.COMMENT) {
-            return COMMENT_KEYS
-        }
+            RnTypes.KEY -> RN_KEY_KEYS
 
-        if (tokenType == RnTypes.ERROR) {
-            return ERROR_KEYS
+            RnTypes.VALUE_,
+            RnTypes.MULTILINE_VALUE,
+            RnTypes.TAIL_VALUE,
+            RnTypes.STRING -> RN_STRING_KEYS
+
+            RnTypes.COMMENT -> RN_COMMENT_KEYS
+            RnTypes.ERROR -> RN_ERROR_KEYS
+
+            RnTypes.NEW_LINE_BREAK,
+            RnTypes.BREAK_ -> RN_BREAK_KEYS
+
+            RnTypes.NEW_LINE_SEPARATE,
+            RnTypes.SEPARATE -> RN_DELIMITER_KEYS
+
+            else -> EMPTY_KEYS
         }
-        if (tokenType == RnTypes.BREAK_) {
-            return BREAK_KEYS
-        }
-        return EMPTY_KEYS
     }
 
     companion object {
-        val SEPARATOR: TextAttributesKey =
+        val RN_ASSIGN: TextAttributesKey =
             createTextAttributesKey("RN_ASSIGN", DefaultLanguageHighlighterColors.OPERATION_SIGN)
-        val KEY: TextAttributesKey = createTextAttributesKey("RN_KEY", DefaultLanguageHighlighterColors.KEYWORD)
-        val VALUE: TextAttributesKey = createTextAttributesKey("RN_VALUE", DefaultLanguageHighlighterColors.STRING)
-        val COMMENT: TextAttributesKey =
+        val RN_ERROR: TextAttributesKey = createTextAttributesKey("RN_ERROR", HighlighterColors.BAD_CHARACTER)
+        val RN_STRING: TextAttributesKey = createTextAttributesKey("RN_VALUE", DefaultLanguageHighlighterColors.STRING)
+        val RN_BREAK: TextAttributesKey =
+            createTextAttributesKey("RN_BREAK", DefaultLanguageHighlighterColors.SEMICOLON)
+        val RN_DELIMITER: TextAttributesKey =
+            createTextAttributesKey("RN_DELIMITER", DefaultLanguageHighlighterColors.COMMA)
+        val RN_COMMENT: TextAttributesKey =
             createTextAttributesKey("RN_COMMENT", DefaultLanguageHighlighterColors.LINE_COMMENT)
-        val ERROR: TextAttributesKey = createTextAttributesKey("RN_ERROR", HighlighterColors.BAD_CHARACTER)
-        val END: TextAttributesKey = createTextAttributesKey("RN_END", DefaultLanguageHighlighterColors.SEMICOLON)
-        val BREAK: TextAttributesKey = createTextAttributesKey("RN_BREAK", DefaultLanguageHighlighterColors.SEMICOLON)
-
-
-        private val SPACE_KEYS = arrayOf<TextAttributesKey?>(END)
-        private val ERROR_KEYS = arrayOf<TextAttributesKey?>(ERROR)
-        private val SEPARATOR_KEYS = arrayOf<TextAttributesKey?>(SEPARATOR)
-        private val KEY_KEYS = arrayOf<TextAttributesKey?>(KEY)
-        private val VALUE_KEYS = arrayOf<TextAttributesKey?>(VALUE)
-        private val COMMENT_KEYS = arrayOf<TextAttributesKey?>(COMMENT)
-        private val BREAK_KEYS = arrayOf<TextAttributesKey?>(BREAK)
+        val RN_KEY: TextAttributesKey = createTextAttributesKey("RN_KEY", DefaultLanguageHighlighterColors.IDENTIFIER)
+        private val RN_ASSIGN_KEYS = arrayOf<TextAttributesKey?>(RN_ASSIGN)
+        private val RN_ERROR_KEYS = arrayOf<TextAttributesKey?>(RN_ERROR)
+        private val RN_STRING_KEYS = arrayOf<TextAttributesKey?>(RN_STRING)
+        private val RN_BREAK_KEYS = arrayOf<TextAttributesKey?>(RN_BREAK)
+        private val RN_DELIMITER_KEYS = arrayOf<TextAttributesKey?>(RN_DELIMITER)
+        private val RN_COMMENT_KEYS = arrayOf<TextAttributesKey?>(RN_COMMENT)
+        private val RN_KEY_KEYS = arrayOf<TextAttributesKey?>(RN_KEY)
         private val EMPTY_KEYS = arrayOfNulls<TextAttributesKey>(0)
     }
 }
-
-

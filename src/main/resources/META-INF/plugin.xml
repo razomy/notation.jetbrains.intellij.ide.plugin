@@ -76,7 +76,7 @@
         />
         <projectViewPane
                 implementation="com.razomy.notation.jetbrains.intellij.ide.plugin.project.RnAbstractProjectViewPane"/>
-
+        <annotator language="RN" implementationClass="com.razomy.notation.jetbrains.intellij.ide.plugin.RnAnnotator"/>
     </extensions>
 
 </idea-plugin>
