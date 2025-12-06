@@ -11,6 +11,7 @@ import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.ctx.pop
 import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.ctx.push
 import com.razomy.notation.jetbrains.intellij.ide.plugin.parse.ctx.string_to_lexeme_tree
 import com.intellij.openapi.diagnostic.Logger
+
 fun map_token(type: LexemeType): IElementType {
     return when (type) {
         LexemeType.new_line_assign -> RnTypes.NEW_LINE_ASSIGN
@@ -33,9 +34,11 @@ class RnLexer : LexerBase() {
     var curTokenType: IElementType? = null
     var endOffset = 0
 
+    var deep_: Int = 0
     var state_: Int = 0
     private val pendingTokens = ArrayDeque<IElementType>()
     private val indentLevelStack = ArrayDeque<Int>()
+
     companion object {
         private val LOG = Logger.getInstance(RnLexer::class.java)
     }
@@ -46,6 +49,7 @@ class RnLexer : LexerBase() {
         this.ctx.prev_offset = startOffset
         this.ctx.offset = startOffset
         this.state_ = initialState
+        this.deep_ =initialState
 //        LOG.warn("startOffset " +  startOffset)
 //        LOG.warn("endOffset " +  endOffset)
         advance()
@@ -61,19 +65,24 @@ class RnLexer : LexerBase() {
 //        LOG.warn("this.ctx.offset " +  this.ctx.offset)
         if (this.ctx.offset >= this.endOffset) {
             curTokenType = null
+            state_ = 0
             return
         }
 
         if (pendingTokens.isNotEmpty()) {
             val t = pendingTokens.removeFirst()
             if (t == RnTypes.INDENT) {
-                state_ += 1
+                deep_ += 1
+                state_ = deep_
             } else {
-                state_ -= 1
+                deep_ -= 1
+                state_ = deep_
             }
             this.ctx.lexeme.offset = this.ctx.offset
             curTokenType = t
             return
+        } else {
+            state_ = 0
         }
 
         this.ctx.execute(this.ctx)
