@@ -5,27 +5,10 @@ import com.intellij.psi.tree.IElementType
 import com.razomy.notation.jetbrains.intellij.ide.plugin.bridge.lexeme.LexemeType
 import com.razomy.notation.jetbrains.intellij.ide.plugin.bridge.ctx.NotationCtx
 import com.razomy.notation.jetbrains.intellij.ide.plugin.bridge.ctx.UnknownTypeArgumentException
-import com.razomy.notation.jetbrains.intellij.ide.plugin.bridge.ctx.create_notation_ctx
+import com.razomy.notation.jetbrains.intellij.ide.plugin.bridge.lexeme.string_to_lexeme_ctx
 import com.razomy.notation.jetbrains.intellij.ide.plugin.bridge.ctx.pop
 import com.razomy.notation.jetbrains.intellij.ide.plugin.bridge.ctx.push
 import com.intellij.openapi.diagnostic.Logger
-
-fun map_token(type: LexemeType): IElementType {
-    return when (type) {
-        LexemeType.new_line_assign -> RnTypes.NEW_LINE_ASSIGN
-        LexemeType.multiline_value -> RnTypes.MULTILINE_VALUE
-        LexemeType.new_line_break -> RnTypes.NEW_LINE_BREAK
-        LexemeType.separate -> RnTypes.SEPARATE
-        LexemeType.value_ -> RnTypes.VALUE_
-        LexemeType.tail_value -> RnTypes.TAIL_VALUE
-        LexemeType.assign -> RnTypes.ASSIGN
-        LexemeType.break_ -> RnTypes.BREAK_
-        LexemeType.new_line_separate -> RnTypes.NEW_LINE_SEPARATE
-        LexemeType.not_closed_error_multiline_value -> RnTypes.NOT_CLOSED_ERROR_MULTILINE_VALUE
-        LexemeType.error -> RnTypes.ERROR
-        null -> throw UnknownTypeArgumentException("Unknown lexeme type ${type}")
-    }
-}
 
 class RnLexer : LexerBase() {
     lateinit var ctx: NotationCtx
@@ -43,7 +26,7 @@ class RnLexer : LexerBase() {
 
     override fun start(buffer: CharSequence, startOffset: Int, endOffset: Int, initialState: Int) {
         this.endOffset = endOffset
-        this.ctx = create_notation_ctx(buffer.toString())
+        this.ctx = string_to_lexeme_ctx(buffer.toString())
         this.ctx.prev_offset = startOffset
         this.ctx.offset = startOffset
         this.state_ = initialState
@@ -84,7 +67,7 @@ class RnLexer : LexerBase() {
         }
 
         this.ctx.execute(this.ctx)
-        curTokenType = map_token(this.ctx.lexeme.type)
+        curTokenType = lexeme_to_element(this.ctx.lexeme.type)
 
 
         if (this.ctx.lexeme.type == LexemeType.assign) {

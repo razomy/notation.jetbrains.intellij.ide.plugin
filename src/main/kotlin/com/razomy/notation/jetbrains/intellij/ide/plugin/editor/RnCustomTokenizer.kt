@@ -12,26 +12,24 @@ class RnCustomTokenizer : Tokenizer<PsiElement>() {
         var child = element.firstChild
 
         while (child != null) {
-            // Check if the child is a valid token for spelling checking
             if (isValidToken(child)) {
-                // Add the token to the spellchecker
                 consumer.consumeToken(child, PlainTextSplitter())
             }
 
-            // Move to the next sibling
             child = child.nextSibling
         }
     }
 
     private fun isValidToken(element: PsiElement): Boolean {
-        // You can customize this method to define which elements should be considered valid tokens
         val elementType = element.node.elementType
 
-        // Example: consider identifiers, strings, and comments as valid tokens
         return TokenSet.create(
                 RnTypes.COMMENT,
-//                RnTypes.VALUE_,
+                RnTypes.STRING,
+                RnTypes.KEY,
                 RnTypes.VALUE_,
+                RnTypes.MULTILINE_VALUE,
+                RnTypes.TAIL_VALUE,
         ).contains(elementType)
     }
 }

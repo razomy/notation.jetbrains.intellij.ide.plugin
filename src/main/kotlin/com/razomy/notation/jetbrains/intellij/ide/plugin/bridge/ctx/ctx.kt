@@ -13,6 +13,7 @@ import com.razomy.notation.jetbrains.intellij.ide.plugin.bridge.lexeme.WithPrevD
 import com.razomy.notation.jetbrains.intellij.ide.plugin.bridge.lexeme.WithPrevOffset
 import com.razomy.notation.jetbrains.intellij.ide.plugin.bridge.parse.WithPrevSpaces
 import com.razomy.notation.jetbrains.intellij.ide.plugin.bridge.parse.WithTail
+import com.razomy.notation.jetbrains.intellij.ide.plugin.bridge.parse.WithValue
 import com.razomy.notation.jetbrains.intellij.ide.plugin.bridge.parse.WithValueRecursiveDict
 
 interface WithCreateCtxPipes<T> {
@@ -33,6 +34,7 @@ class NotationCtx(
     WithLexemes<NotationLexeme>,
     WithOffset,
     WithString,
+    WithValue,
     WithTail,
     WithExceptions,
     WithPrevOffset,
@@ -55,4 +57,5 @@ class NotationCtx(
     override var execute: (NotationCtx) -> Unit = {}
     override lateinit var lexeme: NotationLexeme
     override lateinit var parent_value_recursive: MutableList<WithValueRecursiveDict>
+    override var value: String = ""
 }

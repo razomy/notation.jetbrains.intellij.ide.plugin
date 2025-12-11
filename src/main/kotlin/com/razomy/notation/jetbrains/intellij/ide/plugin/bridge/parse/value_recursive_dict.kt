@@ -91,9 +91,9 @@ fun <T, L> assign(ctx: T, lexeme: L)
 
 fun <T, L> value(ctx: T, lexeme: L)
         where T : WithExceptions, T : WithOffset, T : WithString, T : ParentValueRecursiveDict,
-              L : WithOffset, L : WithDeep, L : WithLexemeType {
+              L : WithOffset, L : WithDeep, L : WithLexemeType, L : WithValue {
 
-    var valueStr = get_lexeme_value(ctx, lexeme)
+    var valueStr = lexeme.value
     val parent = ctx.parent_value_recursive.last()
     val parentValue = parent.value_recursive as ValueRecursiveDict
 
@@ -112,7 +112,7 @@ fun <T, L> value(ctx: T, lexeme: L)
 
 fun <T, L> create_lexeme_value_recursive_dict(ctx: T, lexeme: L): L
         where T : WithExceptions, T : WithOffset, T : WithString, T : ParentValueRecursiveDict,
-              L : WithOffset, L : WithDeep, L : WithLexemeType {
+              L : WithOffset, L : WithDeep, L : WithLexemeType, L : WithValue {
 
 
     when (lexeme.type) {
