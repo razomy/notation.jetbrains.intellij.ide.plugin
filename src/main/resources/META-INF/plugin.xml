@@ -76,7 +76,15 @@
         />
         <projectViewPane
                 implementation="com.razomy.notation.jetbrains.intellij.ide.plugin.project.RnAbstractProjectViewPane"/>
-        <annotator language="RN" implementationClass="com.razomy.notation.jetbrains.intellij.ide.plugin.editor.RnAnnotator"/>
+        <annotator language="RN"
+                   implementationClass="com.razomy.notation.jetbrains.intellij.ide.plugin.editor.RnAnnotator"/>
+        <runLineMarkerContributor
+                language="RN"
+                implementationClass="com.razomy.notation.jetbrains.intellij.ide.plugin.editor.RnRunLineMarkerContributor"/>
+        <configurationType
+                implementation="com.razomy.notation.jetbrains.intellij.ide.plugin.editor.RnConfigurationType"/>
+        <runConfigurationProducer
+                implementation="com.razomy.notation.jetbrains.intellij.ide.plugin.editor.RnRunConfigurationProducer"/>
     </extensions>
 
 </idea-plugin>

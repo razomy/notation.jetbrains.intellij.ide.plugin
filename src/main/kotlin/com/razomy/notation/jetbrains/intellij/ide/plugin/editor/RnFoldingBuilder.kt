@@ -6,6 +6,7 @@ import com.intellij.lang.folding.FoldingDescriptor
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.util.TextRange
 import com.razomy.notation.jetbrains.intellij.ide.plugin.bridge.RnTypes
+import kotlin.math.min
 
 fun substringWithDots(input: String, maxLength: Int): String {
     if (input.length <= maxLength) return input
@@ -54,8 +55,8 @@ fun substringWithDots(input: String, maxLength: Int): String {
 fun substringWithDotsEnd(input: String, maxLength: Int): String {
     if (input.length <= maxLength) return input
 
-    var inline =input.replace("\n +".toRegex(), ":")
-    val start = inline.substring(0, maxLength - 1)
+    var inline = input.replace("\n +".toRegex(), ":")
+    val start = inline.take(min(inline.length, maxLength - 1))
 
     return "$start…"
 }
