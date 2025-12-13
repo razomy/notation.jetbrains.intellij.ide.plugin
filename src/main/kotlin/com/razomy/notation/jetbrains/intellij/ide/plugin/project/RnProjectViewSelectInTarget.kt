@@ -7,7 +7,7 @@ import com.intellij.ide.impl.ProjectViewSelectInTarget
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 
-class ProjectPaneSelectInTarget(project: Project?, protected val id: String) : ProjectViewSelectInTarget(project),
+class RnProjectViewSelectInTarget(project: Project?, protected val id: String) : ProjectViewSelectInTarget(project),
     DumbAware {
     override fun toString(): String {
         return SelectInManager.getProject()

@@ -75,7 +75,7 @@
                 implementation="com.razomy.notation.jetbrains.intellij.ide.plugin.editor.RnMultiHostInjector"
         />
         <projectViewPane
-                implementation="com.razomy.notation.jetbrains.intellij.ide.plugin.project.RnAbstractProjectViewPane"/>
+                implementation="com.razomy.notation.jetbrains.intellij.ide.plugin.project.RnProjectViewPane"/>
         <annotator language="RN"
                    implementationClass="com.razomy.notation.jetbrains.intellij.ide.plugin.editor.RnAnnotator"/>
         <runLineMarkerContributor

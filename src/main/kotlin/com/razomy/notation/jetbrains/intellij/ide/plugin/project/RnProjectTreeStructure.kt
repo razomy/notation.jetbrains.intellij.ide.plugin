@@ -9,7 +9,7 @@ import com.intellij.ide.util.treeView.AbstractTreeNode
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.registry.Registry
 
-open class ProjectViewPaneTreeStructure(
+open class RnProjectTreeStructure(
     private val myProject: Project,
     private val id: String
 ) : ProjectTreeStructure(myProject, id), ProjectViewSettings {

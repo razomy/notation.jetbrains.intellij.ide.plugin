@@ -7,7 +7,7 @@ import com.intellij.ide.util.treeView.NodeDescriptor
 import com.intellij.openapi.project.Project
 import java.util.Comparator
 
-class RnAbstractProjectViewPane(project: Project) : ProjectViewPane(project) {
+class RnProjectViewPane(project: Project) : ProjectViewPane(project) {
     var ID = "RnProject"
     override fun getTitle(): String {
         return ID;
@@ -22,11 +22,11 @@ class RnAbstractProjectViewPane(project: Project) : ProjectViewPane(project) {
     }
 
     override fun createComparator(): Comparator<NodeDescriptor<*>> {
-        return ConfigBasedComparator(myProject, ID)
+        return RnOrderConfigComparator(myProject, ID)
     }
 
     override fun createSelectInTarget(): SelectInTarget {
-        return ProjectPaneSelectInTarget(myProject, ID)
+        return RnProjectViewSelectInTarget(myProject, ID)
     }
 
     override fun createStructure(): ProjectAbstractTreeStructureBase {
