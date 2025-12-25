@@ -139,7 +139,8 @@ class RnMultiHostInjector : MultiHostInjector {
             return
         }
 
-        if (value.elementType !== RnTypes.VALUE_
+        if (value.elementType !== RnTypes.STRING
+            && value.elementType !== RnTypes.VALUE_
             && value.elementType !== RnTypes.TAIL_VALUE
             && value.elementType !== RnTypes.MULTILINE_VALUE
         ) {
