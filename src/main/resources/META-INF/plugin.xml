@@ -86,5 +86,32 @@
         <runConfigurationProducer
                 implementation="com.razomy.notation.jetbrains.intellij.ide.plugin.editor.RnRunConfigurationProducer"/>
     </extensions>
-
+    <actions>
+        <group id="com.razomy.notation.jetbrains.intellij.ide.plugin.OpenInApp"
+               text="Open In App"
+               description="Open In App"
+               popup="true"
+               icon="AllIcons.Nodes.Toolbox">
+            <add-to-group group-id="ProjectViewPopupMenu" anchor="after" relative-to-action="SplitRevealGroup"/>
+            <add-to-group group-id="ChangesViewPopupMenu" anchor="before" relative-to-action="VersionControlsGroup"/>
+            <action id="com.razomy.notation.jetbrains.intellij.ide.plugin.OpenInAppWebstorm"
+                    class="com.razomy.notation.jetbrains.intellij.ide.plugin.project.OpenInApp"
+                    text="WebStorm"
+                    description="Open in WebStorm"
+                    icon="AllIcons.FileTypes.Css">
+            </action>
+            <action id="com.razomy.notation.jetbrains.intellij.ide.plugin.OpenInAppIdea"
+                    class="com.razomy.notation.jetbrains.intellij.ide.plugin.project.OpenInApp"
+                    text="Idea"
+                    description="Open in Idea"
+                    icon="AllIcons.Ultimate.IdeaUltimatePromo">
+            </action>
+            <action id="com.razomy.notation.jetbrains.intellij.ide.plugin.OpenInAppPyCharm"
+                    class="com.razomy.notation.jetbrains.intellij.ide.plugin.project.OpenInApp"
+                    text="PyCharm"
+                    description="Open in Python"
+                    icon="AllIcons.Language.Python">
+            </action>
+        </group>
+    </actions>
 </idea-plugin>
