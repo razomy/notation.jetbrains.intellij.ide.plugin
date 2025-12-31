@@ -6,6 +6,7 @@ import com.intellij.execution.configurations.ConfigurationFactory
 import com.intellij.openapi.util.Ref
 import com.intellij.psi.PsiCompiledElement
 import com.intellij.psi.PsiElement
+import kotlin.math.min
 
 class RnRunConfigurationProducer : LazyRunConfigurationProducer<RnConfiguration>() {
 
@@ -30,6 +31,10 @@ class RnRunConfigurationProducer : LazyRunConfigurationProducer<RnConfiguration>
             return false;
         }
 
+        if (element.text.length < 4) {
+            return false;
+        }
+
         val file = context.psiLocation?.containingFile ?: return false
         if (!file.name.endsWith(".rn")) return false
 
@@ -40,10 +45,11 @@ class RnRunConfigurationProducer : LazyRunConfigurationProducer<RnConfiguration>
             .getDocument(file)
 
         if (document != null) {
-            configuration.scriptCommand = element.text.replace("^`".toRegex(), "")
+            var command = element.text.replace("^`".toRegex(), "")
                 .replace("`$".toRegex(), "")
                 .replace("^run ".toRegex(), "")
-            configuration.name = "Run ${file.name} ${configuration.scriptCommand?.substring(0, 10)}"
+            configuration.scriptCommand = command
+            configuration.name = "Run ${file.name} ${command.substring(0, min(command.length, 10))}"
         }
 
         return true

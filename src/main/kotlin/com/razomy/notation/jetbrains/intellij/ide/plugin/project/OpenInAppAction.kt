@@ -9,7 +9,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.notification.Notification
 
-class OpenInApp : AnAction() {
+class OpenInAppAction : AnAction() {
 
     fun getCommand(): String? {
         var id = this.templatePresentation.text

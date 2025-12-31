@@ -95,23 +95,70 @@
             <add-to-group group-id="ProjectViewPopupMenu" anchor="after" relative-to-action="SplitRevealGroup"/>
             <add-to-group group-id="ChangesViewPopupMenu" anchor="before" relative-to-action="VersionControlsGroup"/>
             <action id="com.razomy.notation.jetbrains.intellij.ide.plugin.OpenInAppWebstorm"
-                    class="com.razomy.notation.jetbrains.intellij.ide.plugin.project.OpenInApp"
+                    class="com.razomy.notation.jetbrains.intellij.ide.plugin.project.OpenInAppAction"
                     text="WebStorm"
                     description="Open in WebStorm"
                     icon="AllIcons.FileTypes.Css">
             </action>
             <action id="com.razomy.notation.jetbrains.intellij.ide.plugin.OpenInAppIdea"
-                    class="com.razomy.notation.jetbrains.intellij.ide.plugin.project.OpenInApp"
+                    class="com.razomy.notation.jetbrains.intellij.ide.plugin.project.OpenInAppAction"
                     text="Idea"
                     description="Open in Idea"
                     icon="AllIcons.Ultimate.IdeaUltimatePromo">
             </action>
             <action id="com.razomy.notation.jetbrains.intellij.ide.plugin.OpenInAppPyCharm"
-                    class="com.razomy.notation.jetbrains.intellij.ide.plugin.project.OpenInApp"
+                    class="com.razomy.notation.jetbrains.intellij.ide.plugin.project.OpenInAppAction"
                     text="PyCharm"
                     description="Open in Python"
                     icon="AllIcons.Language.Python">
             </action>
         </group>
+
+        <group id="ArrowInsertGroup" text="Insert Arrows" popup="true">
+            <add-to-group group-id="EditMenu" anchor="last"/>
+
+            <!-- Top Row -->
+            <action id="ArrowNW" class="com.razomy.notation.jetbrains.intellij.ide.plugin.project.ArrowInsertAction$NorthWest" text="NW Arrow (↖)">
+                <keyboard-shortcut first-keystroke="alt NUMPAD7" keymap="$default"/>
+            </action>
+            <action id="ArrowUp" class="com.razomy.notation.jetbrains.intellij.ide.plugin.project.ArrowInsertAction$Up" text="Up Arrow (↑)">
+                <keyboard-shortcut first-keystroke="alt NUMPAD8" keymap="$default"/>
+            </action>
+            <action id="ArrowNE" class="com.razomy.notation.jetbrains.intellij.ide.plugin.project.ArrowInsertAction$NorthEast" text="NE Arrow (↗)">
+                <keyboard-shortcut first-keystroke="alt NUMPAD9" keymap="$default"/>
+            </action>
+
+            <!-- Middle Row -->
+            <action id="ArrowLeft" class="com.razomy.notation.jetbrains.intellij.ide.plugin.project.ArrowInsertAction$Left" text="Left Arrow (←)">
+                <keyboard-shortcut first-keystroke="alt NUMPAD4" keymap="$default"/>
+            </action>
+            <action id="ArrowHoriz" class="com.razomy.notation.jetbrains.intellij.ide.plugin.project.ArrowInsertAction$Horizontal" text="Horizontal Arrow (↔)">
+                <keyboard-shortcut first-keystroke="alt NUMPAD5" keymap="$default"/>
+            </action>
+            <action id="ArrowRight" class="com.razomy.notation.jetbrains.intellij.ide.plugin.project.ArrowInsertAction$Right" text="Right Arrow (→)">
+                <keyboard-shortcut first-keystroke="alt NUMPAD6" keymap="$default"/>
+            </action>
+
+            <!-- Bottom Row -->
+            <action id="ArrowSW" class="com.razomy.notation.jetbrains.intellij.ide.plugin.project.ArrowInsertAction$SouthWest" text="SW Arrow (↙)">
+                <keyboard-shortcut first-keystroke="alt NUMPAD1" keymap="$default"/>
+            </action>
+            <action id="ArrowDown" class="com.razomy.notation.jetbrains.intellij.ide.plugin.project.ArrowInsertAction$Down" text="Down Arrow (↓)">
+                <keyboard-shortcut first-keystroke="alt NUMPAD2" keymap="$default"/>
+            </action>
+            <action id="ArrowSE" class="com.razomy.notation.jetbrains.intellij.ide.plugin.project.ArrowInsertAction$SouthEast" text="SE Arrow (↘)">
+                <keyboard-shortcut first-keystroke="alt NUMPAD3" keymap="$default"/>
+            </action>
+
+            <!-- Extra -->
+            <action id="ArrowVert" class="com.razomy.notation.jetbrains.intellij.ide.plugin.project.ArrowInsertAction$Vertical" text="Vertical Arrow (↕)">
+                <keyboard-shortcut first-keystroke="alt NUMPAD0" keymap="$default"/>
+            </action>
+
+            <action id="Delta" class="com.razomy.notation.jetbrains.intellij.ide.plugin.project.ArrowInsertAction$Delta" text="Delta (Δ)">
+                <keyboard-shortcut first-keystroke="alt SUBTRACT" keymap="$default"/>
+            </action>
+        </group>
+
     </actions>
 </idea-plugin>
