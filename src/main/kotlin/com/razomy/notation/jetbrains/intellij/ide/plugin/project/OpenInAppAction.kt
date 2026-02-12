@@ -14,9 +14,13 @@ class OpenInAppAction : AnAction() {
     fun getCommand(): String? {
         var id = this.templatePresentation.text
         return when (id) {
+            "Chrome" -> "open -a \"Google Chrome\""
             "WebStorm" -> "webstorm"
             "PyCharm" -> "pycharm"
             "Idea" -> "idea"
+            "Rider" -> "rider"
+            "Rust" -> "rustrover"
+            "Unity" -> "unity"
             else -> {
                 throw UnknownError("Unknown command: $id")
             }

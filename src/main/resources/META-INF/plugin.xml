@@ -112,6 +112,30 @@
                     description="Open in Python"
                     icon="AllIcons.Language.Python">
             </action>
+            <action id="com.razomy.notation.jetbrains.intellij.ide.plugin.OpenInAppRider"
+                    class="com.razomy.notation.jetbrains.intellij.ide.plugin.project.OpenInAppAction"
+                    text="Rider"
+                    description="Open in Rider"
+                    icon="AllIcons.Actions.AddDirectory">
+            </action>
+            <action id="com.razomy.notation.jetbrains.intellij.ide.plugin.OpenInAppRust"
+                    class="com.razomy.notation.jetbrains.intellij.ide.plugin.project.OpenInAppAction"
+                    text="Rust"
+                    description="Open in Rust"
+                    icon="AllIcons.Language.Rust">
+            </action>
+            <action id="com.razomy.notation.jetbrains.intellij.ide.plugin.OpenInAppUnity"
+                    class="com.razomy.notation.jetbrains.intellij.ide.plugin.project.OpenInAppAction"
+                    text="Unity"
+                    description="Open in Unity"
+                    icon="AllIcons.Actions.AddDirectory">
+            </action>
+            <action id="com.razomy.notation.jetbrains.intellij.ide.plugin.OpenInAppChrome"
+                    class="com.razomy.notation.jetbrains.intellij.ide.plugin.project.OpenInAppAction"
+                    text="Chrome"
+                    description="Open in Chrome"
+                    icon="AllIcons.Actions.AddDirectory">
+            </action>
         </group>
 
         <group id="ArrowInsertGroup" text="Insert Arrows" popup="true">
