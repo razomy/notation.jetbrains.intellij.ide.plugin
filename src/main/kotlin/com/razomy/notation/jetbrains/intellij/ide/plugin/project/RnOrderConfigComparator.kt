@@ -34,7 +34,9 @@ class RnOrderConfigComparator(private val project: Project?, private val paneId:
     private fun getSortIndex(fileName: String, directoryVf: VirtualFile?): Int {
         val configOrder = loadFileLines(directoryVf, "config.rn")
         var order = configOrder + rootConfigOrder()
-        return order.indexOf(fileName).takeIf { it >= 0 } ?: Int.MAX_VALUE
+        return order.indexOfFirst({
+            it.replace("^\\.+".toRegex(), "") == fileName.replace(".rn$".toRegex(), "")
+        }).takeIf { it >= 0 } ?: Int.MAX_VALUE
     }
 
     override fun compare(descriptor1: NodeDescriptor<*>?, descriptor2: NodeDescriptor<*>?): Int {
