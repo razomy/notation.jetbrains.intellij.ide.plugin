@@ -85,6 +85,11 @@
                 implementation="com.razomy.notation.jetbrains.intellij.ide.plugin.editor.RnConfigurationType"/>
         <runConfigurationProducer
                 implementation="com.razomy.notation.jetbrains.intellij.ide.plugin.editor.RnRunConfigurationProducer"/>
+        <toolWindow id="Local AI Chat"
+                    anchor="right"
+                    factoryClass="com.razomy.notation.jetbrains.intellij.ide.plugin.ai.AiChatToolWindowFactory"
+                    icon="AllIcons.General.Web"/>
+        <actionPromoter implementation="com.razomy.notation.jetbrains.intellij.ide.plugin.ai.InlineAiActionPromoter"/>
     </extensions>
     <actions>
         <group id="com.razomy.notation.jetbrains.intellij.ide.plugin.OpenInApp"
@@ -183,6 +188,19 @@
                 <keyboard-shortcut first-keystroke="alt SUBTRACT" keymap="$default"/>
             </action>
         </group>
+        <action id="Notation.InlineAiAction"
+                class="com.razomy.notation.jetbrains.intellij.ide.plugin.ai.InlineAiAction"
+                text="Inline AI Prompt"
+                description="Ask local AI about selected code">
+            <!-- Добавляем в меню правой кнопки мыши (чтобы можно было вызвать без клавиш) -->
+            <add-to-group group-id="EditorPopupMenu" anchor="first"/>
 
+            <!-- Жесткая привязка Option + Space для всех Mac систем -->
+            <keyboard-shortcut first-keystroke="meta I" keymap="Mac OS X" replace-all="true"/>
+            <keyboard-shortcut first-keystroke="meta I" keymap="Mac OS X 10.5+" replace-all="true"/>
+            <keyboard-shortcut first-keystroke="alt SPACE" keymap="Mac OS X" replace-all="true"/>
+            <keyboard-shortcut first-keystroke="alt SPACE" keymap="Mac OS X 10.5+" replace-all="true"/>
+            <keyboard-shortcut first-keystroke="alt SPACE" keymap="$default" replace-all="true"/>
+        </action>
     </actions>
 </idea-plugin>

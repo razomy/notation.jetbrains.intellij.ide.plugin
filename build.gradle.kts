@@ -23,6 +23,9 @@ dependencies {
         bundledPlugin("com.intellij.java")
         pluginVerifier()
     }
+    implementation(kotlin("stdlib-jdk8"))
+    implementation("com.google.code.gson:gson:2.10.1")
+    implementation("org.commonmark:commonmark:0.21.0")
 }
 
 intellijPlatform {
@@ -35,14 +38,21 @@ intellijPlatform {
 
 sourceSets["main"].java.srcDirs("src/main/gen")
 
+// 1. Устанавливаем единый Toolchain для всего проекта (Java 21)
+kotlin {
+    jvmToolchain(21)
+}
+
 tasks {
-    // Set the JVM compatibility versions
+    // 2. Указываем компилятору Java версию 21
     withType<JavaCompile> {
-        sourceCompatibility = "17"
-        targetCompatibility = "17"
+        sourceCompatibility = "21"
+        targetCompatibility = "21"
     }
+
+    // 3. Указываем компилятору Kotlin версию 21 (теперь они совпадают!)
     withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-        compilerOptions.jvmTarget = JvmTarget.JVM_17
+        compilerOptions.jvmTarget.set(JvmTarget.JVM_21)
     }
 
     patchPluginXml {
