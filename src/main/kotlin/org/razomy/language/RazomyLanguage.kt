@@ -230,6 +230,30 @@ class RazomySyntaxHighlighterFactory : SyntaxHighlighterFactory() {
 
 object RazomyUtil {
 
+    /**
+     * Возвращает полное имя сущности с учетом иерархии вложенности блоков { ... }.
+     * Например, для `Log` внутри `Shell { ... }` вернет "Shell.Log".
+     */
+    fun getQualifiedName(path: RazomyPath): String {
+        val parts = mutableListOf(path.text)
+        var current: PsiElement? = path
+
+        while (current != null) {
+            val parentBrace = PsiTreeUtil.getParentOfType(current, RazomyBraceGroup::class.java) ?: break
+            // Ищем заголовок объявления перед фигурной скобкой
+            val parentStmt = PsiTreeUtil.getParentOfType(parentBrace, RazomyStatement::class.java)
+            val parentDecl = parentStmt?.children?.filterIsInstance<RazomyPath>()?.firstOrNull { isDeclaration(it) }
+
+            if (parentDecl != null && parentDecl != current) {
+                parts.add(0, parentDecl.text)
+                current = parentDecl
+            } else {
+                current = parentBrace
+            }
+        }
+        return parts.joinToString(".")
+    }
+
     fun isDeclaration(path: RazomyPath): Boolean {
         val name = path.text
         if (name == "match" || name == "instanceof" || name == "const") return false
@@ -242,12 +266,13 @@ object RazomyUtil {
         val braceParents = PsiTreeUtil.collectParents(path, RazomyBraceGroup::class.java, false) { false }
 
         return if (braceParents.isEmpty()) {
-            true // В корне файла
+            true // В корне файла (в т.ч. Shell.Log { ... })
         } else {
             if (hasConst) {
-                true // Локальный const внутри { ... }
+                true // Локальный const
             } else {
                 val nextSibling = PsiTreeUtil.skipWhitespacesForward(path)
+                // Если после имени идет блок {...} или аргументы
                 nextSibling is RazomyGroup && nextSibling.braceGroup != null
             }
         }
@@ -526,6 +551,8 @@ class RazomyBlock(private val myNode: ASTNode, private val myWrap: Wrap?, privat
 
 // --- UNUSED INSPECTION ---
 
+// --- UNUSED INSPECTION ---
+
 class RazomyUnusedInspection : LocalInspectionTool() {
     override fun buildVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): PsiElementVisitor {
         return object : PsiElementVisitor() {
@@ -536,12 +563,30 @@ class RazomyUnusedInspection : LocalInspectionTool() {
 
                     val allPaths = PsiTreeUtil.findChildrenOfType(file, RazomyPath::class.java)
 
-                    // Считаем использованным, если имя встречается в файле где-либо кроме самого этого объявления
-                    val isUsed = allPaths.any { path ->
-                        path != element && path.text == name
+                    // 1. Проверяем обращение к этой сущности
+                    val isUsedAsReference = allPaths.any { path ->
+                        if (path == element || RazomyUtil.isDeclaration(path)) return@any false
+
+                        val pathText = path.text
+
+                        // Прямое совпадение (Shell)
+                        // ИЛИ префикс составного пути (Shell.Log, Shell.Command.Run)
+                        pathText == name ||
+                                pathText.startsWith("$name.") ||
+                                pathText.split('.').contains(name)
                     }
 
-                    if (!isUsed) {
+                    // 2. Если это контейнер (Shell { ... }), и внутри него объявлены члены,
+                    // к которым обращаются снаружи через Shell.xxx — такой контейнер также считается используемым
+                    val isUsedViaMember = if (!isUsedAsReference) {
+                        val qualifiedPrefix = RazomyUtil.getQualifiedName(element)
+                        allPaths.any { path ->
+                            !RazomyUtil.isDeclaration(path) &&
+                                    (path.text.startsWith("$qualifiedPrefix.") || path.text == qualifiedPrefix)
+                        }
+                    } else false
+
+                    if (!isUsedAsReference && !isUsedViaMember) {
                         holder.registerProblem(
                             element,
                             "Сущность '$name' нигде не используется",
@@ -553,6 +598,7 @@ class RazomyUnusedInspection : LocalInspectionTool() {
         }
     }
 }
+
 // --- ANNOTATOR ---
 
 class RazomyAnnotator : Annotator {
@@ -581,11 +627,22 @@ class RazomyAnnotator : Annotator {
             }
         }
 
-        // 2. ДЖЕНЕРИКИ / МЕТАДАННЫЕ <...>
+        // 2. ДЖЕНЕРИКИ / ПАРАМЕТРЫ В <...>
         val insideAngleGroup = PsiTreeUtil.getParentOfType(element, RazomyAngleGroup::class.java) != null
         if (insideAngleGroup) {
             highlight(element, holder, DefaultLanguageHighlighterColors.METADATA)
             return
+        }
+
+        // 3. ПРОВЕРКА НА НЕСУЩЕСТВУЮЩИЙ ИДЕНТИФИКАТОР
+        if (!RazomyUtil.isDeclaration(element)) {
+            if (!isResolved(element)) {
+                holder.newAnnotation(HighlightSeverity.ERROR, "Неизвестный идентификатор '$text'")
+                    .range(element.textRange)
+                    .highlightType(ProblemHighlightType.LIKE_UNKNOWN_SYMBOL)
+                    .create()
+                return
+            }
         }
 
         val isDecl = RazomyUtil.isDeclaration(element)
@@ -593,48 +650,48 @@ class RazomyAnnotator : Annotator {
         val isFunctionCall = nextNonSpace is RazomyParenGroup
         val isType = text.firstOrNull()?.isUpperCase() == true
 
-        // 3. СТОЙКАЯ ПОДСВЕТКА СИНТАКСИСА
+        // 4. ПОДСВЕТКА СИНТАКСИСА
         when {
-            // Вызовы функций: func(...) -> Нежно-желтый
-            isFunctionCall -> {
-                highlight(element, holder, DefaultLanguageHighlighterColors.FUNCTION_CALL)
-            }
-
-            // Константы: const foo -> Фиолетовый
-            isPrecededByConst(element) -> {
-                highlight(element, holder, DefaultLanguageHighlighterColors.CONSTANT)
-            }
-
-            // ОБЪЯВЛЕНИЕ типа с большой буквы (TextMessage, Message { ...)
-            // -> ЗОЛОТОЙ / ЖЕЛТЫЙ (как заголовок сущности)
-            isDecl && isType -> {
-                highlight(element, holder, DefaultLanguageHighlighterColors.FUNCTION_DECLARATION)
-            }
-
-            // ИСПОЛЬЗОВАНИЕ типа с большой буквы (Message, Text, DefaultStr)
-            // -> БИРЮЗОВЫЙ / ЦВЕТ АННОТАЦИЙ
-            isType -> {
-                highlight(element, holder, DefaultLanguageHighlighterColors.METADATA)
-            }
-
-            // Поля (str, text, foo.bar)
-            // -> ПУРПУРНЫЙ / ФИОЛЕТОВЫЙ
-            isField(element) || (isDecl && !isType) -> {
-                highlight(element, holder, DefaultLanguageHighlighterColors.INSTANCE_FIELD)
-            }
-
-            // Обычные локальные переменные
-            else -> {
-                highlight(element, holder, DefaultLanguageHighlighterColors.IDENTIFIER)
-            }
+            isFunctionCall -> highlight(element, holder, DefaultLanguageHighlighterColors.FUNCTION_CALL)
+            isPrecededByConst(element) -> highlight(element, holder, DefaultLanguageHighlighterColors.CONSTANT)
+            isDecl && isType -> highlight(element, holder, DefaultLanguageHighlighterColors.FUNCTION_DECLARATION)
+            isType -> highlight(element, holder, DefaultLanguageHighlighterColors.METADATA)
+            isField(element) || (isDecl && !isType) -> highlight(element, holder, DefaultLanguageHighlighterColors.INSTANCE_FIELD)
+            else -> highlight(element, holder, DefaultLanguageHighlighterColors.IDENTIFIER)
         }
     }
 
-    /**
-     * TEXT_ATTRIBUTES не сбрасывается фоновыми демонами IDE!
-     */
+    private fun isResolved(element: RazomyPath): Boolean {
+        val name = element.text
+        if (name == "match" || name == "instanceof" || name == "const") return true
+
+        val file = element.containingFile ?: return true
+
+        // 1. Проверяем параметры из <...> в родительских блоках
+        var parentGroup = PsiTreeUtil.getParentOfType(element, RazomyBraceGroup::class.java)
+        while (parentGroup != null) {
+            val angleGroups = PsiTreeUtil.findChildrenOfType(parentGroup, RazomyAngleGroup::class.java)
+            for (angle in angleGroups) {
+                if (angle.textOffset < element.textOffset) {
+                    val params = PsiTreeUtil.findChildrenOfType(angle, RazomyPath::class.java)
+                    if (params.any { it.text == name }) return true
+                }
+            }
+            parentGroup = PsiTreeUtil.getParentOfType(parentGroup, RazomyBraceGroup::class.java)
+        }
+
+        // 2. Ищем по файлу с учетом полных путей (Shell.Log)
+        val allPaths = PsiTreeUtil.findChildrenOfType(file, RazomyPath::class.java)
+        return allPaths.any { decl ->
+            if (decl != element && RazomyUtil.isDeclaration(decl)) {
+                val simpleName = decl.text
+                val qualifiedName = RazomyUtil.getQualifiedName(decl)
+                simpleName == name || qualifiedName == name || qualifiedName.endsWith(".$name")
+            } else false
+        }
+    }
+
     private fun highlight(element: PsiElement, holder: AnnotationHolder, colorKey: TextAttributesKey) {
-//        println(">>> КРАСИМ: '${element.text}' в цвет [${colorKey.externalName}]")
         holder.newSilentAnnotation(HighlightSeverity.TEXT_ATTRIBUTES)
             .range(element.textRange)
             .textAttributes(colorKey)
@@ -642,9 +699,6 @@ class RazomyAnnotator : Annotator {
     }
 
     private fun isField(element: PsiElement): Boolean {
-        val prevLeaf = PsiTreeUtil.skipWhitespacesBackward(element)
-        if (prevLeaf?.text == ".") return true
-
         val insideBraces = PsiTreeUtil.getParentOfType(element, RazomyBraceGroup::class.java) != null
         if (insideBraces) {
             val nextSibling = PsiTreeUtil.skipWhitespacesForward(element)
@@ -665,7 +719,7 @@ class RazomyAnnotator : Annotator {
         }
         return false
     }
-}// --- COMPLETION ---
+}
 
 class RazomyCompletionContributor : CompletionContributor() {
     init {
@@ -680,20 +734,24 @@ class RazomyCompletionContributor : CompletionContributor() {
                 ) {
                     val currentFile = parameters.originalFile
                     val existingPaths = PsiTreeUtil.findChildrenOfType(currentFile, RazomyPath::class.java)
-                    val uniqueWords = existingPaths.map { it.text }.toSet()
                     val currentWord = parameters.position.text.replace("IntellijIdeaRulezzz", "")
 
-                    for (word in uniqueWords) {
-                        if (word != currentWord) {
-                            val isType = word.firstOrNull()?.isUpperCase() == true
-                            val icon = if (isType) AllIcons.Nodes.Class else AllIcons.Nodes.Field
-                            val typeLabel = if (isType) "Type" else "Field"
+                    val decls = existingPaths.filter { RazomyUtil.isDeclaration(it) }
 
-                            result.addElement(
-                                LookupElementBuilder.create(word)
-                                    .withIcon(icon)
-                                    .withTypeText(typeLabel)
-                            )
+                    for (decl in decls) {
+                        val names = setOf(decl.text, RazomyUtil.getQualifiedName(decl))
+                        for (word in names) {
+                            if (word != currentWord) {
+                                val isType = word.firstOrNull()?.isUpperCase() == true
+                                val icon = if (isType) AllIcons.Nodes.Class else AllIcons.Nodes.Field
+                                val typeLabel = if (word.contains('.')) "Member" else (if (isType) "Type" else "Field")
+
+                                result.addElement(
+                                    LookupElementBuilder.create(word)
+                                        .withIcon(icon)
+                                        .withTypeText(typeLabel)
+                                )
+                            }
                         }
                     }
                 }
@@ -701,7 +759,6 @@ class RazomyCompletionContributor : CompletionContributor() {
         )
     }
 }
-
 // --- BRACE MATCHER, FOLDING, COMMENTER ---
 
 class RazomyBraceMatcher : PairedBraceMatcher {
@@ -746,16 +803,35 @@ class RazomyReference(element: RazomyPath, textRange: TextRange) : PsiReferenceB
 
     override fun multiResolve(incompleteCode: Boolean): Array<ResolveResult> {
         val file = myElement.containingFile ?: return emptyArray()
-        val name = myElement.text
-
-        // Ищем по всему файлу объявления с таким же именем
-        val allPaths = PsiTreeUtil.findChildrenOfType(file, RazomyPath::class.java)
+        val pathText = myElement.text
         val results = mutableListOf<ResolveResult>()
 
-        for (path in allPaths) {
-            // Имя совпадает, это не мы сами, и это точно объявление
-            if (path != myElement && path.text == name && RazomyUtil.isDeclaration(path)) {
-                results.add(PsiElementResolveResult(path))
+        // 1. Ищем среди параметров угловых скобок <name> в родительских scope
+        var parentGroup = PsiTreeUtil.getParentOfType(myElement, RazomyBraceGroup::class.java)
+        while (parentGroup != null) {
+            val angleGroups = PsiTreeUtil.findChildrenOfType(parentGroup, RazomyAngleGroup::class.java)
+            for (angle in angleGroups) {
+                val params = PsiTreeUtil.findChildrenOfType(angle, RazomyPath::class.java)
+                for (param in params) {
+                    if (param.text == pathText) {
+                        results.add(PsiElementResolveResult(param))
+                    }
+                }
+            }
+            parentGroup = PsiTreeUtil.getParentOfType(parentGroup, RazomyBraceGroup::class.java)
+        }
+
+        // 2. Ищем по файлу объявления (с учетом составных имен Shell.Log)
+        val allPaths = PsiTreeUtil.findChildrenOfType(file, RazomyPath::class.java)
+        for (decl in allPaths) {
+            if (decl != myElement && RazomyUtil.isDeclaration(decl)) {
+                val simpleName = decl.text
+                val qualifiedName = RazomyUtil.getQualifiedName(decl)
+
+                // Совпадение по прямому имени или по полному составному пути Shell.Log
+                if (simpleName == pathText || qualifiedName == pathText || qualifiedName.endsWith(".$pathText")) {
+                    results.add(PsiElementResolveResult(decl))
+                }
             }
         }
 
