@@ -17,7 +17,6 @@ WHITE_SPACE=[ \t\r]+
 CRLF=\R
 LINE_COMMENT="//".*
 
-// Обычный ID начинается с буквы. Если начинается с '_', то это ID только если за '_' идут еще символы.
 IDENTIFIER=[a-zA-Z][a-zA-Z0-9_]*|_[a-zA-Z0-9_]+
 NUMBER=[0-9]+(\.[0-9]+)?
 STRING=\"([^\"\\]|\\.)*\"|\'([^\'\\]|\\.)*\'
@@ -40,7 +39,6 @@ STRING=\"([^\"\\]|\\.)*\"|\'([^\'\\]|\\.)*\'
   ".>"                 { return RazomyTypes.DOT_GT; }
   ".&"                 { return RazomyTypes.DOT_AMP; }
   "->"                 { return RazomyTypes.MIGRATION; }
-  "."                  { return RazomyTypes.DOT; }
 
   // Сравнения
   "=="                 { return RazomyTypes.EQ_EQ; }
@@ -59,7 +57,7 @@ STRING=\"([^\"\\]|\\.)*\"|\'([^\'\\]|\\.)*\'
   "-"                  { return RazomyTypes.MINUS; }
   "*"                  { return RazomyTypes.MUL; }
 
-  // Разделители и спецсимволы
+  // Разделители
   ","                  { return RazomyTypes.COMMA; }
   "_"                  { return RazomyTypes.UNDERSCORE; }
   ";"                  { return RazomyTypes.SEMICOLON; }
@@ -71,6 +69,11 @@ STRING=\"([^\"\\]|\\.)*\"|\'([^\'\\]|\\.)*\'
   {IDENTIFIER}         { return RazomyTypes.IDENTIFIER; }
   {NUMBER}             { return RazomyTypes.NUMBER; }
   {STRING}             { return RazomyTypes.STRING; }
+
+  // ВАЖНО: Разделение точки доступа (User.Id) и точки пайплайна (A . B)
+  // Если точка окружена пробелами или стоит в начале пайплайна после перевода строки:
+  "."/{WHITE_SPACE}    { return RazomyTypes.PIPE_DOT; }
+  "."                  { return RazomyTypes.DOT; }
 }
 
 [^] { return BAD_CHARACTER; }

@@ -630,14 +630,14 @@ public class RazomyParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // DOT_GT | DOT_AMP | DOT
+  // DOT_GT | DOT_AMP | PIPE_DOT
   public static boolean pipeline_op(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "pipeline_op")) return false;
     boolean r;
     Marker m = enter_section_(b, l, _NONE_, PIPELINE_OP, "<pipeline op>");
     r = consumeToken(b, DOT_GT);
     if (!r) r = consumeToken(b, DOT_AMP);
-    if (!r) r = consumeToken(b, DOT);
+    if (!r) r = consumeToken(b, PIPE_DOT);
     exit_section_(b, l, m, r, false, null);
     return r;
   }
@@ -690,7 +690,7 @@ public class RazomyParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // LPAREN (CRLF2 | slot_item)? (COMMA (CRLF2 | slot_item))* RPAREN
+  // LPAREN (CRLF2 | SEMICOLON | COMMA | slot_item)* RPAREN
   public static boolean slot(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "slot")) return false;
     if (!nextTokenIs(b, LPAREN)) return false;
@@ -698,55 +698,29 @@ public class RazomyParser implements PsiParser, LightPsiParser {
     Marker m = enter_section_(b);
     r = consumeToken(b, LPAREN);
     r = r && slot_1(b, l + 1);
-    r = r && slot_2(b, l + 1);
     r = r && consumeToken(b, RPAREN);
     exit_section_(b, m, SLOT, r);
     return r;
   }
 
-  // (CRLF2 | slot_item)?
+  // (CRLF2 | SEMICOLON | COMMA | slot_item)*
   private static boolean slot_1(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "slot_1")) return false;
-    slot_1_0(b, l + 1);
-    return true;
-  }
-
-  // CRLF2 | slot_item
-  private static boolean slot_1_0(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "slot_1_0")) return false;
-    boolean r;
-    r = consumeToken(b, CRLF2);
-    if (!r) r = slot_item(b, l + 1);
-    return r;
-  }
-
-  // (COMMA (CRLF2 | slot_item))*
-  private static boolean slot_2(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "slot_2")) return false;
     while (true) {
       int c = current_position_(b);
-      if (!slot_2_0(b, l + 1)) break;
-      if (!empty_element_parsed_guard_(b, "slot_2", c)) break;
+      if (!slot_1_0(b, l + 1)) break;
+      if (!empty_element_parsed_guard_(b, "slot_1", c)) break;
     }
     return true;
   }
 
-  // COMMA (CRLF2 | slot_item)
-  private static boolean slot_2_0(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "slot_2_0")) return false;
-    boolean r;
-    Marker m = enter_section_(b);
-    r = consumeToken(b, COMMA);
-    r = r && slot_2_0_1(b, l + 1);
-    exit_section_(b, m, null, r);
-    return r;
-  }
-
-  // CRLF2 | slot_item
-  private static boolean slot_2_0_1(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "slot_2_0_1")) return false;
+  // CRLF2 | SEMICOLON | COMMA | slot_item
+  private static boolean slot_1_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "slot_1_0")) return false;
     boolean r;
     r = consumeToken(b, CRLF2);
+    if (!r) r = consumeToken(b, SEMICOLON);
+    if (!r) r = consumeToken(b, COMMA);
     if (!r) r = slot_item(b, l + 1);
     return r;
   }

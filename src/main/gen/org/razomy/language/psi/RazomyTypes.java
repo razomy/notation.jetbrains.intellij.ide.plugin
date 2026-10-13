@@ -58,6 +58,7 @@ public interface RazomyTypes {
   IElementType NOT_EQ = new RazomyTokenType("!=");
   IElementType NUMBER = new RazomyTokenType("NUMBER");
   IElementType PIPE = new RazomyTokenType("|");
+  IElementType PIPE_DOT = new RazomyTokenType("PIPE_DOT");
   IElementType PLUS = new RazomyTokenType("+");
   IElementType RANGLE = new RazomyTokenType(">");
   IElementType RBRACE = new RazomyTokenType("}");

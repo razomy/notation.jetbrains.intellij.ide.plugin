@@ -23,6 +23,7 @@
 
     DOT_GT='.>'
     DOT_AMP='.&'
+    PIPE_DOT='.'
     MIGRATION='->'
     DOT='.'
 
@@ -61,17 +62,17 @@
 // 1. Корень файла
 razomyFile ::= (CRLF2 | SEMICOLON | declaration)*
 
-// 2. Декларация на уровне файла (Имя + Значение/Блок)
+// 2. Декларация на уровне файла
 declaration ::= expr expr? {pin=1}
 
 // =============================================================================
-// ИЕРАРХИЯ ВЫРАЖЕНИЙ (От наименьшего приоритета к наибольшему)
+// ИЕРАРХИЯ ВЫРАЖЕНИЙ
 // =============================================================================
 
 expr ::= pipeline_expr
 
 pipeline_expr ::= migrate_expr ( (CRLF2)* pipeline_op (CRLF2)* migrate_expr )*
-pipeline_op ::= DOT_GT | DOT_AMP | DOT
+pipeline_op ::= DOT_GT | DOT_AMP | PIPE_DOT
 
 migrate_expr ::= union_expr ( (CRLF2)* MIGRATION (CRLF2)* union_expr )*
 
@@ -89,7 +90,7 @@ mul_expr ::= primary_expr ( (CRLF2)* mul_op (CRLF2)* primary_expr )*
 mul_op ::= MUL
 
 // =============================================================================
-// БАЗОВЫЕ СТРУКТУРЫ (ПЕРВИЧНЫЕ ВЫРАЖЕНИЯ)
+// БАЗОВЫЕ СТРУКТУРЫ
 // =============================================================================
 
 primary_expr ::= literal
@@ -107,7 +108,7 @@ call_expr ::= path slot
 typed_form_block ::= path form_block
 typed_flow_block ::= path flow_block
 
-// Поддержка анонимного контекста в начале пути (например _.Age) и как одиночного токена (_)
+// Обращение к полям слитное: User.Id, Err.Log, _.Age
 path ::= path_root (DOT IDENTIFIER)* {
     mixin="org.razomy.language.RazomyPathMixin"
     implements="com.intellij.psi.PsiNameIdentifierOwner"
@@ -115,18 +116,17 @@ path ::= path_root (DOT IDENTIFIER)* {
 private path_root ::= IDENTIFIER | UNDERSCORE
 
 // =============================================================================
-// СКОБКИ И БЛОКИ (Формы, Потоки, Слоты)
+// СКОБКИ И БЛОКИ
 // =============================================================================
 
-// () — Слот (Захват объекта в переменную, Кортежи, Типизированные аргументы)
-slot ::= LPAREN (CRLF2 | slot_item)? (COMMA (CRLF2 | slot_item))* RPAREN
-slot_item ::= expr expr? {pin=1} // Поддержка `(U User)`
+// () — Слот теперь поддерживает любые разделители (запятая, перенос, точка с запятой)
+slot ::= LPAREN (CRLF2 | SEMICOLON | COMMA | slot_item)* RPAREN
+slot_item ::= expr expr? {pin=1}
 
-// {} — Форма (Структуры данных, Таблицы маршрутизации)
-// Поддерживает запятые, точки с запятой и переносы строк как разделители
+// {} — Форма
 form_block ::= LBRACE (CRLF2 | SEMICOLON | COMMA | form_item)* RBRACE
-form_item ::= expr expr? {pin=1} // Поддержка `Id Str` или `[ _ > 0 ] [ 300 ]`
+form_item ::= expr expr? {pin=1}
 
-// [] — Поток (Пайплайны, Предикаты)
+// [] — Поток
 flow_block ::= LBRACKET (CRLF2 | SEMICOLON | flow_item)* RBRACKET
-flow_item ::= expr {pin=1} // Внутри пайплайна просто список выражений
+flow_item ::= expr {pin=1}

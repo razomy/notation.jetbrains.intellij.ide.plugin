@@ -67,8 +67,7 @@ object RazomyTypeSystem {
         for (decl in globalDecls) {
             val path = PsiTreeUtil.findChildOfType(decl, RazomyPath::class.java)
             if (path?.text == name) {
-
-                // 1. Прямая Форма
+                // 1. Форма { ... }
                 val formBlock = PsiTreeUtil.findChildOfType(decl, RazomyFormBlock::class.java)
                 if (formBlock != null) {
                     val fields = mutableMapOf<String, PsiElement>()
@@ -82,34 +81,46 @@ object RazomyTypeSystem {
                     return RazomyType.Form(name, path, fields)
                 }
 
-                // 2. Алиас / Наследование
+                // 2. Алиас / Наследование (User & Identifiable)
                 val allPaths = PsiTreeUtil.findChildrenOfType(decl, RazomyPath::class.java).toList()
                 val baseTypePath = allPaths.drop(1).firstOrNull { it.text.firstOrNull()?.isUpperCase() == true }
-
                 if (baseTypePath != null) {
                     return inferTypeByName(baseTypePath.text, context)
                 }
             }
         }
-        // Убрали спам из логов, так как поля с большой буквы тоже сюда попадают
         return RazomyType.Unknown
     }
 
     fun inferTypeOfElement(element: PsiElement): RazomyType {
-        val text = element.text
-        if (text.firstOrNull()?.isUpperCase() == true) {
-            return inferTypeByName(text, element)
-        }
-
+        // Если это путь, сначала проверим: не является ли он объявлением переменной в слоте?
         if (element is RazomyPath) {
             val slotItem = PsiTreeUtil.getParentOfType(element, RazomySlotItem::class.java)
             if (slotItem != null) {
                 val paths = PsiTreeUtil.findChildrenOfType(slotItem, RazomyPath::class.java).toList()
+                // Вариант 1: Явно указан тип в слоте, например: (Err BuildError)
                 if (paths.size > 1 && paths[0] == element) {
                     return inferTypeByName(paths[1].text, element)
                 }
+
+                // Вариант 2: Захват в роутере, например: BuildError(NewErr)
+                val callExpr = PsiTreeUtil.getParentOfType(slotItem, RazomyCallExpr::class.java)
+                if (callExpr != null) {
+                    val callerPath = PsiTreeUtil.getChildOfType(callExpr, RazomyPath::class.java)
+                    if (callerPath != null && callerPath.text.firstOrNull()?.isUpperCase() == true) {
+                        return inferTypeByName(callerPath.text, element)
+                    }
+                }
             }
         }
+
+        // Если это глобальный тип (начинается с большой буквы и это не переменная из слота)
+        val text = element.text
+        if (text.firstOrNull()?.isUpperCase() == true) {
+            val resolvedType = inferTypeByName(text, element)
+            if (resolvedType !is RazomyType.Unknown) return resolvedType
+        }
+
         return RazomyType.Unknown
     }
 
@@ -127,8 +138,7 @@ object RazomyTypeSystem {
                 }
             }
 
-            // ПРАВИЛО 2: Видимость "соседей" внутри одной формы (FormBlock)
-            // Позволяет FinalPrice видеть Discount, так как они в одном блоке { ... }
+            // ПРАВИЛО 2: Видимость "соседей" внутри одной формы
             if (current is RazomyFormBlock) {
                 val items = PsiTreeUtil.findChildrenOfType(current, RazomyFormItem::class.java)
                 for (item in items) {
@@ -139,13 +149,10 @@ object RazomyTypeSystem {
                 }
             }
 
-            // ПРАВИЛО 3: Проброс контекста (Data-Flow) в пайплайне
-            // Если мы внутри потока [ ... ], все анонимные формы { ... },
-            // созданные ДО нашего текущего положения (слева или выше), отдают свои поля нам.
+            // ПРАВИЛО 3: Проброс контекста в пайплайне [ ... ]
             if (current is RazomyFlowBlock) {
                 val precedingForms = PsiTreeUtil.findChildrenOfType(current, RazomyFormBlock::class.java)
                 for (formBlock in precedingForms) {
-                    // Проверяем, что форма была объявлена до того места, где мы сейчас находимся
                     if (formBlock.textOffset < element.textOffset) {
                         val items = PsiTreeUtil.findChildrenOfType(formBlock, RazomyFormItem::class.java)
                         for (item in items) {
@@ -158,7 +165,7 @@ object RazomyTypeSystem {
                 }
             }
 
-            // ПРАВИЛО 4: ЗАХВАТ СЛОТОВ И УМНЫЙ ВЫВОД ТИПОВ
+            // ПРАВИЛО 4: ЗАХВАТ СЛОТОВ И ТИПОВ
             if (current is RazomyDeclaration || current is RazomyFormItem || current is RazomyCallExpr) {
                 val slot = PsiTreeUtil.findChildOfType(current, RazomySlot::class.java)
                 if (slot != null && slot.textOffset < element.textOffset) {
@@ -169,19 +176,14 @@ object RazomyTypeSystem {
                             val varName = paths[0]
                             scope.variables[varName.text] = varName
 
-                            // АВТО-ТИПИЗАЦИЯ ПО ИМЕНИ!
-                            // Если указан тип (Order Order) - берем его.
-                            // Если нет (Order) - переводим первую букву в верхний регистр
-                            // (order -> Order) и ищем такой тип в файле.
-                            val typeName = if (paths.size > 1) {
-                                paths[1].text
-                            } else {
-                                varName.text.replaceFirstChar { it.uppercaseChar() }
-                            }
-
-                            val resolvedType = inferTypeByName(typeName, element)
+                            // Вычисляем тип для распаковки полей:
+                            val resolvedType = inferTypeOfElement(varName)
                             if (resolvedType !is RazomyType.Unknown) {
                                 scope.unpackedFields.putAll(RazomyType.extractFields(resolvedType))
+                            } else {
+                                // Фолбэк: если это имя само совпадает с типом (TaskPolicy -> TaskPolicy)
+                                val fallbackType = inferTypeByName(varName.text, element)
+                                scope.unpackedFields.putAll(RazomyType.extractFields(fallbackType))
                             }
                         }
                     }
@@ -203,7 +205,6 @@ object RazomyTypeSystem {
         return scope
     }
 }
-
 object RazomyResolver {
     private val LOG = Logger.getInstance("RazomyResolver")
 
@@ -739,8 +740,11 @@ class RazomyStructureElement(private val element: PsiElement) : StructureViewTre
 
 class RazomyFormattingModelBuilder : FormattingModelBuilder {
     override fun createModel(formattingContext: FormattingContext): FormattingModel {
-        val block =
-            RazomyBlock(formattingContext.node, Wrap.createWrap(WrapType.NONE, false), Alignment.createAlignment())
+        val block = RazomyBlock(
+            formattingContext.node,
+            Wrap.createWrap(WrapType.NONE, false),
+            Alignment.createAlignment()
+        )
         return FormattingModelProvider.createFormattingModelForPsiFile(
             formattingContext.containingFile,
             block,
@@ -749,8 +753,12 @@ class RazomyFormattingModelBuilder : FormattingModelBuilder {
     }
 }
 
-class RazomyBlock(private val myNode: ASTNode, private val myWrap: Wrap?, private val myAlignment: Alignment?) :
-    ASTBlock {
+class RazomyBlock(
+    private val myNode: ASTNode,
+    private val myWrap: Wrap?,
+    private val myAlignment: Alignment?
+) : ASTBlock {
+
     override fun getNode() = myNode
     override fun getTextRange() = myNode.textRange
     override fun getWrap() = myWrap
@@ -760,7 +768,10 @@ class RazomyBlock(private val myNode: ASTNode, private val myWrap: Wrap?, privat
         val blocks = mutableListOf<Block>()
         var child = myNode.firstChildNode
         while (child != null) {
-            if (child.elementType != TokenType.WHITE_SPACE && child.elementType != RazomyTypes.CRLF2 && child.textRange.length > 0) {
+            if (child.elementType != TokenType.WHITE_SPACE &&
+                child.elementType != RazomyTypes.CRLF2 &&
+                child.textRange.length > 0
+            ) {
                 blocks.add(RazomyBlock(child, Wrap.createWrap(WrapType.NONE, false), null))
             }
             child = child.treeNext
@@ -772,6 +783,7 @@ class RazomyBlock(private val myNode: ASTNode, private val myWrap: Wrap?, privat
         val parentType = myNode.treeParent?.elementType
         val groups = listOf(RazomyTypes.FLOW_BLOCK, RazomyTypes.FORM_BLOCK, RazomyTypes.SLOT)
 
+        // Делаем отступ только для элементов внутри блоков {...}, [...] или (...)
         if (parentType in groups &&
             myNode.elementType != RazomyTypes.LBRACE && myNode.elementType != RazomyTypes.RBRACE &&
             myNode.elementType != RazomyTypes.LBRACKET && myNode.elementType != RazomyTypes.RBRACKET &&
@@ -782,12 +794,33 @@ class RazomyBlock(private val myNode: ASTNode, private val myWrap: Wrap?, privat
         return Indent.getNoneIndent()
     }
 
-    override fun getSpacing(child1: Block?, child2: Block) = null
-    override fun getChildAttributes(newChildIndex: Int) = ChildAttributes(Indent.getNormalIndent(), null)
-    override fun isIncomplete() = false
+    override fun getSpacing(child1: Block?, child2: Block): Spacing? {
+        return null
+    }
+
+    // ИСПРАВЛЕНИЕ БАГА:
+    // Добавляем отступ только если мы действительно внутри незакрытого блока скобок.
+    // На верхнем уровне файла или в обычных выражениях возвращаем NoneIndent.
+    override fun getChildAttributes(newChildIndex: Int): ChildAttributes {
+        val blockTypes = listOf(RazomyTypes.FLOW_BLOCK, RazomyTypes.FORM_BLOCK, RazomyTypes.SLOT)
+        if (myNode.elementType in blockTypes) {
+            return ChildAttributes(Indent.getNormalIndent(), null)
+        }
+        return ChildAttributes(Indent.getNoneIndent(), null)
+    }
+
+    override fun isIncomplete(): Boolean {
+        val lastChild = myNode.lastChildNode
+        return when (myNode.elementType) {
+            RazomyTypes.FORM_BLOCK -> lastChild?.elementType != RazomyTypes.RBRACE
+            RazomyTypes.FLOW_BLOCK -> lastChild?.elementType != RazomyTypes.RBRACKET
+            RazomyTypes.SLOT -> lastChild?.elementType != RazomyTypes.RPAREN
+            else -> false
+        }
+    }
+
     override fun isLeaf() = myNode.firstChildNode == null
 }
-
 
 // --- INSPECTIONS ---
 
@@ -853,14 +886,25 @@ class RazomyUnusedInspection : LocalInspectionTool() {
 
 
 // --- ANNOTATOR ---
-// --- ANNOTATOR ---
 class RazomyAnnotator : Annotator {
+
     companion object {
         private val ESCAPE_PATTERN = Regex("""\\[ntr\"'\\{}]""")
         private val INTERPOLATION_PATTERN = Regex("""(?<!\\)\{([^}]+)\}""")
+
+        // Контрастные атрибуты IntelliJ, которые гарантированно видны в стандартных темах:
+        val COLOR_MODULE = DefaultLanguageHighlighterColors.CLASS_NAME              // Модули (Shell)
+        val COLOR_TYPE = DefaultLanguageHighlighterColors.CLASS_REFERENCE           // Типы/Структуры (AiContext, BuildSuccess)
+        val COLOR_FUNCTION_DEF = DefaultLanguageHighlighterColors.FUNCTION_DECLARATION // Определение функции (RunBuild)
+        val COLOR_METHOD_CALL = DefaultLanguageHighlighterColors.STATIC_METHOD      // Вызов функции/метода (Shell.Log, . AttemptFix)
+        val COLOR_FIELD = DefaultLanguageHighlighterColors.INSTANCE_FIELD           // Поля структур (CleanLog, Retries, Head)
+        val COLOR_PARAM = DefaultLanguageHighlighterColors.PARAMETER                // Параметры функций (ErrorLog, Cmd)
+        val COLOR_VARIABLE = DefaultLanguageHighlighterColors.LOCAL_VARIABLE        // Переменные / аргументы
+        val COLOR_NATIVE = DefaultLanguageHighlighterColors.PREDEFINED_SYMBOL       // Системные вызовы (native_print)
     }
 
     override fun annotate(element: PsiElement, holder: AnnotationHolder) {
+        // 1. Строки, Escape-последовательности и интерполяция
         if (element.node.elementType == RazomyTypes.STRING || element.textContains('\"') || element.textContains('\'')) {
             if (element.node.elementType == RazomyTypes.STRING) annotateString(element, holder)
             return
@@ -869,31 +913,32 @@ class RazomyAnnotator : Annotator {
         if (element !is RazomyPath) return
         val text = element.text.trim()
 
-        // Отключаем аннотатор на моменте автокомплита, чтобы не было ложных красных ошибок
         if (text.isEmpty() || text.endsWith(".") || text.contains("IntellijIdeaRulezzz")) return
 
+        // 2. Wildcard и подстановки (_ и _.)
         if (text == "_" || text.startsWith("_.")) {
             highlight(element, holder, DefaultLanguageHighlighterColors.KEYWORD)
             return
         }
 
+        // 3. Нативные вызовы
+        if (text.startsWith("native_") || text.contains("native_")) {
+            highlight(element, holder, COLOR_NATIVE)
+            return
+        }
+
         val isDecl = RazomyUtil.isDeclaration(element)
         val isMemberAccess = text.contains(".")
-        val isType = !isMemberAccess && text.firstOrNull()?.isUpperCase() == true
 
-        // СТРОГАЯ СЕМАНТИКА
+        // =========================================================================
+        // 4. СТРОГАЯ ВАЛИДАЦИЯ И ПРОВЕРКА ОШИБОК
+        // =========================================================================
         if (!isDecl) {
             val resolved = RazomyResolver.resolvePath(element, text)
             val scope = RazomyTypeSystem.buildScope(element)
             val isResolvedLocally = !isMemberAccess && (scope.variables.containsKey(text) || scope.unpackedFields.containsKey(text))
 
             if (resolved == null && !isResolvedLocally) {
-                // Игнорируем нативные вызовы
-                if (text.contains("native_")) {
-                    highlight(element, holder, DefaultLanguageHighlighterColors.PREDEFINED_SYMBOL)
-                    return
-                }
-
                 if (isMemberAccess) {
                     val parts = text.split(".")
                     holder.newAnnotation(HighlightSeverity.ERROR, "Неразрешенное поле: '${parts.last()}' в '${parts.dropLast(1).joinToString(".")}'")
@@ -906,25 +951,195 @@ class RazomyAnnotator : Annotator {
                         .highlightType(ProblemHighlightType.LIKE_UNKNOWN_SYMBOL)
                         .create()
                 }
+                return // При ошибке прерываем цепочку, чтобы не перетирать красное подчеркивание
+            }
+        }
+
+        // =========================================================================
+        // 5. СЕМАНТИЧЕСКАЯ ОТРИСОВКА
+        // =========================================================================
+
+        // А. Обращение через точку (Shell.Log, NewErr.Log) — красим каждую часть раздельно
+        if (isMemberAccess) {
+            annotateMemberAccess(element, holder)
+            return
+        }
+
+        // Б. Параметры в слотах: AttemptFix(ErrorLog) или BuildError(NewErr)
+        val enclosingSlot = PsiTreeUtil.getParentOfType(element, RazomySlot::class.java)
+        if (enclosingSlot != null && isParameterInsideSlot(element, enclosingSlot)) {
+            highlight(element, holder, COLOR_PARAM)
+            return
+        }
+
+        // В. Объявления (Декларации)
+        if (isDecl) {
+            annotateDeclaration(element, holder)
+            return
+        }
+
+        // Г. Использования (Ссылки и вызовы)
+        annotateUsage(element, holder, text)
+    }
+
+    // -------------------------------------------------------------------------
+    // Составные пути: Shell.Log, User.Id, NewErr.Log
+    // -------------------------------------------------------------------------
+    private fun annotateMemberAccess(element: RazomyPath, holder: AnnotationHolder) {
+        val children = element.node.getChildren(null).filter {
+            it.elementType != TokenType.WHITE_SPACE && it.elementType != RazomyTypes.CRLF2
+        }
+
+        var isAfterDot = false
+        for (node in children) {
+            if (node.elementType == RazomyTypes.DOT) {
+                isAfterDot = true
+                continue
+            }
+
+            val partText = node.text
+            if (!isAfterDot) {
+                // Левая часть: Shell (Модуль) или NewErr (Переменная)
+                if (partText.firstOrNull()?.isUpperCase() == true) {
+                    highlightRange(node.textRange, holder, COLOR_MODULE)
+                } else {
+                    highlightRange(node.textRange, holder, COLOR_VARIABLE)
+                }
+            } else {
+                // Правая часть: Log / Exec (Метод) или Size / Id (Поле)
+                val isMethod = partText.firstOrNull()?.isUpperCase() == true
+                val rightColor = if (isMethod) COLOR_METHOD_CALL else COLOR_FIELD
+                highlightRange(node.textRange, holder, rightColor)
+            }
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Определение сущностей при объявлении
+    // -------------------------------------------------------------------------
+    private fun annotateDeclaration(element: RazomyPath, holder: AnnotationHolder) {
+        val parent = element.parent
+
+        // 1. Прямая связь: Name [ ... ] или Name { ... }
+        if (parent is RazomyTypedFlowBlock) {
+            highlight(element, holder, COLOR_FUNCTION_DEF)
+            return
+        }
+        if (parent is RazomyTypedFormBlock) {
+            if (isModuleForm(parent.formBlock)) {
+                highlight(element, holder, COLOR_MODULE)
+            } else {
+                highlight(element, holder, COLOR_TYPE)
+            }
+            return
+        }
+
+        // 2. Сигнатуры с аргументами: Func(A) [ ... ] или Type(T) { ... }
+        val grandParent = parent?.parent
+        if (grandParent is RazomyTypedFlowBlock && parent is RazomyCallExpr) {
+            highlight(element, holder, COLOR_FUNCTION_DEF)
+            return
+        }
+        if (grandParent is RazomyTypedFormBlock && parent is RazomyCallExpr) {
+            highlight(element, holder, COLOR_TYPE)
+            return
+        }
+
+        // 3. Анализ элементов деклараций через выражения: expr expr?
+        val targetItem = PsiTreeUtil.getParentOfType(element, RazomyDeclaration::class.java, RazomyFormItem::class.java)
+        if (targetItem != null) {
+            val expressions = PsiTreeUtil.getChildrenOfType(targetItem, RazomyExpr::class.java)
+            if (expressions != null && expressions.size >= 2) {
+                val valueExpr = expressions[1]
+
+                // За именем следует блок потока [ ... ] -> Функция
+                if (PsiTreeUtil.findChildOfType(valueExpr, RazomyFlowBlock::class.java) != null) {
+                    highlight(element, holder, COLOR_FUNCTION_DEF)
+                    return
+                }
+
+                // За именем следует форма { ... } -> Структура или Модуль
+                val formBlock = PsiTreeUtil.findChildOfType(valueExpr, RazomyFormBlock::class.java)
+                if (formBlock != null) {
+                    if (isModuleForm(formBlock)) {
+                        highlight(element, holder, COLOR_MODULE)
+                    } else {
+                        highlight(element, holder, COLOR_TYPE)
+                    }
+                    return
+                }
+
+                // Внутри формы левая часть — поле: CleanLog String
+                if (targetItem is RazomyFormItem) {
+                    highlight(element, holder, COLOR_FIELD)
+                    return
+                }
+            } else if (expressions != null && expressions.size == 1 && targetItem is RazomyFormItem) {
+                highlight(element, holder, COLOR_FIELD)
                 return
             }
         }
 
-        // Красивая семантическая подсветка
-        val parentType = element.parent?.node?.elementType
-        val isCall = parentType == RazomyTypes.CALL_EXPR ||
-                parentType == RazomyTypes.TYPED_FORM_BLOCK ||
-                parentType == RazomyTypes.TYPED_FLOW_BLOCK
-
-        when {
-            isMemberAccess -> highlight(element, holder, DefaultLanguageHighlighterColors.INSTANCE_FIELD)
-            isCall && isType -> highlight(element, holder, DefaultLanguageHighlighterColors.CLASS_REFERENCE)
-            isCall -> highlight(element, holder, DefaultLanguageHighlighterColors.FUNCTION_CALL)
-            isDecl && isType -> highlight(element, holder, DefaultLanguageHighlighterColors.CLASS_NAME)
-            isType -> highlight(element, holder, DefaultLanguageHighlighterColors.CLASS_REFERENCE)
-            isDecl -> highlight(element, holder, DefaultLanguageHighlighterColors.INSTANCE_FIELD)
-            else -> highlight(element, holder, DefaultLanguageHighlighterColors.IDENTIFIER)
+        // По умолчанию
+        if (element.text.firstOrNull()?.isUpperCase() == true) {
+            highlight(element, holder, COLOR_TYPE)
+        } else {
+            highlight(element, holder, COLOR_FIELD)
         }
+    }
+
+    // -------------------------------------------------------------------------
+    // Определение сущностей при использовании
+    // -------------------------------------------------------------------------
+    private fun annotateUsage(element: RazomyPath, holder: AnnotationHolder, text: String) {
+        val parent = element.parent
+
+        // 1. Поле инициализации в форме: TaskPolicy { CleanLog Log, Retries 3 }
+        if (parent is RazomyFormItem) {
+            val firstExpr = PsiTreeUtil.findChildOfType(parent, RazomyExpr::class.java)
+            if (firstExpr != null && PsiTreeUtil.isAncestor(firstExpr, element, false)) {
+                highlight(element, holder, COLOR_FIELD)
+                return
+            }
+        }
+
+        // 2. Шаг в пайплайне: ErrorLog . BuildSystemPrompt или . RetryLoop
+        if (isInsidePipeline(element)) {
+            highlight(element, holder, COLOR_METHOD_CALL)
+            return
+        }
+
+        // 3. Вызов или инициализация типа
+        if (parent is RazomyTypedFormBlock || (parent is RazomyCallExpr && text.firstOrNull()?.isUpperCase() == true)) {
+            highlight(element, holder, COLOR_TYPE)
+            return
+        }
+
+        // 4. По регистру
+        if (text.firstOrNull()?.isUpperCase() == true) {
+            highlight(element, holder, COLOR_TYPE)
+        } else {
+            highlight(element, holder, COLOR_VARIABLE)
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Вспомогательные методы
+    // -------------------------------------------------------------------------
+
+    private fun isModuleForm(formBlock: RazomyFormBlock?): Boolean {
+        if (formBlock == null) return false
+        return PsiTreeUtil.findChildOfType(formBlock, RazomyFlowBlock::class.java) != null
+    }
+
+    private fun isParameterInsideSlot(element: RazomyPath, slot: RazomySlot): Boolean {
+        val slotParent = slot.parent
+        return slotParent is RazomyCallExpr || slotParent is RazomyTypedFlowBlock || slotParent is RazomyTypedFormBlock
+    }
+
+    private fun isInsidePipeline(element: RazomyPath): Boolean {
+        val pipelineExpr = PsiTreeUtil.getParentOfType(element, RazomyPipelineExpr::class.java) ?: return false
+        return pipelineExpr.text.contains(".") && pipelineExpr.firstChild != element
     }
 
     private fun highlight(element: PsiElement, holder: AnnotationHolder, colorKey: TextAttributesKey) {
@@ -934,8 +1149,14 @@ class RazomyAnnotator : Annotator {
             .create()
     }
 
+    private fun highlightRange(range: TextRange, holder: AnnotationHolder, colorKey: TextAttributesKey) {
+        holder.newSilentAnnotation(HighlightSeverity.TEXT_ATTRIBUTES)
+            .range(range)
+            .textAttributes(colorKey)
+            .create()
+    }
+
     private fun annotateString(element: PsiElement, holder: AnnotationHolder) {
-        // ... (Код annotateString оставляем без изменений)
         val text = element.text
         val offset = element.textOffset
 
@@ -967,9 +1188,7 @@ class RazomyAnnotator : Annotator {
             }
         }
     }
-}
-
-// --- COMPLETION ---
+}// --- COMPLETION ---
 
 // --- COMPLETION ---
 
