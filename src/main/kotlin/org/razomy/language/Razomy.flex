@@ -70,9 +70,8 @@ STRING=\"([^\"\\]|\\.)*\"|\'([^\'\\]|\\.)*\'
   {NUMBER}             { return RazomyTypes.NUMBER; }
   {STRING}             { return RazomyTypes.STRING; }
 
-  // ВАЖНО: Разделение точки доступа (User.Id) и точки пайплайна (A . B)
-  // Если точка окружена пробелами или стоит в начале пайплайна после перевода строки:
-  "."/{WHITE_SPACE}    { return RazomyTypes.PIPE_DOT; }
+  // ВАЖНО: Разделение точки доступа (User.Id) и точки пайплайна (A . B, или . перед переносом строки / скобкой)
+  "."/([ \t\r\n\{\[\(]) { return RazomyTypes.PIPE_DOT; }
   "."                  { return RazomyTypes.DOT; }
 }
 
