@@ -90,6 +90,58 @@
                     factoryClass="com.razomy.notation.jetbrains.intellij.ide.plugin.ai.AiChatToolWindowFactory"
                     icon="AllIcons.General.Web"/>
         <actionPromoter implementation="com.razomy.notation.jetbrains.intellij.ide.plugin.ai.InlineAiActionPromoter"/>
+
+        <fileType name="Razomy File"
+                  implementationClass="org.razomy.language.RazomyFileType"
+                  fieldName="INSTANCE"
+                  language="RL"
+                  extensions="rl"/>
+
+        <lang.parserDefinition language="RL"
+                               implementationClass="org.razomy.language.parser.RazomyParserDefinition"/>
+
+        <lang.syntaxHighlighterFactory language="RL"
+                                       implementationClass="org.razomy.language.RazomySyntaxHighlighterFactory"/>
+        <lang.braceMatcher language="RL"
+                           implementationClass="org.razomy.language.RazomyBraceMatcher"/>
+
+        <lang.foldingBuilder language="RL"
+                             implementationClass="org.razomy.language.RazomyFoldingBuilder"/>
+
+        <lang.commenter language="RL"
+                        implementationClass="org.razomy.language.RazomyCommenter"/>
+
+        <annotator language="RL"
+                   implementationClass="org.razomy.language.RazomyAnnotator"/>
+
+        <completion.contributor language="RL"
+                                implementationClass="org.razomy.language.RazomyCompletionContributor"/>
+
+        <psi.referenceContributor language="RL"
+                                  implementation="org.razomy.language.RazomyReferenceContributor"/>
+
+        <gotoDeclarationHandler implementation="org.razomy.language.RazomyGotoDeclarationHandler"/>
+
+        <codeInsight.lineMarkerProvider language="RL"
+                                        implementationClass="org.razomy.language.RazomyLineMarkerProvider"/>
+
+        <lang.documentationProvider language="RL"
+                                    implementationClass="org.razomy.language.RazomyDocumentationProvider"/>
+
+        <lang.psiStructureViewFactory language="RL"
+                                      implementationClass="org.razomy.language.RazomyStructureViewFactory"/>
+
+        <!-- Форматирование (Auto-Indent) -->
+        <lang.formatter language="RL"
+                        implementationClass="org.razomy.language.RazomyFormattingModelBuilder"/>
+
+        <!-- Инспекция (Неиспользуемые переменные) -->
+        <localInspection language="RL"
+                         groupName="Razomy"
+                         displayName="Неиспользуемое объявление"
+                         enabledByDefault="true"
+                         level="WARNING"
+                         implementationClass="org.razomy.language.RazomyUnusedInspection"/>
     </extensions>
     <actions>
         <group id="com.razomy.notation.jetbrains.intellij.ide.plugin.OpenInApp"
@@ -204,3 +256,5 @@
         </action>
     </actions>
 </idea-plugin>
+
+
