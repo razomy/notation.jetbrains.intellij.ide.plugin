@@ -121,6 +121,8 @@
         <psi.referenceContributor language="RL"
                                   implementation="org.razomy.language.RazomyReferenceContributor"/>
 
+        <lang.findUsagesProvider language="RL" implementationClass="org.razomy.language.RazomyFindUsagesProvider"/>
+        <fileBasedIndex implementation="org.razomy.language.RazomyExportIndex"/>
 <!--        <codeInsight.lineMarkerProvider language="RL"-->
 <!--                                        implementationClass="org.razomy.language.RazomyLineMarkerProvider"/>-->
 

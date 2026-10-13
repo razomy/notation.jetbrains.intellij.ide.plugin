@@ -1,10 +1,12 @@
 package org.razomy.language
-
+import com.intellij.util.indexing.*
+import com.intellij.util.io.EnumeratorStringDescriptor
 import com.intellij.codeInsight.hints.InlayInfo
 import com.intellij.codeInsight.hints.InlayParameterHintsProvider
 import com.intellij.codeInsight.completion.*
 import com.intellij.codeInsight.daemon.RelatedItemLineMarkerInfo
 import com.intellij.codeInsight.daemon.RelatedItemLineMarkerProvider
+import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.codeInsight.navigation.NavigationGutterIconBuilder
 import com.intellij.codeInspection.*
@@ -44,9 +46,19 @@ import com.intellij.util.ProcessingContext
 import org.razomy.language.psi.*
 import javax.swing.Icon
 import com.intellij.codeInsight.navigation.actions.GotoDeclarationHandler
+import com.intellij.codeInspection.util.IntentionName
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiElement
+import com.intellij.psi.search.FileTypeIndex
+import com.intellij.openapi.roots.ProjectRootManager
+import com.intellij.openapi.vfs.VfsUtilCore
+import com.intellij.lang.cacheBuilder.DefaultWordsScanner
+import com.intellij.lang.cacheBuilder.WordsScanner
+import com.intellij.lang.findUsages.FindUsagesProvider
+import com.intellij.psi.tree.TokenSet
+
+// --- LANGUAGE & FILE TYPE ---
 
 // --- СИСТЕМА ТИПОВ И СЕМАНТИЧЕСКИЙ РЕЗОЛВЕР (Razomy Type System V2.5 - Logger Edition) ---
 
@@ -84,65 +96,6 @@ class RazomySyntaxHighlighterFactory : SyntaxHighlighterFactory() {
 }
 
 
-// --- REFERENCES ---
-
-class RazomyReferenceContributor : PsiReferenceContributor() {
-    override fun registerReferenceProviders(registrar: PsiReferenceRegistrar) {
-        registrar.registerReferenceProvider(
-            PlatformPatterns.psiElement(RazomyPath::class.java),
-            object : PsiReferenceProvider() {
-                override fun getReferencesByElement(
-                    element: PsiElement,
-                    context: ProcessingContext
-                ): Array<PsiReference> {
-                    val path = element as RazomyPath
-                    if (RazomyUtil.isDeclaration(path) || path.text == "_") return emptyArray()
-                    return arrayOf(RazomyReference(path, TextRange(0, element.textLength)))
-                }
-            }
-        )
-    }
-}
-
-// --- REFERENCES ---
-
-class RazomyReference(element: RazomyPath, textRange: TextRange) : PsiReferenceBase<RazomyPath>(element, textRange),
-    PsiPolyVariantReference {
-
-    override fun multiResolve(incompleteCode: Boolean): Array<ResolveResult> {
-        // Используем новую семантическую систему типов
-        val resolved = RazomyResolver.resolvePath(myElement, myElement.text)
-
-        if (resolved != null) {
-            return arrayOf(PsiElementResolveResult(resolved))
-        }
-        return emptyArray()
-    }
-
-    override fun resolve(): PsiElement? {
-        val results = multiResolve(false)
-        return if (results.isNotEmpty()) results[0].element else null
-    }
-
-    override fun getVariants(): Array<Any> {
-        // Подсказки автокомплита из текущего Scope
-        val scope = RazomyTypeSystem.buildScope(myElement)
-        val variants = mutableListOf<Any>()
-
-        scope.variables.keys.forEach {
-            val isType = it.firstOrNull()?.isUpperCase() == true
-            variants.add(
-                LookupElementBuilder.create(it).withIcon(if (isType) AllIcons.Nodes.Class else AllIcons.Nodes.Variable)
-            )
-        }
-
-        scope.unpackedFields.keys.forEach {
-            variants.add(LookupElementBuilder.create(it).withIcon(AllIcons.Nodes.Field).withTypeText("Auto-unpacked"))
-        }
-
-        return variants.toTypedArray()
-    }
-}
 // --- LINE MARKERS (Иерархия) ---
 
 class RazomyLineMarkerProvider : RelatedItemLineMarkerProvider() {
@@ -693,6 +646,99 @@ class RazomyInlayParameterHintsProvider : InlayParameterHintsProvider {
 
 // --- LANGUAGE & FILE TYPE ---
 
+// --- СИСТЕМА ТИПОВ И СЕМАНТИЧЕСКИЙ РЕЗОЛВЕР (Razomy Type System V2.6 - Modules Edition) ---
+
+
+// --- GOTO DECLARATION ---
+
+class RazomyGotoDeclarationHandler : GotoDeclarationHandler {
+    override fun getGotoDeclarationTargets(
+        sourceElement: PsiElement?,
+        offset: Int,
+        editor: Editor?
+    ): Array<PsiElement>? {
+        if (sourceElement == null) return null
+        val word = sourceElement.text
+        if (word.isBlank() || word == "_") return null
+
+        val currentPath = PsiTreeUtil.getParentOfType(sourceElement, RazomyPath::class.java) ?: return null
+        val file = sourceElement.containingFile ?: return null
+
+        // 1. Если кликаем по файловому пути в импорте (правая часть)
+        val parentDecl = currentPath.parent?.parent as? RazomyDeclaration
+        if (parentDecl != null) {
+            val rightExpr = parentDecl.children.getOrNull(1)
+            val rightPath = PsiTreeUtil.findChildOfType(rightExpr, RazomyPath::class.java)
+            if (currentPath == rightPath && rightPath.textOffset == rightExpr?.textOffset && RazomyUtil.isImportPath(
+                    currentPath.text
+                )
+            ) {
+                val fileTarget = RazomyImportResolver.resolveImportedFile(sourceElement, currentPath.text)
+                if (fileTarget != null) return arrayOf(fileTarget)
+                return null
+            }
+        }
+
+        // 2. Если кликаем по самому определению
+        if (RazomyUtil.isDeclaration(currentPath)) {
+            val targets = findUsages(currentPath, file)
+            return if (targets.isNotEmpty()) targets.toTypedArray() else null
+        }
+
+        // 3. Стандартный семантический резолв
+        val resolved = RazomyResolver.resolvePath(currentPath, word)
+            ?: RazomyResolver.resolvePath(currentPath, currentPath.text)
+            ?: resolveLocalDeclaration(currentPath, word, file)
+
+        return if (resolved != null) arrayOf(resolved) else null
+    }
+
+    private fun findUsages(element: RazomyPath, file: PsiFile): List<PsiElement> {
+        val currentName = element.text
+        val results = LinkedHashSet<PsiElement>()
+        val allPaths = PsiTreeUtil.findChildrenOfType(file, RazomyPath::class.java)
+        for (path in allPaths) {
+            if (path != element && matchesName(path.text, currentName)) {
+                results.add(path)
+            }
+        }
+        return results.toList()
+    }
+
+    private fun resolveLocalDeclaration(from: RazomyPath, name: String, file: PsiFile): RazomyPath? {
+        var scope = from.parent
+        while (scope != null) {
+            if (scope is RazomyFormBlock || scope is RazomyFlowBlock) {
+                val parentDecl =
+                    PsiTreeUtil.getParentOfType(scope, RazomyDeclaration::class.java, RazomyFormItem::class.java)
+                val leftExpr = parentDecl?.children?.firstOrNull()
+                val slot = PsiTreeUtil.findChildOfType(leftExpr, RazomySlot::class.java)
+                if (slot != null) {
+                    val slotItems = PsiTreeUtil.findChildrenOfType(slot, RazomySlotItem::class.java)
+                    for (item in slotItems) {
+                        val firstExpr = item.children.firstOrNull()
+                        val paramPath = PsiTreeUtil.findChildOfType(firstExpr, RazomyPath::class.java)
+                        if (paramPath != null && paramPath.textOffset == firstExpr?.textOffset && matchesName(
+                                paramPath.text,
+                                name
+                            )
+                        ) {
+                            return paramPath
+                        }
+                    }
+                }
+            }
+            scope = scope.parent
+        }
+        return null
+    }
+
+    private fun matchesName(declarationText: String, searchName: String): Boolean {
+        return declarationText == searchName || declarationText.endsWith(".$searchName") || searchName.endsWith(".$declarationText")
+    }
+}
+
+
 object RazomyIcons {
     val FILE: Icon = IconLoader.getIcon("icons/rl.svg", RazomyIcons::class.java)
 }
@@ -735,6 +781,26 @@ object RazomyUtil {
         if (text.isBlank() || text == "_") return false
         return text.first().isLowerCase()
     }
+
+    enum class ImportContext { RIGHT_PATH, LEFT_ALIAS_OR_DESTRUCT }
+
+    fun getImportContext(path: RazomyPath): ImportContext? {
+        val parentExpr = path.parent as? RazomyExpr ?: return null
+        val decl = parentExpr.parent as? RazomyDeclaration ?: return null
+        val leftExpr = decl.children.firstOrNull()
+        val rightExpr = decl.children.getOrNull(1)
+
+        if (rightExpr != null && PsiTreeUtil.isAncestor(rightExpr, path, false)) {
+            return ImportContext.RIGHT_PATH
+        }
+        if (leftExpr != null && PsiTreeUtil.isAncestor(leftExpr, path, false)) {
+            val rightPath = PsiTreeUtil.findChildOfType(rightExpr, RazomyPath::class.java)
+            if (rightPath != null && isImportPath(rightPath.text)) {
+                return ImportContext.LEFT_ALIAS_OR_DESTRUCT
+            }
+        }
+        return null
+    }
 }
 
 // --- СИСТЕМА ИМПОРТОВ И РЕЗОЛВА МОДУЛЕЙ ---
@@ -742,16 +808,37 @@ object RazomyUtil {
 object RazomyImportResolver {
     fun resolveImportedFile(context: PsiElement, importPath: String): PsiFile? {
         val project = context.project
-        val fileName = importPath.substringAfterLast('.') + ".rl"
-        val expectedPath = importPath.replace('.', '/') + ".rl"
+        val fileName = importPath.substringAfterLast('.') + ".rl" // например, base.rl
+        val expectedPathFragment = importPath.replace('.', '/') + ".rl" // test/base.rl
 
         val virtualFiles = FilenameIndex.getVirtualFilesByName(fileName, GlobalSearchScope.projectScope(project))
-        for (vf in virtualFiles) {
-            if (vf.path.replace('\\', '/').endsWith(expectedPath)) {
-                return PsiManager.getInstance(project).findFile(vf)
+
+        // 1. Пытаемся найти точное совпадение по хвосту пути
+        val exactMatch = virtualFiles.firstOrNull { it.path.replace('\\', '/').endsWith(expectedPathFragment) }
+        if (exactMatch != null) {
+            return PsiManager.getInstance(project).findFile(exactMatch)
+        }
+
+        // 2. МЯГКИЙ ФОЛЛБЭК: Если файл с таким именем (base.rl) всего один в проекте,
+        // 100% это он, даже если структура папок немного отличается.
+        if (virtualFiles.size == 1) {
+            return PsiManager.getInstance(project).findFile(virtualFiles.first())
+        }
+
+        return null
+    }
+
+    fun getExportedSymbols(file: PsiFile): Set<String> {
+        val exports = mutableSetOf<String>()
+        val globalDecls = PsiTreeUtil.findChildrenOfType(file, RazomyDeclaration::class.java)
+        for (decl in globalDecls) {
+            val leftExpr = decl.children.firstOrNull()
+            val path = PsiTreeUtil.findChildOfType(leftExpr, RazomyPath::class.java)
+            if (path != null && path.textOffset == leftExpr?.textOffset) {
+                exports.add(path.text)
             }
         }
-        return null
+        return exports
     }
 
     fun findExportedSymbol(file: PsiFile, name: String): PsiElement? {
@@ -765,9 +852,87 @@ object RazomyImportResolver {
         }
         return null
     }
+
+    fun findModuleByExportedSymbol(project: Project, symbolName: String): List<String> {
+        val result = mutableListOf<String>()
+
+        // МГНОВЕННЫЙ ПОИСК ПО ИНДЕКСУ! IDE выдаст файлы за миллисекунды.
+        val virtualFiles = FileBasedIndex.getInstance().getContainingFiles(
+            RazomyIndexKeys.EXPORTED_SYMBOLS,
+            symbolName,
+            GlobalSearchScope.projectScope(project)
+        )
+
+        for (vf in virtualFiles) {
+            val sourceRoot = ProjectRootManager.getInstance(project).fileIndex.getSourceRootForFile(vf)
+            var relPath = if (sourceRoot != null) {
+                VfsUtilCore.getRelativePath(vf, sourceRoot) ?: vf.name
+            } else {
+                vf.name
+            }
+            relPath = relPath.removeSuffix(".rl").replace('/', '.')
+            result.add(relPath)
+        }
+
+        return result.distinct()
+    }
 }
 
-// --- СИСТЕМА ТИПОВ И СЕМАНТИЧЕСКИЙ РЕЗОЛВЕР (Razomy Type System V2.6 - Modules Edition) ---
+// --- AUTO-IMPORT QUICK FIX ---
+
+// --- AUTO-IMPORT QUICK FIX ---
+
+public class RazomyImportQuickFix(private val symbolName: String, private val modulePath: String) : LocalQuickFix,
+    IntentionAction {
+
+    override fun getFamilyName(): String = "Импортировать"
+
+    override fun getName(): String = "Импортировать '$symbolName' из $modulePath"
+
+    // IntentionAction использует getText для отображения в меню (Alt+Enter)
+    override fun getText(): @IntentionName String = name
+
+    // Важно: возвращаем true, так как модификация AST должна происходить в режиме записи (Write-Action)
+    override fun startInWriteAction(): Boolean = true
+
+    // Проверяем, доступен ли QuickFix. Достаточно проверить, что мы работаем с нужным файлом.
+    override fun isAvailable(project: Project, editor: Editor?, file: PsiFile?): Boolean {
+        return file != null && file.language == RazomyLanguage.INSTANCE && file.manager.isInProject(file)
+    }
+
+    // Метод от LocalQuickFix (когда вызывается из Inspection)
+    override fun applyFix(project: Project, descriptor: ProblemDescriptor) {
+        val file = descriptor.psiElement.containingFile ?: return
+        invoke(project, null, file)
+    }
+
+    // Метод от IntentionAction (когда вызывается вручную пользователем через Alt+Enter)
+    override fun invoke(project: Project, editor: Editor?, file: PsiFile?) {
+        if (file == null) return
+
+        val factory = PsiFileFactory.getInstance(project)
+
+        // Создаем кусочек AST с импортом
+        val dummyContent = "{ $symbolName } $modulePath\n"
+        val dummyFile = factory.createFileFromText("dummy.rl", RazomyFileType.INSTANCE, dummyContent)
+
+        // Находим первую декларацию, чтобы вставить импорт перед ней
+        val firstDecl = PsiTreeUtil.findChildOfType(file, RazomyDeclaration::class.java)
+
+        if (firstDecl != null) {
+            // Вставляем все токены из dummy перед первой декларацией (чтобы не терять перенос строки)
+            for (child in dummyFile.children) {
+                file.addBefore(child, firstDecl)
+            }
+        } else {
+            // Если файл пуст (нет деклараций), просто добавляем
+            for (child in dummyFile.children) {
+                file.add(child)
+            }
+        }
+    }
+}
+// --- СИСТЕМА ТИПОВ И СЕМАНТИЧЕСКИЙ РЕЗОЛВЕР (Razomy Type System V2.7 - Wildcard Edition) ---
 
 object RazomyTypeSystem {
     private val LOG = Logger.getInstance("RazomyTypeSystem")
@@ -776,7 +941,6 @@ object RazomyTypeSystem {
         val file = context.containingFile ?: return RazomyType.Unknown
         val globalDecls = PsiTreeUtil.findChildrenOfType(file, RazomyDeclaration::class.java)
 
-        // 1. Проверяем импорты в начале файла
         for (decl in globalDecls) {
             val leftExpr = decl.children.firstOrNull()
             val rightExpr = decl.children.getOrNull(1)
@@ -786,8 +950,16 @@ object RazomyTypeSystem {
             val leftForm = PsiTreeUtil.findChildOfType(leftExpr, RazomyFormBlock::class.java)
 
             if (rightPath != null && rightPath.textOffset == rightExpr?.textOffset && RazomyUtil.isImportPath(rightPath.text)) {
+                // Wildcard import: _ tests.base
+                if (leftPath != null && leftPath.text == "_" && leftPath.textOffset == leftExpr?.textOffset) {
+                    val importedFile = RazomyImportResolver.resolveImportedFile(context, rightPath.text)
+                    if (importedFile != null) {
+                        val foreignSymbol = RazomyImportResolver.findExportedSymbol(importedFile, name)
+                        if (foreignSymbol != null) return inferTypeOfElement(foreignSymbol)
+                    }
+                }
                 // Alias import: Age package.age
-                if (leftPath != null && leftPath.text == name && leftPath.textOffset == leftExpr?.textOffset) {
+                else if (leftPath != null && leftPath.text == name && leftPath.textOffset == leftExpr?.textOffset) {
                     val importedFile = RazomyImportResolver.resolveImportedFile(context, rightPath.text)
                     return if (importedFile != null) RazomyType.Module(importedFile) else RazomyType.Unknown
                 }
@@ -811,27 +983,20 @@ object RazomyTypeSystem {
             val leftExpr = decl.children.firstOrNull()
             val path = PsiTreeUtil.findChildOfType(leftExpr, RazomyPath::class.java)
             if (path?.text == name && path.textOffset == leftExpr?.textOffset) {
-
-                // Форма { ... }
                 val formBlock = PsiTreeUtil.findChildOfType(decl, RazomyFormBlock::class.java)
                 if (formBlock != null) {
                     val fields = mutableMapOf<String, PsiElement>()
                     val items = PsiTreeUtil.findChildrenOfType(formBlock, RazomyFormItem::class.java)
                     for (item in items) {
                         val fieldPath = PsiTreeUtil.findChildOfType(item, RazomyPath::class.java)
-                        if (fieldPath != null) {
-                            fields[fieldPath.text] = fieldPath
-                        }
+                        if (fieldPath != null) fields[fieldPath.text] = fieldPath
                     }
                     return RazomyType.Form(name, path, fields)
                 }
 
-                // Алиас / Наследование (User & Identifiable)
                 val allPaths = PsiTreeUtil.findChildrenOfType(decl, RazomyPath::class.java).toList()
                 val baseTypePath = allPaths.drop(1).firstOrNull { it.text.firstOrNull()?.isUpperCase() == true }
-                if (baseTypePath != null) {
-                    return inferTypeByName(baseTypePath.text, context)
-                }
+                if (baseTypePath != null) return inferTypeByName(baseTypePath.text, context)
             }
         }
         return RazomyType.Unknown
@@ -929,24 +1094,38 @@ object RazomyTypeSystem {
                 val rightPath = PsiTreeUtil.findChildOfType(rightExpr, RazomyPath::class.java)
                 val leftForm = PsiTreeUtil.findChildOfType(leftExpr, RazomyFormBlock::class.java)
 
-                if (leftPath != null && rightPath != null && leftPath.textOffset == leftExpr?.textOffset && rightPath.textOffset == rightExpr?.textOffset && RazomyUtil.isImportPath(
+                if (rightPath != null && rightPath.textOffset == rightExpr?.textOffset && RazomyUtil.isImportPath(
                         rightPath.text
                     )
                 ) {
-                    val alias = leftPath.text
-                    scope.variables[alias] = leftPath
-                    scope.imports[alias] = rightPath
-                } else if (leftForm != null && rightPath != null && leftForm.textOffset == leftExpr?.textOffset && rightPath.textOffset == rightExpr?.textOffset && RazomyUtil.isImportPath(
-                        rightPath.text
-                    )
-                ) {
-                    val items = PsiTreeUtil.findChildrenOfType(leftForm, RazomyFormItem::class.java)
-                    for (item in items) {
-                        val path = PsiTreeUtil.findChildOfType(item, RazomyPath::class.java)
-                        if (path != null) {
-                            scope.variables[path.text] = path
-                            scope.imports[path.text] = rightPath
-                            scope.isDestructuredImport[path.text] = true
+
+                    // Wildcard ( _ app.core )
+                    if (leftPath != null && leftPath.text == "_" && leftPath.textOffset == leftExpr?.textOffset) {
+                        val importedFile = RazomyImportResolver.resolveImportedFile(element, rightPath.text)
+                        if (importedFile != null) {
+                            val exports = RazomyImportResolver.getExportedSymbols(importedFile)
+                            for (exportName in exports) {
+                                scope.isDestructuredImport[exportName] = true
+                                scope.imports[exportName] = rightPath
+                            }
+                        }
+                    }
+                    // Alias ( Core app.core )
+                    else if (leftPath != null && leftPath.textOffset == leftExpr?.textOffset) {
+                        val alias = leftPath.text
+                        scope.variables[alias] = leftPath
+                        scope.imports[alias] = rightPath
+                    }
+                    // Destructured ( { Str, Int } app.core )
+                    else if (leftForm != null && leftForm.textOffset == leftExpr?.textOffset) {
+                        val items = PsiTreeUtil.findChildrenOfType(leftForm, RazomyFormItem::class.java)
+                        for (item in items) {
+                            val path = PsiTreeUtil.findChildOfType(item, RazomyPath::class.java)
+                            if (path != null) {
+                                scope.variables[path.text] = path
+                                scope.imports[path.text] = rightPath
+                                scope.isDestructuredImport[path.text] = true
+                            }
                         }
                     }
                 } else {
@@ -990,8 +1169,50 @@ object RazomyResolver {
             }
         }
 
-        if (current == null) return null
+        // --- НОВЫЙ БЛОК НАЧАЛО ---
+        if (current == null) {
+            // 1. Wildcard фолбэк
+            if (scope.isDestructuredImport.containsKey(rootName)) {
+                val importPath = scope.imports[rootName]!!
+                val importedFile = RazomyImportResolver.resolveImportedFile(context, importPath.text)
+                if (importedFile != null) {
+                    current = RazomyImportResolver.findExportedSymbol(importedFile, rootName)
+                }
+            }
 
+            // 2. ФОЛЛБЭК ДЛЯ МОДУЛЕЙ (tests.base): Ищем как физический путь проекта
+            if (current == null) {
+                var fileRef: PsiFile? = null
+                var memberStartIndex = 0
+                // Идем с конца, чтобы найти максимально длинный путь файла
+                for (i in parts.size downTo 1) {
+                    val prefix = parts.take(i).joinToString(".")
+                    val file = RazomyImportResolver.resolveImportedFile(context, prefix)
+                    if (file != null) {
+                        fileRef = file
+                        memberStartIndex = i
+                        break
+                    }
+                }
+
+                if (fileRef != null) {
+                    current = fileRef
+                    // Если нашли файл, дорезолвливаем оставшиеся поля (например .User)
+                    for (i in memberStartIndex until parts.size) {
+                        val nextMember = parts[i]
+                        current = resolveMember(current!!, nextMember)
+                        if (current == null) return null
+                    }
+                    return current
+                }
+            }
+
+            // Если ничего не подошло
+            if (current == null) return null
+        }
+        // --- НОВЫЙ БЛОК КОНЕЦ ---
+
+        // Резолв вложенных свойств
         for (i in 1 until parts.size) {
             val nextMember = parts[i]
             val resolvedMember = resolveMember(current!!, nextMember)
@@ -1062,97 +1283,8 @@ sealed class RazomyType {
     }
 }
 
-// --- GOTO DECLARATION ---
 
-class RazomyGotoDeclarationHandler : GotoDeclarationHandler {
-    override fun getGotoDeclarationTargets(
-        sourceElement: PsiElement?,
-        offset: Int,
-        editor: Editor?
-    ): Array<PsiElement>? {
-        if (sourceElement == null) return null
-        val word = sourceElement.text
-        if (word.isBlank() || word == "_") return null
-
-        val currentPath = PsiTreeUtil.getParentOfType(sourceElement, RazomyPath::class.java) ?: return null
-        val file = sourceElement.containingFile ?: return null
-
-        // 1. Если кликаем по файловому пути в импорте (правая часть)
-        val parentDecl = currentPath.parent?.parent as? RazomyDeclaration
-        if (parentDecl != null) {
-            val rightExpr = parentDecl.children.getOrNull(1)
-            val rightPath = PsiTreeUtil.findChildOfType(rightExpr, RazomyPath::class.java)
-            if (currentPath == rightPath && rightPath.textOffset == rightExpr?.textOffset && RazomyUtil.isImportPath(
-                    currentPath.text
-                )
-            ) {
-                val fileTarget = RazomyImportResolver.resolveImportedFile(sourceElement, currentPath.text)
-                if (fileTarget != null) return arrayOf(fileTarget)
-                return null
-            }
-        }
-
-        // 2. Если кликаем по самому определению
-        if (RazomyUtil.isDeclaration(currentPath)) {
-            val targets = findUsages(currentPath, file)
-            return if (targets.isNotEmpty()) targets.toTypedArray() else null
-        }
-
-        // 3. Стандартный семантический резолв
-        val resolved = RazomyResolver.resolvePath(currentPath, word)
-            ?: RazomyResolver.resolvePath(currentPath, currentPath.text)
-            ?: resolveLocalDeclaration(currentPath, word, file)
-
-        return if (resolved != null) arrayOf(resolved) else null
-    }
-
-    private fun findUsages(element: RazomyPath, file: PsiFile): List<PsiElement> {
-        val currentName = element.text
-        val results = LinkedHashSet<PsiElement>()
-        val allPaths = PsiTreeUtil.findChildrenOfType(file, RazomyPath::class.java)
-        for (path in allPaths) {
-            if (path != element && matchesName(path.text, currentName)) {
-                results.add(path)
-            }
-        }
-        return results.toList()
-    }
-
-    private fun resolveLocalDeclaration(from: RazomyPath, name: String, file: PsiFile): RazomyPath? {
-        var scope = from.parent
-        while (scope != null) {
-            if (scope is RazomyFormBlock || scope is RazomyFlowBlock) {
-                val parentDecl =
-                    PsiTreeUtil.getParentOfType(scope, RazomyDeclaration::class.java, RazomyFormItem::class.java)
-                val leftExpr = parentDecl?.children?.firstOrNull()
-                val slot = PsiTreeUtil.findChildOfType(leftExpr, RazomySlot::class.java)
-                if (slot != null) {
-                    val slotItems = PsiTreeUtil.findChildrenOfType(slot, RazomySlotItem::class.java)
-                    for (item in slotItems) {
-                        val firstExpr = item.children.firstOrNull()
-                        val paramPath = PsiTreeUtil.findChildOfType(firstExpr, RazomyPath::class.java)
-                        if (paramPath != null && paramPath.textOffset == firstExpr?.textOffset && matchesName(
-                                paramPath.text,
-                                name
-                            )
-                        ) {
-                            return paramPath
-                        }
-                    }
-                }
-            }
-            scope = scope.parent
-        }
-        return null
-    }
-
-    private fun matchesName(declarationText: String, searchName: String): Boolean {
-        return declarationText == searchName || declarationText.endsWith(".$searchName") || searchName.endsWith(".$declarationText")
-    }
-}
-
-
-// --- ANNOTATOR ---
+// --- ANNOTATOR (Подсветка синтаксиса и ошибок) ---
 
 class RazomyAnnotator : Annotator {
 
@@ -1181,6 +1313,29 @@ class RazomyAnnotator : Annotator {
         val text = element.text.trim()
         if (text.isEmpty() || text.endsWith(".") || text.contains("IntellijIdeaRulezzz")) return
 
+        val importCtx = RazomyUtil.getImportContext(element)
+        if (importCtx == RazomyUtil.ImportContext.RIGHT_PATH) {
+            val file = RazomyImportResolver.resolveImportedFile(element, text)
+            if (file == null) {
+                holder.newAnnotation(HighlightSeverity.ERROR, "Файл '$text.rl' не найден")
+                    .range(element.textRange)
+                    .highlightType(ProblemHighlightType.LIKE_UNKNOWN_SYMBOL)
+                    .create()
+            } else {
+                highlight(element, holder, COLOR_IMPORT)
+            }
+            return
+        } else if (importCtx == RazomyUtil.ImportContext.LEFT_ALIAS_OR_DESTRUCT) {
+            if (text == "_") {
+                highlight(element, holder, DefaultLanguageHighlighterColors.KEYWORD)
+            } else if (text.firstOrNull()?.isUpperCase() == true) {
+                highlight(element, holder, COLOR_TYPE)
+            } else {
+                highlight(element, holder, COLOR_MODULE)
+            }
+            return
+        }
+
         if (text == "_" || text.startsWith("_.")) {
             highlight(element, holder, DefaultLanguageHighlighterColors.KEYWORD)
             return
@@ -1194,56 +1349,31 @@ class RazomyAnnotator : Annotator {
         val isDecl = RazomyUtil.isDeclaration(element)
         val isMemberAccess = text.contains(".")
 
-        // ВЫДЕЛЕНИЕ ИМПОРТОВ (Спец. Обработка)
-        val parentExpr = element.parent as? RazomyExpr
-        val grandParent = parentExpr?.parent
-        if (grandParent is RazomyDeclaration) {
-            val leftExpr = grandParent.children.firstOrNull()
-            val rightExpr = grandParent.children.getOrNull(1)
-
-            val rightPath = PsiTreeUtil.findChildOfType(rightExpr, RazomyPath::class.java)
-            if (rightPath != null && rightPath.textOffset == rightExpr?.textOffset && RazomyUtil.isImportPath(rightPath.text)) {
-                // Если красим правую часть (Путь к файлу)
-                if (element == rightPath) {
-                    highlight(element, holder, COLOR_IMPORT)
-                    return
-                }
-                // Если красим левую часть (Алиас модуля)
-                if (leftExpr != null && leftExpr.textOffset == element.textOffset) {
-                    highlight(element, holder, COLOR_MODULE)
-                    return
-                }
-                // Если красим внутренности деструктуризации { Old }
-                val leftForm = PsiTreeUtil.findChildOfType(leftExpr, RazomyFormBlock::class.java)
-                if (leftForm != null && PsiTreeUtil.isAncestor(leftForm, element, false)) {
-                    highlight(element, holder, COLOR_TYPE)
-                    return
-                }
-            }
-        }
-
         if (!isDecl) {
             val resolved = RazomyResolver.resolvePath(element, text)
             val scope = RazomyTypeSystem.buildScope(element)
             val isResolvedLocally =
-                !isMemberAccess && (scope.variables.containsKey(text) || scope.unpackedFields.containsKey(text))
+                !isMemberAccess && (scope.variables.containsKey(text) || scope.unpackedFields.containsKey(text) || scope.isDestructuredImport.containsKey(
+                    text
+                ))
 
             if (resolved == null && !isResolvedLocally) {
-                if (isMemberAccess) {
-                    val parts = text.split(".")
-                    holder.newAnnotation(
-                        HighlightSeverity.ERROR,
-                        "Неразрешенное поле: '${parts.last()}' в '${parts.dropLast(1).joinToString(".")}'"
-                    )
+                val unresolvedName = if (isMemberAccess) text.split(".").last() else text
+
+                val errorBuilder =
+                    holder.newAnnotation(HighlightSeverity.ERROR, "Неразрешенная ссылка: '$unresolvedName'")
                         .range(element.textRange)
                         .highlightType(ProblemHighlightType.LIKE_UNKNOWN_SYMBOL)
-                        .create()
-                } else {
-                    holder.newAnnotation(HighlightSeverity.ERROR, "Неразрешенная ссылка: '$text'")
-                        .range(element.textRange)
-                        .highlightType(ProblemHighlightType.LIKE_UNKNOWN_SYMBOL)
-                        .create()
+
+                // ПОДСКАЗКИ АВТО-ИМПОРТА (Quick Fix)
+                if (!isMemberAccess) {
+                    val candidates = RazomyImportResolver.findModuleByExportedSymbol(element.project, unresolvedName)
+                    for (modulePath in candidates) {
+                        errorBuilder.withFix(RazomyImportQuickFix(unresolvedName, modulePath))
+                    }
                 }
+
+                errorBuilder.create()
                 return
             }
         }
@@ -1364,5 +1494,180 @@ class RazomyAnnotator : Annotator {
                     .textAttributes(DefaultLanguageHighlighterColors.IDENTIFIER).create()
             }
         }
+    }
+}
+
+
+// --- REFERENCES ---
+
+
+object RazomyIndexKeys {
+    val EXPORTED_SYMBOLS = ID.create<String, Void>("razomy.exports.index")
+}
+
+class RazomyExportIndex : ScalarIndexExtension<String>() {
+
+    override fun getName(): ID<String, Void> = RazomyIndexKeys.EXPORTED_SYMBOLS
+
+    override fun getVersion(): Int = 1 // Увеличивайте это число, если меняете логику индексатора
+
+    override fun dependsOnFileContent(): Boolean = true
+
+    override fun getKeyDescriptor(): EnumeratorStringDescriptor = EnumeratorStringDescriptor.INSTANCE
+
+    override fun getInputFilter(): FileBasedIndex.InputFilter {
+        return DefaultFileTypeSpecificInputFilter(RazomyFileType.INSTANCE)
+    }
+
+    override fun getIndexer(): DataIndexer<String, Void, FileContent> {
+        return DataIndexer { inputData ->
+            val result = mutableMapOf<String, Void?>()
+
+            // Во время индексации мы разбираем файл.
+            // IDE делает это в фоне, не блокируя UI.
+            val file = inputData.psiFile
+            val globalDecls = com.intellij.psi.util.PsiTreeUtil.findChildrenOfType(file, org.razomy.language.psi.RazomyDeclaration::class.java)
+
+            for (decl in globalDecls) {
+                val leftExpr = decl.children.firstOrNull()
+                val path = com.intellij.psi.util.PsiTreeUtil.findChildOfType(leftExpr, org.razomy.language.psi.RazomyPath::class.java)
+                if (path != null && path.textOffset == leftExpr?.textOffset) {
+                    val symbolName = path.text
+                    if (symbolName != "_" && symbolName.firstOrNull()?.isUpperCase() == true) {
+                        result[symbolName] = null // Void? значит нам нужен только ключ
+                    }
+                }
+            }
+            result
+        }
+    }
+}
+
+// --- REFERENCES ---
+
+class RazomyReferenceContributor : PsiReferenceContributor() {
+    override fun registerReferenceProviders(registrar: PsiReferenceRegistrar) {
+        registrar.registerReferenceProvider(
+            PlatformPatterns.psiElement(RazomyPath::class.java),
+            object : PsiReferenceProvider() {
+                override fun getReferencesByElement(
+                    element: PsiElement,
+                    context: ProcessingContext
+                ): Array<PsiReference> {
+                    val path = element as RazomyPath
+                    if (path.text == "_") return emptyArray()
+
+                    // ВАЖНОЕ ИЗМЕНЕНИЕ: Разрешаем создавать ссылки, если это Алиас Импорта!
+                    val isDecl = RazomyUtil.isDeclaration(path)
+                    val importCtx = RazomyUtil.getImportContext(path)
+                    if (isDecl && importCtx != RazomyUtil.ImportContext.LEFT_ALIAS_OR_DESTRUCT) {
+                        return emptyArray()
+                    }
+
+                    val text = path.text
+                    val parts = text.split('.')
+
+                    if (parts.size == 1) {
+                        return arrayOf(RazomyReference(path, TextRange(0, text.length), text))
+                    }
+
+                    val references = mutableListOf<PsiReference>()
+                    var offset = 0
+                    for (part in parts) {
+                        val endOffset = offset + part.length
+                        if (part.isNotBlank()) {
+                            val range = TextRange(offset, endOffset)
+                            val subPathText = text.substring(0, endOffset)
+                            references.add(RazomyReference(path, range, subPathText))
+                        }
+                        offset = endOffset + 1
+                    }
+                    return references.toTypedArray()
+                }
+            }
+        )
+    }
+}
+
+class RazomyReference(
+    element: RazomyPath,
+    textRange: TextRange,
+    private val resolveText: String
+) : PsiReferenceBase<RazomyPath>(element, textRange), PsiPolyVariantReference {
+
+    override fun multiResolve(incompleteCode: Boolean): Array<ResolveResult> {
+        val importCtx = RazomyUtil.getImportContext(myElement)
+
+        if (importCtx == RazomyUtil.ImportContext.RIGHT_PATH && resolveText == myElement.text) {
+            val file = RazomyImportResolver.resolveImportedFile(myElement, resolveText)
+            return if (file != null) arrayOf(PsiElementResolveResult(file)) else emptyArray()
+        }
+
+        val resolved = RazomyResolver.resolvePath(myElement, resolveText)
+        if (resolved != null) {
+            return arrayOf(PsiElementResolveResult(resolved))
+        }
+        return emptyArray()
+    }
+
+    override fun resolve(): PsiElement? {
+        val results = multiResolve(false)
+        return if (results.isNotEmpty()) results[0].element else null
+    }
+
+    // ВАЖНОЕ ИЗМЕНЕНИЕ: Безопасное сравнение через VirtualFile!
+    // Теперь IDE 100% поймет, что элементы из разных файлов совпадают.
+    override fun isReferenceTo(element: PsiElement): Boolean {
+        val resolved = resolve()
+        if (resolved == element) return true
+
+        if (element is RazomyPath && resolved is RazomyPath) {
+            val file1 = element.containingFile?.originalFile?.virtualFile
+            val file2 = resolved.containingFile?.originalFile?.virtualFile
+            return element.text == resolved.text &&
+                    element.textOffset == resolved.textOffset &&
+                    file1 != null && file1 == file2
+        }
+        return false
+    }
+
+    override fun getVariants(): Array<Any> = emptyArray() // Делегируем CompletionContributor'у
+}
+
+
+// --- FIND USAGES (ПОИСК ИСПОЛЬЗОВАНИЙ) ---
+
+class RazomyFindUsagesProvider : FindUsagesProvider {
+
+    // Объясняем IDE, какие токены можно искать (идентификаторы), а какие игнорировать (комментарии, строки)
+    override fun getWordsScanner(): WordsScanner {
+        return DefaultWordsScanner(
+            FlexAdapter(RazomyLexer(null)), // Ваш лексер
+            TokenSet.create(RazomyTypes.IDENTIFIER), // Что можно искать
+            TokenSet.create(RazomyTypes.LINE_COMMENT), // Комментарии (игнорируем)
+            TokenSet.create(RazomyTypes.STRING) // Строки (игнорируем)
+        )
+    }
+
+    // Разрешаем поиск только для деклараций
+    override fun canFindUsagesFor(psiElement: PsiElement): Boolean {
+        return psiElement is RazomyPath && RazomyUtil.isDeclaration(psiElement)
+    }
+
+    override fun getHelpId(psiElement: PsiElement): String? = null
+
+    // Название типа сущности в окне "Find Usages"
+    override fun getType(element: PsiElement): String {
+        if (element !is RazomyPath) return ""
+        return if (element.text.firstOrNull()?.isUpperCase() == true) "Type/Structure" else "Variable"
+    }
+
+    // Имя сущности
+    override fun getDescriptiveName(element: PsiElement): String {
+        return element.text
+    }
+
+    override fun getNodeText(element: PsiElement, useFullName: Boolean): String {
+        return element.text
     }
 }
