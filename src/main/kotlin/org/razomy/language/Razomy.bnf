@@ -13,6 +13,9 @@
   elementTypeClass="org.razomy.language.psi.RazomyElementType"
   tokenTypeClass="org.razomy.language.psi.RazomyTokenType"
 
+  // Схлопывает пустые промежуточные узлы приоритетов выражений
+  extends(".*_expr")=expr
+
   tokens=[
     LBRACE='{'
     RBRACE='}'
