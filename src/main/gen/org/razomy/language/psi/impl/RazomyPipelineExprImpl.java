@@ -8,15 +8,15 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.util.PsiTreeUtil;
 import static org.razomy.language.psi.RazomyTypes.*;
-import com.intellij.extapi.psi.ASTWrapperPsiElement;
 import org.razomy.language.psi.*;
 
-public class RazomyPipelineExprImpl extends ASTWrapperPsiElement implements RazomyPipelineExpr {
+public class RazomyPipelineExprImpl extends RazomyExprImpl implements RazomyPipelineExpr {
 
   public RazomyPipelineExprImpl(@NotNull ASTNode node) {
     super(node);
   }
 
+  @Override
   public void accept(@NotNull RazomyVisitor visitor) {
     visitor.visitPipelineExpr(this);
   }
@@ -29,8 +29,8 @@ public class RazomyPipelineExprImpl extends ASTWrapperPsiElement implements Razo
 
   @Override
   @NotNull
-  public List<RazomyMigrateExpr> getMigrateExprList() {
-    return PsiTreeUtil.getChildrenOfTypeAsList(this, RazomyMigrateExpr.class);
+  public List<RazomyExpr> getExprList() {
+    return PsiTreeUtil.getChildrenOfTypeAsList(this, RazomyExpr.class);
   }
 
   @Override

@@ -5,10 +5,10 @@ import java.util.List;
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
 
-public interface RazomyPipelineExpr extends PsiElement {
+public interface RazomyPipelineExpr extends RazomyExpr {
 
   @NotNull
-  List<RazomyMigrateExpr> getMigrateExprList();
+  List<RazomyExpr> getExprList();
 
   @NotNull
   List<RazomyPipelineOp> getPipelineOpList();

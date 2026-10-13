@@ -9,7 +9,7 @@ import com.intellij.psi.PsiNameIdentifierOwner;
 public class RazomyVisitor extends PsiElementVisitor {
 
   public void visitAddExpr(@NotNull RazomyAddExpr o) {
-    visitPsiElement(o);
+    visitExpr(o);
   }
 
   public void visitAddOp(@NotNull RazomyAddOp o) {
@@ -17,11 +17,11 @@ public class RazomyVisitor extends PsiElementVisitor {
   }
 
   public void visitCallExpr(@NotNull RazomyCallExpr o) {
-    visitPsiElement(o);
+    visitExpr(o);
   }
 
   public void visitCompareExpr(@NotNull RazomyCompareExpr o) {
-    visitPsiElement(o);
+    visitExpr(o);
   }
 
   public void visitCompareOp(@NotNull RazomyCompareOp o) {
@@ -57,15 +57,11 @@ public class RazomyVisitor extends PsiElementVisitor {
   }
 
   public void visitMergeExpr(@NotNull RazomyMergeExpr o) {
-    visitPsiElement(o);
-  }
-
-  public void visitMigrateExpr(@NotNull RazomyMigrateExpr o) {
-    visitPsiElement(o);
+    visitExpr(o);
   }
 
   public void visitMulExpr(@NotNull RazomyMulExpr o) {
-    visitPsiElement(o);
+    visitExpr(o);
   }
 
   public void visitMulOp(@NotNull RazomyMulOp o) {
@@ -77,7 +73,7 @@ public class RazomyVisitor extends PsiElementVisitor {
   }
 
   public void visitPipelineExpr(@NotNull RazomyPipelineExpr o) {
-    visitPsiElement(o);
+    visitExpr(o);
   }
 
   public void visitPipelineOp(@NotNull RazomyPipelineOp o) {
@@ -85,7 +81,7 @@ public class RazomyVisitor extends PsiElementVisitor {
   }
 
   public void visitPrimaryExpr(@NotNull RazomyPrimaryExpr o) {
-    visitPsiElement(o);
+    visitExpr(o);
   }
 
   public void visitSlot(@NotNull RazomySlot o) {
@@ -97,7 +93,7 @@ public class RazomyVisitor extends PsiElementVisitor {
   }
 
   public void visitSubtractExpr(@NotNull RazomySubtractExpr o) {
-    visitPsiElement(o);
+    visitExpr(o);
   }
 
   public void visitTypedFlowBlock(@NotNull RazomyTypedFlowBlock o) {
@@ -109,7 +105,7 @@ public class RazomyVisitor extends PsiElementVisitor {
   }
 
   public void visitUnionExpr(@NotNull RazomyUnionExpr o) {
-    visitPsiElement(o);
+    visitExpr(o);
   }
 
   public void visitPsiNameIdentifierOwner(@NotNull PsiNameIdentifierOwner o) {

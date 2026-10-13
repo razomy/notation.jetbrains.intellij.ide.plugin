@@ -34,6 +34,7 @@ import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.patterns.PlatformPatterns
 import com.intellij.psi.*
 import com.intellij.psi.impl.source.resolve.ResolveCache
+import com.intellij.psi.search.FileTypeIndex
 import com.intellij.psi.search.FilenameIndex
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.searches.ReferencesSearch
@@ -72,8 +73,8 @@ class RazomyFileType : LanguageFileType(RazomyLanguage.INSTANCE) {
 
 class RazomyCommenter : Commenter {
     override fun getLineCommentPrefix(): String = "//"
-    override fun getBlockCommentPrefix(): String? = null
-    override fun getBlockCommentSuffix(): String? = null
+    override fun getBlockCommentPrefix(): String = "#"
+    override fun getBlockCommentSuffix(): String = "#"
     override fun getCommentedBlockCommentPrefix(): String? = null
     override fun getCommentedBlockCommentSuffix(): String? = null
 }
@@ -86,7 +87,7 @@ class RazomyFindUsagesProvider : FindUsagesProvider {
         return DefaultWordsScanner(
             FlexAdapter(RazomyLexer(null)),
             TokenSet.create(RazomyTypes.IDENTIFIER),
-            TokenSet.create(RazomyTypes.LINE_COMMENT),
+            TokenSet.create(RazomyTypes.LINE_COMMENT, RazomyTypes.DOC_COMMENT),
             TokenSet.create(RazomyTypes.STRING)
         )
     }
@@ -506,7 +507,21 @@ class RazomyUnusedInspection : LocalInspectionTool() {
                     val isUsedInStrings = org.razomy.language.RazomyUtil.isUsedInStringInterpolations(file, name)
                     if (isUsedInStrings) return
 
-                    val isUsedCrossFile = ReferencesSearch.search(element, element.useScope).findFirst() != null
+                    val project = element.project
+                    val psiManager = PsiManager.getInstance(project)
+                    val allRlFiles = FileTypeIndex.getFiles(RazomyFileType.INSTANCE, GlobalSearchScope.projectScope(project))
+
+                    val isUsedCrossFile = allRlFiles.any { vf ->
+                        val otherFile = psiManager.findFile(vf)
+                        if (otherFile == null || otherFile == file) false
+                        else {
+                            PsiTreeUtil.findChildrenOfType(otherFile, RazomyPath::class.java).any { path ->
+                                val pathText = path.text
+                                (pathText == name || pathText.endsWith(".$name") || pathText.startsWith("$name.")) &&
+                                        org.razomy.language.RazomyResolver.resolvePath(path, pathText) == element
+                            } || org.razomy.language.RazomyUtil.isUsedInStringInterpolations(otherFile, name)
+                        }
+                    }
                     if (!isUsedCrossFile) {
                         holder.registerProblem(
                             element,
@@ -524,9 +539,28 @@ class RazomyUnusedInspection : LocalInspectionTool() {
 
 class RazomyDocumentationProvider : AbstractDocumentationProvider() {
     override fun generateDoc(element: PsiElement?, originalElement: PsiElement?): String? {
-        val target = when (element) {
-            is RazomyPath -> element
-            else -> PsiTreeUtil.getParentOfType(originalElement, RazomyPath::class.java)
+        val origPath = PsiTreeUtil.getParentOfType(originalElement, RazomyPath::class.java)
+
+        // 1. Если навели курсор на `_` — показываем выведенный контекстный тип `_`
+        if (originalElement?.text == "_" || origPath?.text == "_") {
+            val ctxElem = origPath ?: originalElement ?: return null
+            val underscoreType = org.razomy.language.RazomyTypeSystem.inferUnderscoreType(ctxElem)
+            val fields = org.razomy.language.RazomyType.extractFields(underscoreType).keys
+            return buildString {
+                append("<div style='font-family: monospace; padding: 4px;'>")
+                append("<span>Contextual Symbol:</span> <code><b>_</b></code><br/>")
+                append("<span>Inferred Type:</span> <code><b>${escapeHtml(underscoreType.presentableName())}</b></code><br/>")
+                if (fields.isNotEmpty()) {
+                    append("<span>Available Fields:</span> <code>${escapeHtml(fields.joinToString(", "))}</code>")
+                }
+                append("</div>")
+            }
+        }
+
+        val target = when {
+            origPath != null && origPath.text.startsWith("_.") -> origPath
+            element is RazomyPath -> element
+            else -> origPath
         } ?: return null
 
         val decl = if (org.razomy.language.RazomyUtil.isDeclaration(target)) {
@@ -546,7 +580,7 @@ class RazomyDocumentationProvider : AbstractDocumentationProvider() {
             RazomyFormItem::class.java,
             RazomySlotItem::class.java
         ) ?: decl
-        val comments = collectPrecedingComments(container)
+        val formattedComments = collectPrecedingCommentsHtml(container)
 
         val doc = StringBuilder()
         doc.append("<div style='font-family: monospace; padding: 4px;'>")
@@ -560,17 +594,17 @@ class RazomyDocumentationProvider : AbstractDocumentationProvider() {
         doc.append("<span>Declaration:</span> <br/> <code>${escapeHtml(presentationText)}</code>")
         doc.append("</div>")
 
-        if (comments.isNotBlank()) {
-            doc.append("<hr/><div style='color: #666; font-style: italic;'>")
-            doc.append(comments.replace("\n", "<br/>"))
+        if (formattedComments.isNotBlank()) {
+            doc.append("<hr/><div style='padding: 4px;'>")
+            doc.append(formattedComments)
             doc.append("</div>")
         }
 
         return doc.toString()
     }
 
-    private fun collectPrecedingComments(element: PsiElement): String {
-        val commentLines = mutableListOf<String>()
+    private fun collectPrecedingCommentsHtml(element: PsiElement): String {
+        val htmlBlocks = mutableListOf<String>()
         var prev = PsiTreeUtil.prevLeaf(element)
 
         while (prev is PsiWhiteSpace) {
@@ -578,21 +612,47 @@ class RazomyDocumentationProvider : AbstractDocumentationProvider() {
         }
 
         while (prev != null) {
-            if (prev.node.elementType == RazomyTypes.LINE_COMMENT) {
+            val type = prev.node.elementType
+            if (type == RazomyTypes.LINE_COMMENT) {
                 val cleanLine = prev.text.removePrefix("//").trim()
-                commentLines.add(0, escapeHtml(cleanLine))
-            } else if (prev.node.elementType == RazomyTypes.CRLF2 || prev is PsiWhiteSpace) {
+                htmlBlocks.add(0, "<div style='color: #888; font-style: italic;'>${escapeHtml(cleanLine)}</div>")
+            } else if (type == RazomyTypes.DOC_COMMENT) {
+                val rawContent = prev.text.removeSurrounding("#").trim()
+                val parsedDoc = rawContent.lines().mapNotNull { line ->
+                    val trimmed = line.trim()
+                    when {
+                        trimmed.isEmpty() -> null
+                        trimmed.startsWith("title ", ignoreCase = true) -> {
+                            val titleText = trimmed.substring(6).trim()
+                            "<div style='font-weight: bold; font-size: 1.1em; margin-bottom: 4px;'>${
+                                escapeHtml(
+                                    titleText
+                                )
+                            }</div>"
+                        }
+
+                        trimmed.startsWith("T ") -> {
+                            val bodyText = trimmed.substring(2).trim()
+                            "<div style='margin-bottom: 2px;'>${escapeHtml(bodyText)}</div>"
+                        }
+
+                        else -> "<div>${escapeHtml(trimmed)}</div>"
+                    }
+                }.joinToString("")
+                htmlBlocks.add(0, parsedDoc)
+            } else if (type == RazomyTypes.CRLF2 || prev is PsiWhiteSpace) {
                 // skip
             } else {
                 break
             }
             prev = PsiTreeUtil.prevLeaf(prev)
         }
-        return commentLines.joinToString("\n")
+        return htmlBlocks.joinToString("\n")
     }
 
     private fun escapeHtml(text: String) = text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 }
+
 
 // --- STRUCTURE VIEW ---
 
@@ -661,23 +721,25 @@ class RazomyLineMarkerProvider : RelatedItemLineMarkerProvider() {
         result: MutableCollection<in RelatedItemLineMarkerInfo<*>>
     ) {
         if (element !is RazomyPath || !org.razomy.language.RazomyUtil.isDeclaration(element)) return
+        if (org.razomy.language.RazomyUtil.getImportContext(element) != null) return
 
         val leafElement = element.firstChild ?: element
-        val file = element.containingFile ?: return
+        val project = element.project
         val currentName = element.text
         if (currentName.isBlank() || !currentName.first().isUpperCase()) return
 
-        // 1. Предки (Супертипы)
+        // 1. Предки (Супертипы — в том числе из импортированных файлов)
         val statement = PsiTreeUtil.getParentOfType(element, RazomyDeclaration::class.java, RazomyFormItem::class.java)
-        if (statement != null && PsiTreeUtil.findChildOfType(statement, RazomyPath::class.java) == element) {
+        if (statement != null && PsiTreeUtil.findChildOfType(statement.children.firstOrNull(), RazomyPath::class.java) == element) {
             val rightExpr = statement.children.getOrNull(1)
             if (rightExpr != null) {
                 val pathsInRight = PsiTreeUtil.findChildrenOfType(rightExpr, RazomyPath::class.java)
-                val allDecls = org.razomy.language.RazomyTypeSystem.getGlobalDeclarationsMap(file)
                 val superTypes = pathsInRight
-                    .filter { it.text.firstOrNull()?.isUpperCase() == true && !it.text.contains(".") }
-                    .mapNotNull { path -> allDecls[path.text] }
-                    .filter { it != element }
+                    .filter { it.text.firstOrNull()?.isUpperCase() == true }
+                    .mapNotNull { path ->
+                        org.razomy.language.RazomyResolver.resolvePath(path, path.text)
+                    }
+                    .filter { it != element && it !is PsiFile }
                     .distinct()
 
                 if (superTypes.isNotEmpty()) {
@@ -689,15 +751,25 @@ class RazomyLineMarkerProvider : RelatedItemLineMarkerProvider() {
             }
         }
 
-        // 2. Наследники
-        val allDecls = PsiTreeUtil.findChildrenOfType(file, RazomyDeclaration::class.java)
+        // 2. Наследники (По всем .rl файлам проекта)
         val subTypes = mutableListOf<PsiElement>()
+        val psiManager = PsiManager.getInstance(project)
+        val allRlFiles = FileTypeIndex.getFiles(RazomyFileType.INSTANCE, GlobalSearchScope.projectScope(project))
 
-        for (decl in allDecls) {
-            val rightExpr = decl.children.getOrNull(1)
-            if (rightExpr != null) {
+        for (vf in allRlFiles) {
+            val psiFile = psiManager.findFile(vf) ?: continue
+            val allDecls = PsiTreeUtil.findChildrenOfType(psiFile, RazomyDeclaration::class.java)
+
+            for (decl in allDecls) {
+                val rightExpr = decl.children.getOrNull(1) ?: continue
                 val pathsInRight = PsiTreeUtil.findChildrenOfType(rightExpr, RazomyPath::class.java)
-                if (pathsInRight.any { it.text == currentName }) {
+
+                val usesCurrent = pathsInRight.any { p ->
+                    val shortName = p.text.substringAfterLast('.')
+                    shortName == currentName && org.razomy.language.RazomyResolver.resolvePath(p, p.text) == element
+                }
+
+                if (usesCurrent) {
                     val declName = PsiTreeUtil.findChildOfType(decl.children.firstOrNull(), RazomyPath::class.java)
                     if (declName != null && declName != element && org.razomy.language.RazomyUtil.isDeclaration(declName)) {
                         subTypes.add(declName)
@@ -709,12 +781,11 @@ class RazomyLineMarkerProvider : RelatedItemLineMarkerProvider() {
         if (subTypes.isNotEmpty()) {
             val downBuilder = NavigationGutterIconBuilder.create(AllIcons.Gutter.OverridenMethod)
                 .setTargets(subTypes)
-                .setTooltipText("Используется в: " + subTypes.joinToString { it.text })
+                .setTooltipText("Используется в: " + subTypes.joinToString { "${it.text} (${it.containingFile.name})" })
             result.add(downBuilder.createLineMarkerInfo(leafElement))
         }
     }
 }
-
 // --- COMPLETION ---
 
 class RazomyCompletionContributor : CompletionContributor() {
@@ -731,7 +802,7 @@ class RazomyCompletionContributor : CompletionContributor() {
                     val position = parameters.position
                     val currentPath = PsiTreeUtil.getParentOfType(position, RazomyPath::class.java)
 
-                    // 1. КОНТЕКСТ ПОСЛЕ ТОЧКИ
+                    // 1. КОНТЕКСТ ПОСЛЕ ТОЧКИ (Включая `_.`)
                     if (currentPath != null) {
                         val fullText = currentPath.text
                         val caretOffset = (parameters.offset - currentPath.textRange.startOffset)
@@ -741,8 +812,21 @@ class RazomyCompletionContributor : CompletionContributor() {
 
                         if (textBeforeCaret.contains(".")) {
                             val prefix = textBeforeCaret.substringBeforeLast(".")
-                            val resolvedPrefix = org.razomy.language.RazomyResolver.resolvePath(currentPath, prefix)
+                            if (prefix == "_") {
+                                val underscoreType =
+                                    org.razomy.language.RazomyTypeSystem.inferUnderscoreType(currentPath)
+                                val fields = org.razomy.language.RazomyType.extractFields(underscoreType)
+                                for ((name, _) in fields) {
+                                    result.addElement(
+                                        LookupElementBuilder.create(name)
+                                            .withIcon(AllIcons.Nodes.Field)
+                                            .withTypeText("Field of _: ${underscoreType.presentableName()}")
+                                    )
+                                }
+                                return
+                            }
 
+                            val resolvedPrefix = org.razomy.language.RazomyResolver.resolvePath(currentPath, prefix)
                             if (resolvedPrefix != null) {
                                 val type = if (resolvedPrefix is PsiFile) {
                                     org.razomy.language.RazomyType.Module(resolvedPrefix)
@@ -841,21 +925,48 @@ class RazomyGotoDeclarationHandler : GotoDeclarationHandler {
     private fun findUsages(element: RazomyPath, file: PsiFile): List<PsiElement> {
         val currentName = element.text
         val results = LinkedHashSet<PsiElement>()
+        val project = element.project
+        val psiManager = PsiManager.getInstance(project)
 
-        val allPaths = PsiTreeUtil.findChildrenOfType(file, RazomyPath::class.java)
-        for (path in allPaths) {
-            if (path != element && !org.razomy.language.RazomyUtil.isDeclaration(path) && matchesName(path.text, currentName)) {
-                results.add(path)
+        val allRlFiles = FileTypeIndex.getFiles(RazomyFileType.INSTANCE, GlobalSearchScope.projectScope(project))
+
+        for (vf in allRlFiles) {
+            val psiFile = psiManager.findFile(vf) ?: continue
+
+            // 1. Поиск среди обычных путей RazomyPath
+            val allPaths = PsiTreeUtil.findChildrenOfType(psiFile, RazomyPath::class.java)
+            for (path in allPaths) {
+                if (path == element) continue
+                val isDecl = org.razomy.language.RazomyUtil.isDeclaration(path)
+                val importCtx = org.razomy.language.RazomyUtil.getImportContext(path)
+
+                // Пропускаем чужие декларации (кроме деструктуризации импорта { LargeError } api)
+                if (isDecl && importCtx != org.razomy.language.RazomyUtil.ImportContext.LEFT_ALIAS_OR_DESTRUCT) {
+                    continue
+                }
+
+                if (matchesName(path.text, currentName)) {
+                    val resolved = org.razomy.language.RazomyResolver.resolvePath(path, path.text)
+                    if (resolved == element || (psiFile == file && resolved == null)) {
+                        results.add(path)
+                    }
+                }
             }
-        }
 
-        for (ref in ReferencesSearch.search(element, element.useScope)) {
-            results.add(ref.element)
+            // 2. Поиск внутри строковых интерполяций "{Err.Log}"
+            val allLiterals = PsiTreeUtil.findChildrenOfType(psiFile, RazomyLiteral::class.java)
+            for (lit in allLiterals) {
+                if (!lit.text.contains('{')) continue
+                for (ref in lit.references) {
+                    if (ref.isReferenceTo(element)) {
+                        results.add(lit)
+                    }
+                }
+            }
         }
 
         return results.toList()
     }
-
     private fun resolveLocalDeclaration(from: RazomyPath, name: String): RazomyPath? {
         var scope = from.parent
         while (scope != null) {

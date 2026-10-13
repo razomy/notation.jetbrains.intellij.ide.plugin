@@ -5,12 +5,12 @@ import java.util.List;
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
 
-public interface RazomyAddExpr extends PsiElement {
+public interface RazomyAddExpr extends RazomyExpr {
 
   @NotNull
   List<RazomyAddOp> getAddOpList();
 
   @NotNull
-  List<RazomyMulExpr> getMulExprList();
+  List<RazomyExpr> getExprList();
 
 }

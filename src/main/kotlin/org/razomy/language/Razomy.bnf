@@ -27,7 +27,6 @@
     DOT_GT='.>'
     DOT_AMP='.&'
     PIPE_DOT='.'
-    MIGRATION='->'
     DOT='.'
 
     EQ_EQ='=='
@@ -56,6 +55,7 @@
     NUMBER="regexp:\d+(\.\d+)?"
     STRING="regexp:\"([^\"\\]|\\.)*\"|'([^'\\]|\\.)*'"
 
+    DOC_COMMENT="regexp:#[^#]*#"
     LINE_COMMENT="regexp://.*"
     CRLF2="regexp:\R"
     WHITE_SPACE="regexp:[ \t\r]+"
@@ -74,10 +74,8 @@ declaration ::= expr expr? {pin=1}
 
 expr ::= pipeline_expr
 
-pipeline_expr ::= migrate_expr ( (CRLF2)* pipeline_op (CRLF2)* migrate_expr )*
+pipeline_expr ::= union_expr ( (CRLF2)* pipeline_op (CRLF2)* union_expr )*
 pipeline_op ::= DOT_GT | DOT_AMP | PIPE_DOT
-
-migrate_expr ::= union_expr ( (CRLF2)* MIGRATION (CRLF2)* union_expr )*
 
 union_expr ::= merge_expr ( (CRLF2)* PIPE (CRLF2)* merge_expr )*
 merge_expr ::= subtract_expr ( (CRLF2)* AMP (CRLF2)* subtract_expr )*

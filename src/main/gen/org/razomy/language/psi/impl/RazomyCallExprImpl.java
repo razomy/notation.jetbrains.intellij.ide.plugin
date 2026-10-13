@@ -8,15 +8,15 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.util.PsiTreeUtil;
 import static org.razomy.language.psi.RazomyTypes.*;
-import com.intellij.extapi.psi.ASTWrapperPsiElement;
 import org.razomy.language.psi.*;
 
-public class RazomyCallExprImpl extends ASTWrapperPsiElement implements RazomyCallExpr {
+public class RazomyCallExprImpl extends RazomyExprImpl implements RazomyCallExpr {
 
   public RazomyCallExprImpl(@NotNull ASTNode node) {
     super(node);
   }
 
+  @Override
   public void accept(@NotNull RazomyVisitor visitor) {
     visitor.visitCallExpr(this);
   }

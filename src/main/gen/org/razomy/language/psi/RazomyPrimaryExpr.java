@@ -5,10 +5,7 @@ import java.util.List;
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
 
-public interface RazomyPrimaryExpr extends PsiElement {
-
-  @Nullable
-  RazomyCallExpr getCallExpr();
+public interface RazomyPrimaryExpr extends RazomyExpr {
 
   @Nullable
   RazomyFlowBlock getFlowBlock();

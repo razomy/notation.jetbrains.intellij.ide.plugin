@@ -16,6 +16,7 @@ import static com.intellij.psi.TokenType.BAD_CHARACTER;
 WHITE_SPACE=[ \t\r]+
 CRLF=\R
 LINE_COMMENT="//".*
+DOC_COMMENT="#"[^#]*"#"
 
 IDENTIFIER=[a-zA-Z][a-zA-Z0-9_]*|_[a-zA-Z0-9_]+
 NUMBER=[0-9]+(\.[0-9]+)?
@@ -25,6 +26,7 @@ STRING=\"([^\"\\]|\\.)*\"|\'([^\'\\]|\\.)*\'
 <YYINITIAL> {
   {WHITE_SPACE}        { return com.intellij.psi.TokenType.WHITE_SPACE; }
   {CRLF}               { return RazomyTypes.CRLF2; }
+  {DOC_COMMENT}        { return RazomyTypes.DOC_COMMENT; }
   {LINE_COMMENT}       { return RazomyTypes.LINE_COMMENT; }
 
   // Скобки
@@ -35,10 +37,9 @@ STRING=\"([^\"\\]|\\.)*\"|\'([^\'\\]|\\.)*\'
   "("                  { return RazomyTypes.LPAREN; }
   ")"                  { return RazomyTypes.RPAREN; }
 
-  // Пайплайны и миграции
+  // Пайплайны
   ".>"                 { return RazomyTypes.DOT_GT; }
   ".&"                 { return RazomyTypes.DOT_AMP; }
-  "->"                 { return RazomyTypes.MIGRATION; }
 
   // Сравнения
   "=="                 { return RazomyTypes.EQ_EQ; }

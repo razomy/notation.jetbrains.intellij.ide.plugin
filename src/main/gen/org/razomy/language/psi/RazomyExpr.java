@@ -7,7 +7,4 @@ import com.intellij.psi.PsiElement;
 
 public interface RazomyExpr extends PsiElement {
 
-  @NotNull
-  RazomyPipelineExpr getPipelineExpr();
-
 }

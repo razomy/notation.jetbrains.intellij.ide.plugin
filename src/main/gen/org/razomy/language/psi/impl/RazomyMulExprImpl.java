@@ -8,15 +8,15 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.util.PsiTreeUtil;
 import static org.razomy.language.psi.RazomyTypes.*;
-import com.intellij.extapi.psi.ASTWrapperPsiElement;
 import org.razomy.language.psi.*;
 
-public class RazomyMulExprImpl extends ASTWrapperPsiElement implements RazomyMulExpr {
+public class RazomyMulExprImpl extends RazomyExprImpl implements RazomyMulExpr {
 
   public RazomyMulExprImpl(@NotNull ASTNode node) {
     super(node);
   }
 
+  @Override
   public void accept(@NotNull RazomyVisitor visitor) {
     visitor.visitMulExpr(this);
   }
@@ -29,14 +29,14 @@ public class RazomyMulExprImpl extends ASTWrapperPsiElement implements RazomyMul
 
   @Override
   @NotNull
-  public List<RazomyMulOp> getMulOpList() {
-    return PsiTreeUtil.getChildrenOfTypeAsList(this, RazomyMulOp.class);
+  public List<RazomyExpr> getExprList() {
+    return PsiTreeUtil.getChildrenOfTypeAsList(this, RazomyExpr.class);
   }
 
   @Override
   @NotNull
-  public List<RazomyPrimaryExpr> getPrimaryExprList() {
-    return PsiTreeUtil.getChildrenOfTypeAsList(this, RazomyPrimaryExpr.class);
+  public List<RazomyMulOp> getMulOpList() {
+    return PsiTreeUtil.getChildrenOfTypeAsList(this, RazomyMulOp.class);
   }
 
 }

@@ -11,7 +11,7 @@ import static org.razomy.language.psi.RazomyTypes.*;
 import com.intellij.extapi.psi.ASTWrapperPsiElement;
 import org.razomy.language.psi.*;
 
-public class RazomyExprImpl extends ASTWrapperPsiElement implements RazomyExpr {
+public abstract class RazomyExprImpl extends ASTWrapperPsiElement implements RazomyExpr {
 
   public RazomyExprImpl(@NotNull ASTNode node) {
     super(node);
@@ -25,12 +25,6 @@ public class RazomyExprImpl extends ASTWrapperPsiElement implements RazomyExpr {
   public void accept(@NotNull PsiElementVisitor visitor) {
     if (visitor instanceof RazomyVisitor) accept((RazomyVisitor)visitor);
     else super.accept(visitor);
-  }
-
-  @Override
-  @NotNull
-  public RazomyPipelineExpr getPipelineExpr() {
-    return findNotNullChildByClass(RazomyPipelineExpr.class);
   }
 
 }

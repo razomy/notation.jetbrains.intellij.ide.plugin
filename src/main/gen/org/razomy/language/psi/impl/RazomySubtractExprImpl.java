@@ -8,15 +8,15 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.util.PsiTreeUtil;
 import static org.razomy.language.psi.RazomyTypes.*;
-import com.intellij.extapi.psi.ASTWrapperPsiElement;
 import org.razomy.language.psi.*;
 
-public class RazomySubtractExprImpl extends ASTWrapperPsiElement implements RazomySubtractExpr {
+public class RazomySubtractExprImpl extends RazomyExprImpl implements RazomySubtractExpr {
 
   public RazomySubtractExprImpl(@NotNull ASTNode node) {
     super(node);
   }
 
+  @Override
   public void accept(@NotNull RazomyVisitor visitor) {
     visitor.visitSubtractExpr(this);
   }
@@ -29,8 +29,8 @@ public class RazomySubtractExprImpl extends ASTWrapperPsiElement implements Razo
 
   @Override
   @NotNull
-  public List<RazomyCompareExpr> getCompareExprList() {
-    return PsiTreeUtil.getChildrenOfTypeAsList(this, RazomyCompareExpr.class);
+  public List<RazomyExpr> getExprList() {
+    return PsiTreeUtil.getChildrenOfTypeAsList(this, RazomyExpr.class);
   }
 
 }

@@ -8,15 +8,15 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.util.PsiTreeUtil;
 import static org.razomy.language.psi.RazomyTypes.*;
-import com.intellij.extapi.psi.ASTWrapperPsiElement;
 import org.razomy.language.psi.*;
 
-public class RazomyCompareExprImpl extends ASTWrapperPsiElement implements RazomyCompareExpr {
+public class RazomyCompareExprImpl extends RazomyExprImpl implements RazomyCompareExpr {
 
   public RazomyCompareExprImpl(@NotNull ASTNode node) {
     super(node);
   }
 
+  @Override
   public void accept(@NotNull RazomyVisitor visitor) {
     visitor.visitCompareExpr(this);
   }
@@ -29,14 +29,14 @@ public class RazomyCompareExprImpl extends ASTWrapperPsiElement implements Razom
 
   @Override
   @NotNull
-  public List<RazomyAddExpr> getAddExprList() {
-    return PsiTreeUtil.getChildrenOfTypeAsList(this, RazomyAddExpr.class);
+  public List<RazomyCompareOp> getCompareOpList() {
+    return PsiTreeUtil.getChildrenOfTypeAsList(this, RazomyCompareOp.class);
   }
 
   @Override
   @NotNull
-  public List<RazomyCompareOp> getCompareOpList() {
-    return PsiTreeUtil.getChildrenOfTypeAsList(this, RazomyCompareOp.class);
+  public List<RazomyExpr> getExprList() {
+    return PsiTreeUtil.getChildrenOfTypeAsList(this, RazomyExpr.class);
   }
 
 }

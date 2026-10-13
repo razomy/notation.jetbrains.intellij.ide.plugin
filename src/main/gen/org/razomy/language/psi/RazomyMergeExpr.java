@@ -5,9 +5,9 @@ import java.util.List;
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
 
-public interface RazomyMergeExpr extends PsiElement {
+public interface RazomyMergeExpr extends RazomyExpr {
 
   @NotNull
-  List<RazomySubtractExpr> getSubtractExprList();
+  List<RazomyExpr> getExprList();
 
 }

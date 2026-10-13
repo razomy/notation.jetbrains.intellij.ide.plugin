@@ -21,7 +21,7 @@ public class RazomyParser implements PsiParser, LightPsiParser {
 
   public void parseLight(IElementType t, PsiBuilder b) {
     boolean r;
-    b = adapt_builder_(t, b, this, null);
+    b = adapt_builder_(t, b, this, EXTENDS_SETS_);
     Marker m = enter_section_(b, 0, _COLLAPSE_, null);
     r = parse_root_(t, b);
     exit_section_(b, 0, m, t, r, true, TRUE_CONDITION);
@@ -35,12 +35,18 @@ public class RazomyParser implements PsiParser, LightPsiParser {
     return razomyFile(b, l + 1);
   }
 
+  public static final TokenSet[] EXTENDS_SETS_ = new TokenSet[] {
+    create_token_set_(ADD_EXPR, CALL_EXPR, COMPARE_EXPR, EXPR,
+      MERGE_EXPR, MUL_EXPR, PIPELINE_EXPR, PRIMARY_EXPR,
+      SUBTRACT_EXPR, UNION_EXPR),
+  };
+
   /* ********************************************************** */
   // mul_expr ( (CRLF2)* add_op (CRLF2)* mul_expr )*
   public static boolean add_expr(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "add_expr")) return false;
     boolean r;
-    Marker m = enter_section_(b, l, _NONE_, ADD_EXPR, "<add expr>");
+    Marker m = enter_section_(b, l, _COLLAPSE_, ADD_EXPR, "<add expr>");
     r = mul_expr(b, l + 1);
     r = r && add_expr_1(b, l + 1);
     exit_section_(b, l, m, r, false, null);
@@ -124,7 +130,7 @@ public class RazomyParser implements PsiParser, LightPsiParser {
   public static boolean compare_expr(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "compare_expr")) return false;
     boolean r;
-    Marker m = enter_section_(b, l, _NONE_, COMPARE_EXPR, "<compare expr>");
+    Marker m = enter_section_(b, l, _COLLAPSE_, COMPARE_EXPR, "<compare expr>");
     r = add_expr(b, l + 1);
     r = r && compare_expr_1(b, l + 1);
     exit_section_(b, l, m, r, false, null);
@@ -218,7 +224,7 @@ public class RazomyParser implements PsiParser, LightPsiParser {
   public static boolean expr(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "expr")) return false;
     boolean r;
-    Marker m = enter_section_(b, l, _NONE_, EXPR, "<expr>");
+    Marker m = enter_section_(b, l, _COLLAPSE_, EXPR, "<expr>");
     r = pipeline_expr(b, l + 1);
     exit_section_(b, l, m, r, false, null);
     return r;
@@ -345,7 +351,7 @@ public class RazomyParser implements PsiParser, LightPsiParser {
   public static boolean merge_expr(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "merge_expr")) return false;
     boolean r;
-    Marker m = enter_section_(b, l, _NONE_, MERGE_EXPR, "<merge expr>");
+    Marker m = enter_section_(b, l, _COLLAPSE_, MERGE_EXPR, "<merge expr>");
     r = subtract_expr(b, l + 1);
     r = r && merge_expr_1(b, l + 1);
     exit_section_(b, l, m, r, false, null);
@@ -399,69 +405,11 @@ public class RazomyParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // union_expr ( (CRLF2)* MIGRATION (CRLF2)* union_expr )*
-  public static boolean migrate_expr(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "migrate_expr")) return false;
-    boolean r;
-    Marker m = enter_section_(b, l, _NONE_, MIGRATE_EXPR, "<migrate expr>");
-    r = union_expr(b, l + 1);
-    r = r && migrate_expr_1(b, l + 1);
-    exit_section_(b, l, m, r, false, null);
-    return r;
-  }
-
-  // ( (CRLF2)* MIGRATION (CRLF2)* union_expr )*
-  private static boolean migrate_expr_1(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "migrate_expr_1")) return false;
-    while (true) {
-      int c = current_position_(b);
-      if (!migrate_expr_1_0(b, l + 1)) break;
-      if (!empty_element_parsed_guard_(b, "migrate_expr_1", c)) break;
-    }
-    return true;
-  }
-
-  // (CRLF2)* MIGRATION (CRLF2)* union_expr
-  private static boolean migrate_expr_1_0(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "migrate_expr_1_0")) return false;
-    boolean r;
-    Marker m = enter_section_(b);
-    r = migrate_expr_1_0_0(b, l + 1);
-    r = r && consumeToken(b, MIGRATION);
-    r = r && migrate_expr_1_0_2(b, l + 1);
-    r = r && union_expr(b, l + 1);
-    exit_section_(b, m, null, r);
-    return r;
-  }
-
-  // (CRLF2)*
-  private static boolean migrate_expr_1_0_0(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "migrate_expr_1_0_0")) return false;
-    while (true) {
-      int c = current_position_(b);
-      if (!consumeToken(b, CRLF2)) break;
-      if (!empty_element_parsed_guard_(b, "migrate_expr_1_0_0", c)) break;
-    }
-    return true;
-  }
-
-  // (CRLF2)*
-  private static boolean migrate_expr_1_0_2(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "migrate_expr_1_0_2")) return false;
-    while (true) {
-      int c = current_position_(b);
-      if (!consumeToken(b, CRLF2)) break;
-      if (!empty_element_parsed_guard_(b, "migrate_expr_1_0_2", c)) break;
-    }
-    return true;
-  }
-
-  /* ********************************************************** */
   // primary_expr ( (CRLF2)* mul_op (CRLF2)* primary_expr )*
   public static boolean mul_expr(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "mul_expr")) return false;
     boolean r;
-    Marker m = enter_section_(b, l, _NONE_, MUL_EXPR, "<mul expr>");
+    Marker m = enter_section_(b, l, _COLLAPSE_, MUL_EXPR, "<mul expr>");
     r = primary_expr(b, l + 1);
     r = r && mul_expr_1(b, l + 1);
     exit_section_(b, l, m, r, false, null);
@@ -572,18 +520,18 @@ public class RazomyParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // migrate_expr ( (CRLF2)* pipeline_op (CRLF2)* migrate_expr )*
+  // union_expr ( (CRLF2)* pipeline_op (CRLF2)* union_expr )*
   public static boolean pipeline_expr(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "pipeline_expr")) return false;
     boolean r;
-    Marker m = enter_section_(b, l, _NONE_, PIPELINE_EXPR, "<pipeline expr>");
-    r = migrate_expr(b, l + 1);
+    Marker m = enter_section_(b, l, _COLLAPSE_, PIPELINE_EXPR, "<pipeline expr>");
+    r = union_expr(b, l + 1);
     r = r && pipeline_expr_1(b, l + 1);
     exit_section_(b, l, m, r, false, null);
     return r;
   }
 
-  // ( (CRLF2)* pipeline_op (CRLF2)* migrate_expr )*
+  // ( (CRLF2)* pipeline_op (CRLF2)* union_expr )*
   private static boolean pipeline_expr_1(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "pipeline_expr_1")) return false;
     while (true) {
@@ -594,7 +542,7 @@ public class RazomyParser implements PsiParser, LightPsiParser {
     return true;
   }
 
-  // (CRLF2)* pipeline_op (CRLF2)* migrate_expr
+  // (CRLF2)* pipeline_op (CRLF2)* union_expr
   private static boolean pipeline_expr_1_0(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "pipeline_expr_1_0")) return false;
     boolean r;
@@ -602,7 +550,7 @@ public class RazomyParser implements PsiParser, LightPsiParser {
     r = pipeline_expr_1_0_0(b, l + 1);
     r = r && pipeline_op(b, l + 1);
     r = r && pipeline_expr_1_0_2(b, l + 1);
-    r = r && migrate_expr(b, l + 1);
+    r = r && union_expr(b, l + 1);
     exit_section_(b, m, null, r);
     return r;
   }
@@ -654,7 +602,7 @@ public class RazomyParser implements PsiParser, LightPsiParser {
   public static boolean primary_expr(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "primary_expr")) return false;
     boolean r;
-    Marker m = enter_section_(b, l, _NONE_, PRIMARY_EXPR, "<primary expr>");
+    Marker m = enter_section_(b, l, _COLLAPSE_, PRIMARY_EXPR, "<primary expr>");
     r = literal(b, l + 1);
     if (!r) r = call_expr(b, l + 1);
     if (!r) r = typed_form_block(b, l + 1);
@@ -750,7 +698,7 @@ public class RazomyParser implements PsiParser, LightPsiParser {
   public static boolean subtract_expr(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "subtract_expr")) return false;
     boolean r;
-    Marker m = enter_section_(b, l, _NONE_, SUBTRACT_EXPR, "<subtract expr>");
+    Marker m = enter_section_(b, l, _COLLAPSE_, SUBTRACT_EXPR, "<subtract expr>");
     r = compare_expr(b, l + 1);
     r = r && subtract_expr_1(b, l + 1);
     exit_section_(b, l, m, r, false, null);
@@ -834,7 +782,7 @@ public class RazomyParser implements PsiParser, LightPsiParser {
   public static boolean union_expr(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "union_expr")) return false;
     boolean r;
-    Marker m = enter_section_(b, l, _NONE_, UNION_EXPR, "<union expr>");
+    Marker m = enter_section_(b, l, _COLLAPSE_, UNION_EXPR, "<union expr>");
     r = merge_expr(b, l + 1);
     r = r && union_expr_1(b, l + 1);
     exit_section_(b, l, m, r, false, null);

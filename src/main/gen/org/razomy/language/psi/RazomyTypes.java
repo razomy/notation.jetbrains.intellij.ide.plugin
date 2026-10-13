@@ -21,7 +21,6 @@ public interface RazomyTypes {
   IElementType FORM_ITEM = new RazomyElementType("FORM_ITEM");
   IElementType LITERAL = new RazomyElementType("LITERAL");
   IElementType MERGE_EXPR = new RazomyElementType("MERGE_EXPR");
-  IElementType MIGRATE_EXPR = new RazomyElementType("MIGRATE_EXPR");
   IElementType MUL_EXPR = new RazomyElementType("MUL_EXPR");
   IElementType MUL_OP = new RazomyElementType("MUL_OP");
   IElementType PATH = new RazomyElementType("PATH");
@@ -38,6 +37,7 @@ public interface RazomyTypes {
   IElementType AMP = new RazomyTokenType("&");
   IElementType COMMA = new RazomyTokenType(",");
   IElementType CRLF2 = new RazomyTokenType("CRLF2");
+  IElementType DOC_COMMENT = new RazomyTokenType("DOC_COMMENT");
   IElementType DOT = new RazomyTokenType(".");
   IElementType DOT_AMP = new RazomyTokenType(".&");
   IElementType DOT_GT = new RazomyTokenType(".>");
@@ -52,7 +52,6 @@ public interface RazomyTypes {
   IElementType LINE_COMMENT = new RazomyTokenType("LINE_COMMENT");
   IElementType LPAREN = new RazomyTokenType("(");
   IElementType LTE = new RazomyTokenType("<=");
-  IElementType MIGRATION = new RazomyTokenType("->");
   IElementType MINUS = new RazomyTokenType("-");
   IElementType MUL = new RazomyTokenType("*");
   IElementType NOT_EQ = new RazomyTokenType("!=");
@@ -91,9 +90,6 @@ public interface RazomyTypes {
       else if (type == DECLARATION) {
         return new RazomyDeclarationImpl(node);
       }
-      else if (type == EXPR) {
-        return new RazomyExprImpl(node);
-      }
       else if (type == FLOW_BLOCK) {
         return new RazomyFlowBlockImpl(node);
       }
@@ -111,9 +107,6 @@ public interface RazomyTypes {
       }
       else if (type == MERGE_EXPR) {
         return new RazomyMergeExprImpl(node);
-      }
-      else if (type == MIGRATE_EXPR) {
-        return new RazomyMigrateExprImpl(node);
       }
       else if (type == MUL_EXPR) {
         return new RazomyMulExprImpl(node);
