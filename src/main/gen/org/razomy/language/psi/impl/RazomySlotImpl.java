@@ -11,14 +11,14 @@ import static org.razomy.language.psi.RazomyTypes.*;
 import com.intellij.extapi.psi.ASTWrapperPsiElement;
 import org.razomy.language.psi.*;
 
-public class RazomyBracketGroupImpl extends ASTWrapperPsiElement implements RazomyBracketGroup {
+public class RazomySlotImpl extends ASTWrapperPsiElement implements RazomySlot {
 
-  public RazomyBracketGroupImpl(@NotNull ASTNode node) {
+  public RazomySlotImpl(@NotNull ASTNode node) {
     super(node);
   }
 
   public void accept(@NotNull RazomyVisitor visitor) {
-    visitor.visitBracketGroup(this);
+    visitor.visitSlot(this);
   }
 
   @Override
@@ -29,8 +29,8 @@ public class RazomyBracketGroupImpl extends ASTWrapperPsiElement implements Razo
 
   @Override
   @NotNull
-  public List<RazomyStatement> getStatementList() {
-    return PsiTreeUtil.getChildrenOfTypeAsList(this, RazomyStatement.class);
+  public List<RazomySlotItem> getSlotItemList() {
+    return PsiTreeUtil.getChildrenOfTypeAsList(this, RazomySlotItem.class);
   }
 
 }

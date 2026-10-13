@@ -5,9 +5,12 @@ import java.util.List;
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
 
-public interface RazomyAngleGroup extends PsiElement {
+public interface RazomyCompareExpr extends PsiElement {
 
   @NotNull
-  List<RazomyStatement> getStatementList();
+  List<RazomyAddExpr> getAddExprList();
+
+  @NotNull
+  List<RazomyCompareOp> getCompareOpList();
 
 }

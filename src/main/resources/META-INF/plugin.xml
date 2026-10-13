@@ -98,7 +98,7 @@
                   extensions="rl"/>
 
         <lang.parserDefinition language="RL"
-                               implementationClass="org.razomy.language.parser.RazomyParserDefinition"/>
+                               implementationClass="org.razomy.language.RazomyParserDefinition"/>
 
         <lang.syntaxHighlighterFactory language="RL"
                                        implementationClass="org.razomy.language.RazomySyntaxHighlighterFactory"/>
@@ -134,6 +134,10 @@
                         implementationClass="org.razomy.language.RazomyFormattingModelBuilder"/>
 
         <gotoDeclarationHandler implementation="org.razomy.language.RazomyGotoDeclarationHandler"/>
+
+        <codeInsight.parameterNameHints
+                language="RL"
+                implementationClass="org.razomy.language.RazomyInlayParameterHintsProvider"/>
 
         <localInspection language="RL"
                          groupName="Razomy"

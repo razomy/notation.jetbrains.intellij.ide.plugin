@@ -5,12 +5,6 @@ import java.util.List;
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
 
-public interface RazomyStatement extends PsiElement {
-
-  @NotNull
-  List<RazomyGroup> getGroupList();
-
-  @NotNull
-  List<RazomyPath> getPathList();
+public interface RazomyPipelineOp extends PsiElement {
 
 }

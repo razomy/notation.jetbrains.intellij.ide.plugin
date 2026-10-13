@@ -1,4 +1,4 @@
-package org.razomy.language.parser
+package org.razomy.language
 
 import com.intellij.lang.ASTNode
 import com.intellij.lang.ParserDefinition
@@ -11,8 +11,7 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.TokenType
 import com.intellij.psi.tree.IFileElementType
 import com.intellij.psi.tree.TokenSet
-import org.razomy.language.RazomyLanguage
-import org.razomy.language.RazomyLexer
+import org.razomy.language.parser.RazomyParser
 import org.razomy.language.psi.RazomyFile
 import org.razomy.language.psi.RazomyTypes
 

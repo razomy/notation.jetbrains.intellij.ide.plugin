@@ -11,26 +11,20 @@ import static org.razomy.language.psi.RazomyTypes.*;
 import com.intellij.extapi.psi.ASTWrapperPsiElement;
 import org.razomy.language.psi.*;
 
-public class RazomyDeclPathImpl extends ASTWrapperPsiElement implements RazomyDeclPath {
+public class RazomyPipelineOpImpl extends ASTWrapperPsiElement implements RazomyPipelineOp {
 
-  public RazomyDeclPathImpl(@NotNull ASTNode node) {
+  public RazomyPipelineOpImpl(@NotNull ASTNode node) {
     super(node);
   }
 
-//  public void accept(@NotNull RazomyVisitor visitor) {
-//    visitor.visitDeclPath(this);
-//  }
+  public void accept(@NotNull RazomyVisitor visitor) {
+    visitor.visitPipelineOp(this);
+  }
 
   @Override
   public void accept(@NotNull PsiElementVisitor visitor) {
     if (visitor instanceof RazomyVisitor) accept((RazomyVisitor)visitor);
     else super.accept(visitor);
-  }
-
-  @Override
-  @NotNull
-  public RazomyPath getPath() {
-    return findNotNullChildByClass(RazomyPath.class);
   }
 
 }

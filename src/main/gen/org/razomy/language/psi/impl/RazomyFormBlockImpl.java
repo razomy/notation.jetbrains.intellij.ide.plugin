@@ -11,14 +11,14 @@ import static org.razomy.language.psi.RazomyTypes.*;
 import com.intellij.extapi.psi.ASTWrapperPsiElement;
 import org.razomy.language.psi.*;
 
-public class RazomyAngleGroupImpl extends ASTWrapperPsiElement implements RazomyAngleGroup {
+public class RazomyFormBlockImpl extends ASTWrapperPsiElement implements RazomyFormBlock {
 
-  public RazomyAngleGroupImpl(@NotNull ASTNode node) {
+  public RazomyFormBlockImpl(@NotNull ASTNode node) {
     super(node);
   }
 
   public void accept(@NotNull RazomyVisitor visitor) {
-    visitor.visitAngleGroup(this);
+    visitor.visitFormBlock(this);
   }
 
   @Override
@@ -29,8 +29,8 @@ public class RazomyAngleGroupImpl extends ASTWrapperPsiElement implements Razomy
 
   @Override
   @NotNull
-  public List<RazomyStatement> getStatementList() {
-    return PsiTreeUtil.getChildrenOfTypeAsList(this, RazomyStatement.class);
+  public List<RazomyFormItem> getFormItemList() {
+    return PsiTreeUtil.getChildrenOfTypeAsList(this, RazomyFormItem.class);
   }
 
 }

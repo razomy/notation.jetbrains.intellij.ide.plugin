@@ -11,14 +11,14 @@ import static org.razomy.language.psi.RazomyTypes.*;
 import com.intellij.extapi.psi.ASTWrapperPsiElement;
 import org.razomy.language.psi.*;
 
-public class RazomyStatementImpl extends ASTWrapperPsiElement implements RazomyStatement {
+public class RazomyDeclarationImpl extends ASTWrapperPsiElement implements RazomyDeclaration {
 
-  public RazomyStatementImpl(@NotNull ASTNode node) {
+  public RazomyDeclarationImpl(@NotNull ASTNode node) {
     super(node);
   }
 
   public void accept(@NotNull RazomyVisitor visitor) {
-    visitor.visitStatement(this);
+    visitor.visitDeclaration(this);
   }
 
   @Override
@@ -29,14 +29,8 @@ public class RazomyStatementImpl extends ASTWrapperPsiElement implements RazomyS
 
   @Override
   @NotNull
-  public List<RazomyGroup> getGroupList() {
-    return PsiTreeUtil.getChildrenOfTypeAsList(this, RazomyGroup.class);
-  }
-
-  @Override
-  @NotNull
-  public List<RazomyPath> getPathList() {
-    return PsiTreeUtil.getChildrenOfTypeAsList(this, RazomyPath.class);
+  public List<RazomyExpr> getExprList() {
+    return PsiTreeUtil.getChildrenOfTypeAsList(this, RazomyExpr.class);
   }
 
 }

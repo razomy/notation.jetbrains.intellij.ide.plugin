@@ -1,4 +1,4 @@
-package org.razomy.language.psi.impl
+package org.razomy.language
 
 import com.intellij.extapi.psi.ASTWrapperPsiElement
 import com.intellij.lang.ASTNode

@@ -11,14 +11,14 @@ import static org.razomy.language.psi.RazomyTypes.*;
 import com.intellij.extapi.psi.ASTWrapperPsiElement;
 import org.razomy.language.psi.*;
 
-public class RazomyBraceGroupImpl extends ASTWrapperPsiElement implements RazomyBraceGroup {
+public class RazomyFormItemImpl extends ASTWrapperPsiElement implements RazomyFormItem {
 
-  public RazomyBraceGroupImpl(@NotNull ASTNode node) {
+  public RazomyFormItemImpl(@NotNull ASTNode node) {
     super(node);
   }
 
   public void accept(@NotNull RazomyVisitor visitor) {
-    visitor.visitBraceGroup(this);
+    visitor.visitFormItem(this);
   }
 
   @Override
@@ -29,8 +29,8 @@ public class RazomyBraceGroupImpl extends ASTWrapperPsiElement implements Razomy
 
   @Override
   @NotNull
-  public List<RazomyStatement> getStatementList() {
-    return PsiTreeUtil.getChildrenOfTypeAsList(this, RazomyStatement.class);
+  public List<RazomyExpr> getExprList() {
+    return PsiTreeUtil.getChildrenOfTypeAsList(this, RazomyExpr.class);
   }
 
 }

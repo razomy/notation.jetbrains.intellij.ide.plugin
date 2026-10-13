@@ -5,9 +5,12 @@ import java.util.List;
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
 
-public interface RazomyParenGroup extends PsiElement {
+public interface RazomyTypedFlowBlock extends PsiElement {
 
   @NotNull
-  List<RazomyStatement> getStatementList();
+  RazomyFlowBlock getFlowBlock();
+
+  @NotNull
+  RazomyPath getPath();
 
 }

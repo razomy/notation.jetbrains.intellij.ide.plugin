@@ -11,14 +11,14 @@ import static org.razomy.language.psi.RazomyTypes.*;
 import com.intellij.extapi.psi.ASTWrapperPsiElement;
 import org.razomy.language.psi.*;
 
-public class RazomyParenGroupImpl extends ASTWrapperPsiElement implements RazomyParenGroup {
+public class RazomyMergeExprImpl extends ASTWrapperPsiElement implements RazomyMergeExpr {
 
-  public RazomyParenGroupImpl(@NotNull ASTNode node) {
+  public RazomyMergeExprImpl(@NotNull ASTNode node) {
     super(node);
   }
 
   public void accept(@NotNull RazomyVisitor visitor) {
-    visitor.visitParenGroup(this);
+    visitor.visitMergeExpr(this);
   }
 
   @Override
@@ -29,8 +29,8 @@ public class RazomyParenGroupImpl extends ASTWrapperPsiElement implements Razomy
 
   @Override
   @NotNull
-  public List<RazomyStatement> getStatementList() {
-    return PsiTreeUtil.getChildrenOfTypeAsList(this, RazomyStatement.class);
+  public List<RazomySubtractExpr> getSubtractExprList() {
+    return PsiTreeUtil.getChildrenOfTypeAsList(this, RazomySubtractExpr.class);
   }
 
 }

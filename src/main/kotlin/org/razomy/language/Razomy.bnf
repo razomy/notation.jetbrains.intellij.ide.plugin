@@ -1,6 +1,6 @@
 {
   parserClass="org.razomy.language.parser.RazomyParser"
-  parserUtilClass="org.razomy.language.parser.RazomyParserUtil"
+  parserUtilClass="org.razomy.language.RazomyParserUtil"
 
   extends="com.intellij.extapi.psi.ASTWrapperPsiElement"
 
@@ -16,23 +16,41 @@
   tokens=[
     LBRACE='{'
     RBRACE='}'
-    LPAREN='('
-    RPAREN=')'
-    LANGLE='<'
-    RANGLE='>'
     LBRACKET='['
     RBRACKET=']'
+    LPAREN='('
+    RPAREN=')'
+
+    DOT_GT='.>'
+    DOT_AMP='.&'
+    MIGRATION='->'
     DOT='.'
+
+    EQ_EQ='=='
+    NOT_EQ='!='
+    LTE='<='
+    GTE='>='
+    LANGLE='<'
+    RANGLE='>'
+    EQ='='
+
+    AMP='&'
+    PIPE='|'
+    SLASH='/'
+    PLUS='+'
+    MINUS='-'
+    MUL='*'
+
+    COMMA=','
+    UNDERSCORE='_'
     SEMICOLON=';'
 
-    MATCH_KW='match'
-    INSTANCEOF_KW='instanceof'
-    CONST_KW='const'
+    TRUE='true'
+    FALSE='false'
 
-    IDENTIFIER="regexp:[a-zA-Z_][a-zA-Z0-9_]*"
+    IDENTIFIER="regexp:[a-zA-Z][a-zA-Z0-9_]*|_[a-zA-Z0-9_]+"
     NUMBER="regexp:\d+(\.\d+)?"
-    STRING="regexp:\"[^\"]*\"|'[^']*'"
-    OP="regexp:[&|\+\-\*/\!\?@\#\$%\^~=]+"
+    STRING="regexp:\"([^\"\\]|\\.)*\"|'([^'\\]|\\.)*'"
 
     LINE_COMMENT="regexp://.*"
     CRLF2="regexp:\R"
@@ -40,24 +58,75 @@
   ]
 }
 
-// Корневой узел файла: набор утверждений или переводов строк
-razomyFile ::= (CRLF2 | SEMICOLON | statement)*
+// 1. Корень файла
+razomyFile ::= (CRLF2 | SEMICOLON | declaration)*
 
-// Утверждение (строка кода): одна или более сущностей
-statement ::= token_item+
+// 2. Декларация на уровне файла (Имя + Значение/Блок)
+declaration ::= expr expr? {pin=1}
 
-private token_item ::= path | STRING | NUMBER | OP | group | MATCH_KW | INSTANCEOF_KW | CONST_KW
+// =============================================================================
+// ИЕРАРХИЯ ВЫРАЖЕНИЙ (От наименьшего приоритета к наибольшему)
+// =============================================================================
 
-private path_part ::= IDENTIFIER
+expr ::= pipeline_expr
 
-path ::= path_part (DOT path_part)* {
-    mixin="org.razomy.language.psi.impl.RazomyPathMixin"
+pipeline_expr ::= migrate_expr ( (CRLF2)* pipeline_op (CRLF2)* migrate_expr )*
+pipeline_op ::= DOT_GT | DOT_AMP | DOT
+
+migrate_expr ::= union_expr ( (CRLF2)* MIGRATION (CRLF2)* union_expr )*
+
+union_expr ::= merge_expr ( (CRLF2)* PIPE (CRLF2)* merge_expr )*
+merge_expr ::= subtract_expr ( (CRLF2)* AMP (CRLF2)* subtract_expr )*
+subtract_expr ::= compare_expr ( (CRLF2)* SLASH (CRLF2)* compare_expr )*
+
+compare_expr ::= add_expr ( (CRLF2)* compare_op (CRLF2)* add_expr )*
+compare_op ::= EQ_EQ | NOT_EQ | LANGLE | RANGLE | LTE | GTE
+
+add_expr ::= mul_expr ( (CRLF2)* add_op (CRLF2)* mul_expr )*
+add_op ::= PLUS | MINUS
+
+mul_expr ::= primary_expr ( (CRLF2)* mul_op (CRLF2)* primary_expr )*
+mul_op ::= MUL
+
+// =============================================================================
+// БАЗОВЫЕ СТРУКТУРЫ (ПЕРВИЧНЫЕ ВЫРАЖЕНИЯ)
+// =============================================================================
+
+primary_expr ::= literal
+               | call_expr
+               | typed_form_block
+               | typed_flow_block
+               | form_block
+               | flow_block
+               | path
+               | slot
+
+literal ::= NUMBER | STRING | TRUE | FALSE
+
+call_expr ::= path slot
+typed_form_block ::= path form_block
+typed_flow_block ::= path flow_block
+
+// Поддержка анонимного контекста в начале пути (например _.Age) и как одиночного токена (_)
+path ::= path_root (DOT IDENTIFIER)* {
+    mixin="org.razomy.language.RazomyPathMixin"
     implements="com.intellij.psi.PsiNameIdentifierOwner"
 }
-group ::= brace_group | paren_group | angle_group | bracket_group
+private path_root ::= IDENTIFIER | UNDERSCORE
 
-// Внутри групп statements также разделяются переносами строк
-brace_group ::= LBRACE (CRLF2 | SEMICOLON | statement)* RBRACE
-paren_group ::= LPAREN (CRLF2 | SEMICOLON | statement)* RPAREN
-angle_group ::= LANGLE (CRLF2 | SEMICOLON | statement)* RANGLE
-bracket_group ::= LBRACKET (CRLF2 | SEMICOLON | statement)* RBRACKET
+// =============================================================================
+// СКОБКИ И БЛОКИ (Формы, Потоки, Слоты)
+// =============================================================================
+
+// () — Слот (Захват объекта в переменную, Кортежи, Типизированные аргументы)
+slot ::= LPAREN (CRLF2 | slot_item)? (COMMA (CRLF2 | slot_item))* RPAREN
+slot_item ::= expr expr? {pin=1} // Поддержка `(U User)`
+
+// {} — Форма (Структуры данных, Таблицы маршрутизации)
+// Поддерживает запятые, точки с запятой и переносы строк как разделители
+form_block ::= LBRACE (CRLF2 | SEMICOLON | COMMA | form_item)* RBRACE
+form_item ::= expr expr? {pin=1} // Поддержка `Id Str` или `[ _ > 0 ] [ 300 ]`
+
+// [] — Поток (Пайплайны, Предикаты)
+flow_block ::= LBRACKET (CRLF2 | SEMICOLON | flow_item)* RBRACKET
+flow_item ::= expr {pin=1} // Внутри пайплайна просто список выражений

@@ -5,9 +5,9 @@ import java.util.List;
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
 
-public interface RazomyBraceGroup extends PsiElement {
+public interface RazomyFlowBlock extends PsiElement {
 
   @NotNull
-  List<RazomyStatement> getStatementList();
+  List<RazomyFlowItem> getFlowItemList();
 
 }

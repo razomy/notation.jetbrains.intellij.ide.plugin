@@ -8,23 +8,67 @@ import com.intellij.psi.PsiNameIdentifierOwner;
 
 public class RazomyVisitor extends PsiElementVisitor {
 
-  public void visitAngleGroup(@NotNull RazomyAngleGroup o) {
+  public void visitAddExpr(@NotNull RazomyAddExpr o) {
     visitPsiElement(o);
   }
 
-  public void visitBraceGroup(@NotNull RazomyBraceGroup o) {
+  public void visitAddOp(@NotNull RazomyAddOp o) {
     visitPsiElement(o);
   }
 
-  public void visitBracketGroup(@NotNull RazomyBracketGroup o) {
+  public void visitCallExpr(@NotNull RazomyCallExpr o) {
     visitPsiElement(o);
   }
 
-  public void visitGroup(@NotNull RazomyGroup o) {
+  public void visitCompareExpr(@NotNull RazomyCompareExpr o) {
     visitPsiElement(o);
   }
 
-  public void visitParenGroup(@NotNull RazomyParenGroup o) {
+  public void visitCompareOp(@NotNull RazomyCompareOp o) {
+    visitPsiElement(o);
+  }
+
+  public void visitDeclaration(@NotNull RazomyDeclaration o) {
+    visitPsiElement(o);
+  }
+
+  public void visitExpr(@NotNull RazomyExpr o) {
+    visitPsiElement(o);
+  }
+
+  public void visitFlowBlock(@NotNull RazomyFlowBlock o) {
+    visitPsiElement(o);
+  }
+
+  public void visitFlowItem(@NotNull RazomyFlowItem o) {
+    visitPsiElement(o);
+  }
+
+  public void visitFormBlock(@NotNull RazomyFormBlock o) {
+    visitPsiElement(o);
+  }
+
+  public void visitFormItem(@NotNull RazomyFormItem o) {
+    visitPsiElement(o);
+  }
+
+  public void visitLiteral(@NotNull RazomyLiteral o) {
+    visitPsiElement(o);
+  }
+
+  public void visitMergeExpr(@NotNull RazomyMergeExpr o) {
+    visitPsiElement(o);
+  }
+
+  public void visitMigrateExpr(@NotNull RazomyMigrateExpr o) {
+    visitPsiElement(o);
+  }
+
+  public void visitMulExpr(@NotNull RazomyMulExpr o) {
+    visitPsiElement(o);
+  }
+
+  public void visitMulOp(@NotNull RazomyMulOp o) {
     visitPsiElement(o);
   }
 
@@ -32,7 +76,39 @@ public class RazomyVisitor extends PsiElementVisitor {
     visitPsiNameIdentifierOwner(o);
   }
 
-  public void visitStatement(@NotNull RazomyStatement o) {
+  public void visitPipelineExpr(@NotNull RazomyPipelineExpr o) {
+    visitPsiElement(o);
+  }
+
+  public void visitPipelineOp(@NotNull RazomyPipelineOp o) {
+    visitPsiElement(o);
+  }
+
+  public void visitPrimaryExpr(@NotNull RazomyPrimaryExpr o) {
+    visitPsiElement(o);
+  }
+
+  public void visitSlot(@NotNull RazomySlot o) {
+    visitPsiElement(o);
+  }
+
+  public void visitSlotItem(@NotNull RazomySlotItem o) {
+    visitPsiElement(o);
+  }
+
+  public void visitSubtractExpr(@NotNull RazomySubtractExpr o) {
+    visitPsiElement(o);
+  }
+
+  public void visitTypedFlowBlock(@NotNull RazomyTypedFlowBlock o) {
+    visitPsiElement(o);
+  }
+
+  public void visitTypedFormBlock(@NotNull RazomyTypedFormBlock o) {
+    visitPsiElement(o);
+  }
+
+  public void visitUnionExpr(@NotNull RazomyUnionExpr o) {
     visitPsiElement(o);
   }
 

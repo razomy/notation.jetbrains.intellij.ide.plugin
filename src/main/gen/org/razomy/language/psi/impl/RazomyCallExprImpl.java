@@ -11,14 +11,14 @@ import static org.razomy.language.psi.RazomyTypes.*;
 import com.intellij.extapi.psi.ASTWrapperPsiElement;
 import org.razomy.language.psi.*;
 
-public class RazomyGroupImpl extends ASTWrapperPsiElement implements RazomyGroup {
+public class RazomyCallExprImpl extends ASTWrapperPsiElement implements RazomyCallExpr {
 
-  public RazomyGroupImpl(@NotNull ASTNode node) {
+  public RazomyCallExprImpl(@NotNull ASTNode node) {
     super(node);
   }
 
   public void accept(@NotNull RazomyVisitor visitor) {
-    visitor.visitGroup(this);
+    visitor.visitCallExpr(this);
   }
 
   @Override
@@ -28,27 +28,15 @@ public class RazomyGroupImpl extends ASTWrapperPsiElement implements RazomyGroup
   }
 
   @Override
-  @Nullable
-  public RazomyAngleGroup getAngleGroup() {
-    return findChildByClass(RazomyAngleGroup.class);
+  @NotNull
+  public RazomyPath getPath() {
+    return findNotNullChildByClass(RazomyPath.class);
   }
 
   @Override
-  @Nullable
-  public RazomyBraceGroup getBraceGroup() {
-    return findChildByClass(RazomyBraceGroup.class);
-  }
-
-  @Override
-  @Nullable
-  public RazomyBracketGroup getBracketGroup() {
-    return findChildByClass(RazomyBracketGroup.class);
-  }
-
-  @Override
-  @Nullable
-  public RazomyParenGroup getParenGroup() {
-    return findChildByClass(RazomyParenGroup.class);
+  @NotNull
+  public RazomySlot getSlot() {
+    return findNotNullChildByClass(RazomySlot.class);
   }
 
 }

@@ -5,9 +5,9 @@ import java.util.List;
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
 
-public interface RazomyBracketGroup extends PsiElement {
+public interface RazomySlot extends PsiElement {
 
   @NotNull
-  List<RazomyStatement> getStatementList();
+  List<RazomySlotItem> getSlotItemList();
 
 }
