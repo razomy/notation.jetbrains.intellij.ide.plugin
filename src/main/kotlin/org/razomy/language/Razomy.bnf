@@ -25,6 +25,10 @@
     DOT='.'
     SEMICOLON=';'
 
+    MATCH_KW='match'
+    INSTANCEOF_KW='instanceof'
+    CONST_KW='const'
+
     IDENTIFIER="regexp:[a-zA-Z_][a-zA-Z0-9_]*"
     NUMBER="regexp:\d+(\.\d+)?"
     STRING="regexp:\"[^\"]*\"|'[^']*'"
@@ -42,10 +46,14 @@ razomyFile ::= (CRLF2 | SEMICOLON | statement)*
 // Утверждение (строка кода): одна или более сущностей
 statement ::= token_item+
 
-private token_item ::= path | STRING | NUMBER | OP | group
+private token_item ::= path | STRING | NUMBER | OP | group | MATCH_KW | INSTANCEOF_KW | CONST_KW
 
-path ::= IDENTIFIER (DOT IDENTIFIER)*
+private path_part ::= IDENTIFIER
 
+path ::= path_part (DOT path_part)* {
+    mixin="org.razomy.language.psi.impl.RazomyPathMixin"
+    implements="com.intellij.psi.PsiNameIdentifierOwner"
+}
 group ::= brace_group | paren_group | angle_group | bracket_group
 
 // Внутри групп statements также разделяются переносами строк

@@ -102,6 +102,7 @@
 
         <lang.syntaxHighlighterFactory language="RL"
                                        implementationClass="org.razomy.language.RazomySyntaxHighlighterFactory"/>
+
         <lang.braceMatcher language="RL"
                            implementationClass="org.razomy.language.RazomyBraceMatcher"/>
 
@@ -120,8 +121,6 @@
         <psi.referenceContributor language="RL"
                                   implementation="org.razomy.language.RazomyReferenceContributor"/>
 
-        <gotoDeclarationHandler implementation="org.razomy.language.RazomyGotoDeclarationHandler"/>
-
         <codeInsight.lineMarkerProvider language="RL"
                                         implementationClass="org.razomy.language.RazomyLineMarkerProvider"/>
 
@@ -131,11 +130,11 @@
         <lang.psiStructureViewFactory language="RL"
                                       implementationClass="org.razomy.language.RazomyStructureViewFactory"/>
 
-        <!-- Форматирование (Auto-Indent) -->
         <lang.formatter language="RL"
                         implementationClass="org.razomy.language.RazomyFormattingModelBuilder"/>
 
-        <!-- Инспекция (Неиспользуемые переменные) -->
+        <gotoDeclarationHandler implementation="org.razomy.language.RazomyGotoDeclarationHandler"/>
+
         <localInspection language="RL"
                          groupName="Razomy"
                          displayName="Неиспользуемое объявление"

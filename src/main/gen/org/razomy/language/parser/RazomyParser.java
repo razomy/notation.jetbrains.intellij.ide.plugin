@@ -190,19 +190,19 @@ public class RazomyParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // IDENTIFIER (DOT IDENTIFIER)*
+  // path_part (DOT path_part)*
   public static boolean path(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "path")) return false;
     if (!nextTokenIs(b, IDENTIFIER)) return false;
     boolean r;
     Marker m = enter_section_(b);
-    r = consumeToken(b, IDENTIFIER);
+    r = path_part(b, l + 1);
     r = r && path_1(b, l + 1);
     exit_section_(b, m, PATH, r);
     return r;
   }
 
-  // (DOT IDENTIFIER)*
+  // (DOT path_part)*
   private static boolean path_1(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "path_1")) return false;
     while (true) {
@@ -213,14 +213,21 @@ public class RazomyParser implements PsiParser, LightPsiParser {
     return true;
   }
 
-  // DOT IDENTIFIER
+  // DOT path_part
   private static boolean path_1_0(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "path_1_0")) return false;
     boolean r;
     Marker m = enter_section_(b);
-    r = consumeTokens(b, 0, DOT, IDENTIFIER);
+    r = consumeToken(b, DOT);
+    r = r && path_part(b, l + 1);
     exit_section_(b, m, null, r);
     return r;
+  }
+
+  /* ********************************************************** */
+  // IDENTIFIER
+  static boolean path_part(PsiBuilder b, int l) {
+    return consumeToken(b, IDENTIFIER);
   }
 
   /* ********************************************************** */
@@ -262,7 +269,7 @@ public class RazomyParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // path | STRING | NUMBER | OP | group
+  // path | STRING | NUMBER | OP | group | MATCH_KW | INSTANCEOF_KW | CONST_KW
   static boolean token_item(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "token_item")) return false;
     boolean r;
@@ -271,6 +278,9 @@ public class RazomyParser implements PsiParser, LightPsiParser {
     if (!r) r = consumeToken(b, NUMBER);
     if (!r) r = consumeToken(b, OP);
     if (!r) r = group(b, l + 1);
+    if (!r) r = consumeToken(b, MATCH_KW);
+    if (!r) r = consumeToken(b, INSTANCEOF_KW);
+    if (!r) r = consumeToken(b, CONST_KW);
     return r;
   }
 

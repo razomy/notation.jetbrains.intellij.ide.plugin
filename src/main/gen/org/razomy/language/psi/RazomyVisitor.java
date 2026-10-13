@@ -4,6 +4,7 @@ package org.razomy.language.psi;
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiNameIdentifierOwner;
 
 public class RazomyVisitor extends PsiElementVisitor {
 
@@ -28,11 +29,15 @@ public class RazomyVisitor extends PsiElementVisitor {
   }
 
   public void visitPath(@NotNull RazomyPath o) {
-    visitPsiElement(o);
+    visitPsiNameIdentifierOwner(o);
   }
 
   public void visitStatement(@NotNull RazomyStatement o) {
     visitPsiElement(o);
+  }
+
+  public void visitPsiNameIdentifierOwner(@NotNull PsiNameIdentifierOwner o) {
+    visitElement(o);
   }
 
   public void visitPsiElement(@NotNull PsiElement o) {

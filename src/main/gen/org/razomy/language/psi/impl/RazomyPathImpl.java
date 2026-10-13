@@ -8,10 +8,9 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.util.PsiTreeUtil;
 import static org.razomy.language.psi.RazomyTypes.*;
-import com.intellij.extapi.psi.ASTWrapperPsiElement;
 import org.razomy.language.psi.*;
 
-public class RazomyPathImpl extends ASTWrapperPsiElement implements RazomyPath {
+public class RazomyPathImpl extends RazomyPathMixin implements RazomyPath {
 
   public RazomyPathImpl(@NotNull ASTNode node) {
     super(node);

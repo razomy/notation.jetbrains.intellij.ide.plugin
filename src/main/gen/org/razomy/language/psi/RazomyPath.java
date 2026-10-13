@@ -4,7 +4,8 @@ package org.razomy.language.psi;
 import java.util.List;
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiNameIdentifierOwner;
 
-public interface RazomyPath extends PsiElement {
+public interface RazomyPath extends PsiNameIdentifierOwner {
 
 }

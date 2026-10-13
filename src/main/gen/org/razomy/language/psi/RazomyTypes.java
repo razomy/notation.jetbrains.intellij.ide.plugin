@@ -18,14 +18,17 @@ public interface RazomyTypes {
   IElementType PATH = new RazomyElementType("PATH");
   IElementType STATEMENT = new RazomyElementType("STATEMENT");
 
+  IElementType CONST_KW = new RazomyTokenType("const");
   IElementType CRLF2 = new RazomyTokenType("CRLF2");
   IElementType DOT = new RazomyTokenType(".");
   IElementType IDENTIFIER = new RazomyTokenType("IDENTIFIER");
+  IElementType INSTANCEOF_KW = new RazomyTokenType("instanceof");
   IElementType LANGLE = new RazomyTokenType("<");
   IElementType LBRACE = new RazomyTokenType("{");
   IElementType LBRACKET = new RazomyTokenType("[");
   IElementType LINE_COMMENT = new RazomyTokenType("LINE_COMMENT");
   IElementType LPAREN = new RazomyTokenType("(");
+  IElementType MATCH_KW = new RazomyTokenType("match");
   IElementType NUMBER = new RazomyTokenType("NUMBER");
   IElementType OP = new RazomyTokenType("OP");
   IElementType RANGLE = new RazomyTokenType(">");

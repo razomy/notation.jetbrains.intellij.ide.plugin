@@ -5,10 +5,8 @@ package org.razomy.language;
 
 import com.intellij.lexer.FlexLexer;
 import com.intellij.psi.tree.IElementType;
-
+import org.razomy.language.psi.RazomyTypes;
 import static com.intellij.psi.TokenType.BAD_CHARACTER;
-import static com.intellij.psi.TokenType.WHITE_SPACE;
-import static org.razomy.language.psi.RazomyTypes.*;
 
 
 public class RazomyLexer implements FlexLexer {
@@ -66,11 +64,14 @@ public class RazomyLexer implements FlexLexer {
   private static final int [] ZZ_CMAP_BLOCKS = zzUnpackcmap_blocks();
 
   private static final String ZZ_CMAP_BLOCKS_PACKED_0 =
-    "\11\0\1\1\4\2\22\0\1\1\1\3\1\4\4\3"+
-    "\1\5\1\6\1\7\2\3\1\0\1\3\1\10\1\11"+
-    "\12\12\2\0\1\13\1\3\1\14\2\3\32\15\1\16"+
-    "\1\0\1\17\1\3\1\15\1\0\32\15\1\20\1\3"+
-    "\1\21\1\3\6\0\1\22\u01a2\0\2\22\326\0\u0100\23";
+    "\11\0\1\1\1\2\2\3\1\4\22\0\1\1\1\5"+
+    "\1\6\4\5\1\7\1\10\1\11\2\5\1\0\1\5"+
+    "\1\12\1\13\12\14\1\0\1\15\1\16\1\5\1\17"+
+    "\2\5\32\20\1\21\1\0\1\22\1\5\1\20\1\0"+
+    "\1\23\1\20\1\24\1\20\1\25\1\26\1\20\1\27"+
+    "\1\30\3\20\1\31\1\32\1\33\3\20\1\34\1\35"+
+    "\6\20\1\36\1\5\1\37\1\5\6\0\1\3\u01a2\0"+
+    "\2\3\326\0\u0100\40";
 
   private static int [] zzUnpackcmap_blocks() {
     int [] result = new int[1024];
@@ -97,13 +98,14 @@ public class RazomyLexer implements FlexLexer {
   private static final int [] ZZ_ACTION = zzUnpackAction();
 
   private static final String ZZ_ACTION_PACKED_0 =
-    "\1\0\1\1\1\2\1\3\2\1\1\4\1\5\1\6"+
-    "\1\3\1\7\1\10\1\11\1\12\1\13\1\14\1\15"+
-    "\1\16\1\17\1\0\1\20\1\0\1\3\1\0\1\21"+
-    "\1\7";
+    "\1\0\1\1\1\2\1\3\1\2\1\4\2\1\1\5"+
+    "\1\6\1\7\1\4\1\10\1\11\1\12\1\13\1\14"+
+    "\1\15\1\16\3\14\1\17\1\20\1\0\1\21\1\0"+
+    "\1\22\1\0\3\14\1\10\6\14\1\23\1\14\1\24"+
+    "\4\14\1\25";
 
   private static int [] zzUnpackAction() {
-    int [] result = new int[26];
+    int [] result = new int[47];
     int offset = 0;
     offset = zzUnpackAction(ZZ_ACTION_PACKED_0, offset, result);
     return result;
@@ -128,13 +130,15 @@ public class RazomyLexer implements FlexLexer {
   private static final int [] ZZ_ROWMAP = zzUnpackRowMap();
 
   private static final String ZZ_ROWMAP_PACKED_0 =
-    "\0\0\0\24\0\50\0\74\0\120\0\144\0\24\0\24"+
-    "\0\24\0\170\0\214\0\24\0\24\0\240\0\24\0\24"+
-    "\0\24\0\24\0\24\0\120\0\24\0\144\0\264\0\310"+
-    "\0\334\0\310";
+    "\0\0\0\41\0\102\0\41\0\143\0\204\0\245\0\306"+
+    "\0\41\0\41\0\41\0\347\0\u0108\0\41\0\41\0\41"+
+    "\0\u0129\0\41\0\41\0\u014a\0\u016b\0\u018c\0\41\0\41"+
+    "\0\245\0\41\0\306\0\u01ad\0\u01ce\0\u01ef\0\u0210\0\u0231"+
+    "\0\u01ce\0\u0252\0\u0273\0\u0294\0\u02b5\0\u02d6\0\u02f7\0\u0129"+
+    "\0\u0318\0\u0129\0\u0339\0\u035a\0\u037b\0\u039c\0\u0129";
 
   private static int [] zzUnpackRowMap() {
-    int [] result = new int[26];
+    int [] result = new int[47];
     int offset = 0;
     offset = zzUnpackRowMap(ZZ_ROWMAP_PACKED_0, offset, result);
     return result;
@@ -157,17 +161,34 @@ public class RazomyLexer implements FlexLexer {
   private static final int [] ZZ_TRANS = zzUnpacktrans();
 
   private static final String ZZ_TRANS_PACKED_0 =
-    "\1\2\2\3\1\4\1\5\1\6\1\7\1\10\1\11"+
+    "\1\2\1\3\2\4\1\5\1\6\1\7\1\10\1\11"+
     "\1\12\1\13\1\14\1\15\1\16\1\17\1\20\1\21"+
-    "\1\22\1\23\1\2\25\0\2\3\24\0\1\4\5\0"+
-    "\1\4\12\0\4\24\1\25\17\24\5\26\1\25\16\26"+
-    "\3\0\1\4\5\0\1\27\22\0\1\30\1\0\1\13"+
-    "\23\0\1\16\2\0\1\16\6\0\2\31\1\0\1\27"+
-    "\5\31\1\27\10\31\14\0\1\32\11\0\2\31\1\0"+
-    "\17\31\2\0";
+    "\1\22\1\23\1\21\1\24\3\21\1\25\1\26\4\21"+
+    "\1\27\1\30\1\2\42\0\1\3\2\0\1\3\35\0"+
+    "\1\3\1\4\1\0\1\3\41\0\1\6\5\0\1\6"+
+    "\25\0\6\31\1\32\32\31\7\33\1\32\31\33\5\0"+
+    "\1\6\5\0\1\34\37\0\1\35\1\0\1\15\40\0"+
+    "\1\21\3\0\1\21\2\0\13\21\17\0\1\21\3\0"+
+    "\1\21\2\0\10\21\1\36\2\21\17\0\1\21\3\0"+
+    "\1\21\2\0\7\21\1\37\3\21\17\0\1\21\3\0"+
+    "\1\21\2\0\1\40\12\21\3\0\2\34\3\0\33\34"+
+    "\15\0\1\41\40\0\1\21\3\0\1\21\2\0\7\21"+
+    "\1\42\3\21\17\0\1\21\3\0\1\21\2\0\11\21"+
+    "\1\43\1\21\17\0\1\21\3\0\1\21\2\0\12\21"+
+    "\1\44\17\0\1\21\3\0\1\21\2\0\11\21\1\45"+
+    "\1\21\17\0\1\21\3\0\1\21\2\0\12\21\1\46"+
+    "\17\0\1\21\3\0\1\21\2\0\1\21\1\47\11\21"+
+    "\17\0\1\21\3\0\1\21\2\0\12\21\1\50\17\0"+
+    "\1\21\3\0\1\21\2\0\1\51\12\21\17\0\1\21"+
+    "\3\0\1\21\2\0\4\21\1\52\6\21\17\0\1\21"+
+    "\3\0\1\21\2\0\7\21\1\53\3\21\17\0\1\21"+
+    "\3\0\1\21\2\0\1\21\1\54\11\21\17\0\1\21"+
+    "\3\0\1\21\2\0\2\21\1\55\10\21\17\0\1\21"+
+    "\3\0\1\21\2\0\10\21\1\56\2\21\17\0\1\21"+
+    "\3\0\1\21\2\0\3\21\1\57\7\21\3\0";
 
   private static int [] zzUnpacktrans() {
-    int [] result = new int[240];
+    int [] result = new int[957];
     int offset = 0;
     offset = zzUnpacktrans(ZZ_TRANS_PACKED_0, offset, result);
     return result;
@@ -205,11 +226,12 @@ public class RazomyLexer implements FlexLexer {
   private static final int [] ZZ_ATTRIBUTE = zzUnpackAttribute();
 
   private static final String ZZ_ATTRIBUTE_PACKED_0 =
-    "\1\0\1\11\4\1\3\11\2\1\2\11\1\1\5\11"+
-    "\1\0\1\11\1\0\1\1\1\0\2\1";
+    "\1\0\1\11\1\1\1\11\4\1\3\11\2\1\3\11"+
+    "\1\1\2\11\3\1\2\11\1\0\1\11\1\0\1\1"+
+    "\1\0\22\1";
 
   private static int [] zzUnpackAttribute() {
-    int [] result = new int[26];
+    int [] result = new int[47];
     int offset = 0;
     offset = zzUnpackAttribute(ZZ_ATTRIBUTE_PACKED_0, offset, result);
     return result;
@@ -275,11 +297,6 @@ public class RazomyLexer implements FlexLexer {
   /** Whether the user-EOF-code has already been executed. */
   @SuppressWarnings("unused")
   private boolean zzEOFDone;
-
-  /* user code: */
-  public RazomyLexer() {
-    this((java.io.Reader)null);
-  }
 
 
   /**
@@ -527,87 +544,107 @@ public class RazomyLexer implements FlexLexer {
             { return BAD_CHARACTER;
             }
           // fall through
-          case 18: break;
-          case 2:
-            { return WHITE_SPACE;
-            }
-          // fall through
-          case 19: break;
-          case 3:
-            { return OP;
-            }
-          // fall through
-          case 20: break;
-          case 4:
-            { return LPAREN;
-            }
-          // fall through
-          case 21: break;
-          case 5:
-            { return RPAREN;
-            }
-          // fall through
           case 22: break;
-          case 6:
-            { return DOT;
+          case 2:
+            { return com.intellij.psi.TokenType.WHITE_SPACE;
             }
           // fall through
           case 23: break;
-          case 7:
-            { return NUMBER;
+          case 3:
+            { return RazomyTypes.CRLF2;
             }
           // fall through
           case 24: break;
-          case 8:
-            { return LANGLE;
+          case 4:
+            { return RazomyTypes.OP;
             }
           // fall through
           case 25: break;
-          case 9:
-            { return RANGLE;
+          case 5:
+            { return RazomyTypes.LPAREN;
             }
           // fall through
           case 26: break;
-          case 10:
-            { return IDENTIFIER;
+          case 6:
+            { return RazomyTypes.RPAREN;
             }
           // fall through
           case 27: break;
-          case 11:
-            { return LBRACKET;
+          case 7:
+            { return RazomyTypes.DOT;
             }
           // fall through
           case 28: break;
-          case 12:
-            { return RBRACKET;
+          case 8:
+            { return RazomyTypes.NUMBER;
             }
           // fall through
           case 29: break;
-          case 13:
-            { return LBRACE;
+          case 9:
+            { return RazomyTypes.SEMICOLON;
             }
           // fall through
           case 30: break;
-          case 14:
-            { return RBRACE;
+          case 10:
+            { return RazomyTypes.LANGLE;
             }
           // fall through
           case 31: break;
-          case 15:
-            { return CRLF2;
+          case 11:
+            { return RazomyTypes.RANGLE;
             }
           // fall through
           case 32: break;
-          case 16:
-            { return STRING;
+          case 12:
+            { return RazomyTypes.IDENTIFIER;
             }
           // fall through
           case 33: break;
-          case 17:
-            { return LINE_COMMENT;
+          case 13:
+            { return RazomyTypes.LBRACKET;
             }
           // fall through
           case 34: break;
+          case 14:
+            { return RazomyTypes.RBRACKET;
+            }
+          // fall through
+          case 35: break;
+          case 15:
+            { return RazomyTypes.LBRACE;
+            }
+          // fall through
+          case 36: break;
+          case 16:
+            { return RazomyTypes.RBRACE;
+            }
+          // fall through
+          case 37: break;
+          case 17:
+            { return RazomyTypes.STRING;
+            }
+          // fall through
+          case 38: break;
+          case 18:
+            { return RazomyTypes.LINE_COMMENT;
+            }
+          // fall through
+          case 39: break;
+          case 19:
+            { return RazomyTypes.CONST_KW;
+            }
+          // fall through
+          case 40: break;
+          case 20:
+            { return RazomyTypes.MATCH_KW;
+            }
+          // fall through
+          case 41: break;
+          case 21:
+            { return RazomyTypes.INSTANCEOF_KW;
+            }
+          // fall through
+          case 42: break;
           default:
             zzScanError(ZZ_NO_MATCH);
           }
