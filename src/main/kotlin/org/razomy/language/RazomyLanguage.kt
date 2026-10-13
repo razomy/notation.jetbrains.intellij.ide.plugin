@@ -38,415 +38,19 @@ import com.intellij.patterns.PlatformPatterns
 import com.intellij.psi.*
 import com.intellij.psi.tree.IElementType
 import com.intellij.psi.util.PsiTreeUtil
+import com.intellij.psi.search.FilenameIndex
+import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.util.ProcessingContext
-import org.jetbrains.annotations.NonNls
-import org.jetbrains.annotations.NotNull
 import org.razomy.language.psi.*
 import javax.swing.Icon
 import com.intellij.codeInsight.navigation.actions.GotoDeclarationHandler
-
-import com.intellij.psi.PsiFile
-import org.razomy.language.psi.*
-// --- LANGUAGE & FILE TYPE ---
-
-// --- СИСТЕМА ТИПОВ И СЕМАНТИЧЕСКИЙ РЕЗОЛВЕР (Razomy Type System V2.1) ---
-// --- СИСТЕМА ТИПОВ И СЕМАНТИЧЕСКИЙ РЕЗОЛВЕР (Razomy Type System V2.3) ---
-
 import com.intellij.openapi.diagnostic.Logger
+import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiElement
 
 // --- СИСТЕМА ТИПОВ И СЕМАНТИЧЕСКИЙ РЕЗОЛВЕР (Razomy Type System V2.5 - Logger Edition) ---
 
-object RazomyTypeSystem {
-    private val LOG = Logger.getInstance("RazomyTypeSystem")
-
-    fun inferTypeByName(name: String, context: PsiElement): RazomyType {
-        val file = context.containingFile ?: return RazomyType.Unknown
-        val globalDecls = PsiTreeUtil.findChildrenOfType(file, RazomyDeclaration::class.java)
-
-        for (decl in globalDecls) {
-            val path = PsiTreeUtil.findChildOfType(decl, RazomyPath::class.java)
-            if (path?.text == name) {
-                // 1. Форма { ... }
-                val formBlock = PsiTreeUtil.findChildOfType(decl, RazomyFormBlock::class.java)
-                if (formBlock != null) {
-                    val fields = mutableMapOf<String, PsiElement>()
-                    val items = PsiTreeUtil.findChildrenOfType(formBlock, RazomyFormItem::class.java)
-                    for (item in items) {
-                        val fieldPath = PsiTreeUtil.findChildOfType(item, RazomyPath::class.java)
-                        if (fieldPath != null) {
-                            fields[fieldPath.text] = fieldPath
-                        }
-                    }
-                    return RazomyType.Form(name, path, fields)
-                }
-
-                // 2. Алиас / Наследование (User & Identifiable)
-                val allPaths = PsiTreeUtil.findChildrenOfType(decl, RazomyPath::class.java).toList()
-                val baseTypePath = allPaths.drop(1).firstOrNull { it.text.firstOrNull()?.isUpperCase() == true }
-                if (baseTypePath != null) {
-                    return inferTypeByName(baseTypePath.text, context)
-                }
-            }
-        }
-        return RazomyType.Unknown
-    }
-
-    fun inferTypeOfElement(element: PsiElement): RazomyType {
-        // Если это путь, сначала проверим: не является ли он объявлением переменной в слоте?
-        if (element is RazomyPath) {
-            val slotItem = PsiTreeUtil.getParentOfType(element, RazomySlotItem::class.java)
-            if (slotItem != null) {
-                val paths = PsiTreeUtil.findChildrenOfType(slotItem, RazomyPath::class.java).toList()
-                // Вариант 1: Явно указан тип в слоте, например: (Err BuildError)
-                if (paths.size > 1 && paths[0] == element) {
-                    return inferTypeByName(paths[1].text, element)
-                }
-
-                // Вариант 2: Захват в роутере, например: BuildError(NewErr)
-                val callExpr = PsiTreeUtil.getParentOfType(slotItem, RazomyCallExpr::class.java)
-                if (callExpr != null) {
-                    val callerPath = PsiTreeUtil.getChildOfType(callExpr, RazomyPath::class.java)
-                    if (callerPath != null && callerPath.text.firstOrNull()?.isUpperCase() == true) {
-                        return inferTypeByName(callerPath.text, element)
-                    }
-                }
-            }
-        }
-
-        // Если это глобальный тип (начинается с большой буквы и это не переменная из слота)
-        val text = element.text
-        if (text.firstOrNull()?.isUpperCase() == true) {
-            val resolvedType = inferTypeByName(text, element)
-            if (resolvedType !is RazomyType.Unknown) return resolvedType
-        }
-
-        return RazomyType.Unknown
-    }
-
-    fun buildScope(element: PsiElement): RazomyScope {
-        val scope = RazomyScope()
-        var current: PsiElement? = element.parent
-
-        while (current != null) {
-            // ПРАВИЛО 1: Авто-распаковка из Роутера
-            if (current is RazomyFormItem) {
-                val firstPath = PsiTreeUtil.findChildOfType(current, RazomyPath::class.java)
-                if (firstPath != null && firstPath.text.firstOrNull()?.isUpperCase() == true) {
-                    val resolvedType = inferTypeByName(firstPath.text, element)
-                    scope.unpackedFields.putAll(RazomyType.extractFields(resolvedType))
-                }
-            }
-
-            // ПРАВИЛО 2: Видимость "соседей" внутри одной формы
-            if (current is RazomyFormBlock) {
-                val items = PsiTreeUtil.findChildrenOfType(current, RazomyFormItem::class.java)
-                for (item in items) {
-                    val fieldPath = PsiTreeUtil.findChildOfType(item, RazomyPath::class.java)
-                    if (fieldPath != null) {
-                        scope.variables[fieldPath.text] = fieldPath
-                    }
-                }
-            }
-
-            // ПРАВИЛО 3: Проброс контекста в пайплайне [ ... ]
-            if (current is RazomyFlowBlock) {
-                val precedingForms = PsiTreeUtil.findChildrenOfType(current, RazomyFormBlock::class.java)
-                for (formBlock in precedingForms) {
-                    if (formBlock.textOffset < element.textOffset) {
-                        val items = PsiTreeUtil.findChildrenOfType(formBlock, RazomyFormItem::class.java)
-                        for (item in items) {
-                            val fieldPath = PsiTreeUtil.findChildOfType(item, RazomyPath::class.java)
-                            if (fieldPath != null) {
-                                scope.unpackedFields[fieldPath.text] = fieldPath
-                            }
-                        }
-                    }
-                }
-            }
-
-            // ПРАВИЛО 4: ЗАХВАТ СЛОТОВ И ТИПОВ
-            if (current is RazomyDeclaration || current is RazomyFormItem || current is RazomyCallExpr) {
-                val slot = PsiTreeUtil.findChildOfType(current, RazomySlot::class.java)
-                if (slot != null && slot.textOffset < element.textOffset) {
-                    val items = PsiTreeUtil.findChildrenOfType(slot, RazomySlotItem::class.java)
-                    for (item in items) {
-                        val paths = PsiTreeUtil.findChildrenOfType(item, RazomyPath::class.java).toList()
-                        if (paths.isNotEmpty()) {
-                            val varName = paths[0]
-                            scope.variables[varName.text] = varName
-
-                            // Вычисляем тип для распаковки полей:
-                            val resolvedType = inferTypeOfElement(varName)
-                            if (resolvedType !is RazomyType.Unknown) {
-                                scope.unpackedFields.putAll(RazomyType.extractFields(resolvedType))
-                            } else {
-                                // Фолбэк: если это имя само совпадает с типом (TaskPolicy -> TaskPolicy)
-                                val fallbackType = inferTypeByName(varName.text, element)
-                                scope.unpackedFields.putAll(RazomyType.extractFields(fallbackType))
-                            }
-                        }
-                    }
-                }
-            }
-            current = current.parent
-        }
-
-        // ГЛОБАЛЬНЫЙ СКОУП
-        val file = element.containingFile
-        if (file != null) {
-            val globalDecls = PsiTreeUtil.findChildrenOfType(file, RazomyDeclaration::class.java)
-            for (decl in globalDecls) {
-                val path = PsiTreeUtil.findChildOfType(decl, RazomyPath::class.java)
-                if (path != null) scope.variables[path.text] = path
-            }
-        }
-
-        return scope
-    }
-}
-object RazomyResolver {
-    private val LOG = Logger.getInstance("RazomyResolver")
-
-    fun resolvePath(context: PsiElement, pathText: String): PsiElement? {
-        if (pathText == "_" || pathText.startsWith("_.")) return null
-
-        val cleanPath = pathText.replace("\\s+\\.\\s+".toRegex(), ".")
-        val parts = cleanPath.split(".")
-        if (parts.isEmpty()) return null
-
-        val rootName = parts[0]
-        val scope = RazomyTypeSystem.buildScope(context)
-
-        var current: PsiElement? = scope.variables[rootName] ?: scope.unpackedFields[rootName]
-        if (current == null) {
-            return null
-        }
-
-        // Если это путь с точками (e.g. Shell.Log)
-        for (i in 1 until parts.size) {
-            val nextMember = parts[i]
-            val resolvedMember = resolveMember(current!!, nextMember)
-            if (resolvedMember == null) {
-                LOG.warn("ОШИБКА: Поле '$nextMember' не найдено в '$rootName'")
-                return null // Возвращаем null, чтобы Аннотатор понял, что путь сломан
-            }
-            current = resolvedMember
-        }
-
-        return current
-    }
-
-    private fun resolveMember(owner: PsiElement, memberName: String): PsiElement? {
-        val type = RazomyTypeSystem.inferTypeOfElement(owner)
-        val fields = RazomyType.extractFields(type)
-        return fields[memberName]
-    }
-}
-
-sealed class RazomyType {
-    class Form(val name: String, val declaration: PsiElement, val fields: Map<String, PsiElement>) : RazomyType()
-    class Union(val left: RazomyType, val right: RazomyType) : RazomyType()
-    class Intersection(val left: RazomyType, val right: RazomyType) : RazomyType() {
-        fun getResolvedFields(): Map<String, PsiElement> {
-            val leftFields = extractFields(left)
-            val rightFields = extractFields(right)
-            val result = mutableMapOf<String, PsiElement>()
-            result.putAll(leftFields.filterKeys { it !in rightFields.keys })
-            result.putAll(rightFields.filterKeys { it !in leftFields.keys })
-            return result
-        }
-    }
-
-    object Unknown : RazomyType()
-
-    companion object {
-        fun extractFields(type: RazomyType): Map<String, PsiElement> {
-            return when (type) {
-                is Form -> type.fields
-                is Intersection -> type.getResolvedFields()
-                else -> emptyMap()
-            }
-        }
-    }
-}
-
-class RazomyScope(
-    val variables: MutableMap<String, PsiElement> = mutableMapOf(),
-    val unpackedFields: MutableMap<String, PsiElement> = mutableMapOf()
-)
-
-
-class RazomyLanguage : Language("RL") {
-    companion object {
-        val INSTANCE = RazomyLanguage()
-    }
-}
-
-object RazomyIcons {
-    val FILE: Icon = IconLoader.getIcon("icons/rl.svg", RazomyIcons::class.java)
-}
-// --- SEMANTIC RESOLVER (Контекстный анализ и области видимости) ---
-
-
-class RazomyFileType : LanguageFileType(RazomyLanguage.INSTANCE) {
-    override fun getName() = "Razomy File"
-    override fun getDescription() = "Razomy language file"
-    override fun getDefaultExtension() = "rl"
-    override fun getIcon() = RazomyIcons.FILE
-
-    companion object {
-        val INSTANCE = RazomyFileType()
-    }
-}
-
-// --- UTILITY (THE CORE ENGINE) ---
-
-object RazomyUtil {
-
-    fun getQualifiedName(path: RazomyPath): String {
-        val parts = mutableListOf(path.text)
-        var current: PsiElement? = path
-
-        while (current != null) {
-            val parentBlock = PsiTreeUtil.getParentOfType(current, RazomyFormBlock::class.java) ?: break
-            val parentItem =
-                PsiTreeUtil.getParentOfType(parentBlock, RazomyDeclaration::class.java, RazomyFormItem::class.java)
-
-            // Находим самый первый путь в родителе
-            val parentDecl = PsiTreeUtil.findChildOfType(parentItem, RazomyPath::class.java)
-
-            if (parentDecl != null && parentDecl != current) {
-                parts.add(0, parentDecl.text)
-                current = parentDecl
-            } else {
-                current = parentBlock
-            }
-        }
-        return parts.joinToString(".")
-    }
-
-    fun isDeclaration(path: RazomyPath): Boolean {
-        if (path.text == "_" || path.text.startsWith("_.")) return false // Анонимный контекст
-
-        val parentItem = PsiTreeUtil.getParentOfType(
-            path,
-            RazomyDeclaration::class.java,
-            RazomyFormItem::class.java,
-            RazomySlotItem::class.java
-        ) ?: return false
-
-        // Надежная проверка (без textOffset):
-        // Если мы являемся САМЫМ ПЕРВЫМ путем в нашем Statement-контейнере, значит мы - его Декларация.
-        val firstPath = PsiTreeUtil.findChildOfType(parentItem, RazomyPath::class.java)
-        return firstPath == path
-    }
-}
-
 // --- GOTO DECLARATION ---
-
-class RazomyGotoDeclarationHandler : GotoDeclarationHandler {
-
-    override fun getGotoDeclarationTargets(
-        sourceElement: PsiElement?,
-        offset: Int,
-        editor: Editor?
-    ): Array<PsiElement>? {
-        if (sourceElement == null) return null
-
-        val word = sourceElement.text
-        if (word.isBlank() || word == "_") return null
-
-        val currentPath = PsiTreeUtil.getParentOfType(sourceElement, RazomyPath::class.java) ?: return null
-        val file = sourceElement.containingFile ?: return null
-
-        if (RazomyUtil.isDeclaration(currentPath)) {
-            val targets = findUsages(currentPath, file)
-            return if (targets.isNotEmpty()) targets.toTypedArray() else null
-        }
-
-        val target = resolveDeclaration(currentPath, word, file)
-            ?: resolveDeclaration(currentPath, currentPath.text, file)
-            ?: return null
-
-        return arrayOf(target)
-    }
-
-    private fun findUsages(element: RazomyPath, file: PsiFile): List<PsiElement> {
-        val currentName = element.text
-        val results = LinkedHashSet<PsiElement>()
-
-        val allPaths = PsiTreeUtil.findChildrenOfType(file, RazomyPath::class.java)
-        for (path in allPaths) {
-            if (path != element && matchesName(path.text, currentName)) {
-                results.add(path)
-            }
-        }
-        return results.toList()
-    }
-
-    private fun resolveDeclaration(from: RazomyPath, name: String, file: PsiFile): RazomyPath? {
-        // 1. Поиск локальных переменных (в слотах, по иерархии вверх)
-        var scope = from.parent
-        while (scope != null) {
-            if (scope is RazomyFormBlock || scope is RazomyFlowBlock) {
-                val parentDecl =
-                    PsiTreeUtil.getParentOfType(scope, RazomyDeclaration::class.java, RazomyFormItem::class.java)
-                val leftExpr = parentDecl?.children?.firstOrNull()
-                val slot = PsiTreeUtil.findChildOfType(leftExpr, RazomySlot::class.java)
-                if (slot != null) {
-                    val slotItems = PsiTreeUtil.findChildrenOfType(slot, RazomySlotItem::class.java)
-                    for (item in slotItems) {
-                        val firstExpr = item.children.firstOrNull()
-                        val paramPath = PsiTreeUtil.findChildOfType(firstExpr, RazomyPath::class.java)
-                        if (paramPath != null && paramPath.textOffset == firstExpr?.textOffset && matchesName(
-                                paramPath.text,
-                                name
-                            )
-                        ) {
-                            return paramPath
-                        }
-                    }
-                }
-            }
-            scope = scope.parent
-        }
-
-        // 2. Поиск свойств внутри соседних FormBlock
-        var formScope = PsiTreeUtil.getParentOfType(from, RazomyFormBlock::class.java)
-        while (formScope != null) {
-            val formItems = PsiTreeUtil.findChildrenOfType(formScope, RazomyFormItem::class.java)
-            for (item in formItems) {
-                val firstExpr = item.children.firstOrNull()
-                val localPath = PsiTreeUtil.findChildOfType(firstExpr, RazomyPath::class.java)
-                if (localPath != null && localPath != from && localPath.textOffset == firstExpr?.textOffset && matchesName(
-                        localPath.text,
-                        name
-                    )
-                ) {
-                    return localPath
-                }
-            }
-            formScope = PsiTreeUtil.getParentOfType(formScope, RazomyFormBlock::class.java)
-        }
-
-        // 3. Глобальный поиск
-        val allPaths = PsiTreeUtil.findChildrenOfType(file, RazomyPath::class.java)
-        for (path in allPaths) {
-            if (path != from && matchesName(path.text, name) && RazomyUtil.isDeclaration(path)) {
-                return path
-            }
-        }
-
-        return null
-    }
-
-    private fun matchesName(declarationText: String, searchName: String): Boolean {
-        return declarationText == searchName ||
-                declarationText.endsWith(".$searchName") ||
-                searchName.endsWith(".$declarationText")
-    }
-}
 
 
 // --- SYNTAX HIGHLIGHTER ---
@@ -884,312 +488,6 @@ class RazomyUnusedInspection : LocalInspectionTool() {
     }
 }
 
-
-// --- ANNOTATOR ---
-class RazomyAnnotator : Annotator {
-
-    companion object {
-        private val ESCAPE_PATTERN = Regex("""\\[ntr\"'\\{}]""")
-        private val INTERPOLATION_PATTERN = Regex("""(?<!\\)\{([^}]+)\}""")
-
-        // Контрастные атрибуты IntelliJ, которые гарантированно видны в стандартных темах:
-        val COLOR_MODULE = DefaultLanguageHighlighterColors.CLASS_NAME              // Модули (Shell)
-        val COLOR_TYPE = DefaultLanguageHighlighterColors.CLASS_REFERENCE           // Типы/Структуры (AiContext, BuildSuccess)
-        val COLOR_FUNCTION_DEF = DefaultLanguageHighlighterColors.FUNCTION_DECLARATION // Определение функции (RunBuild)
-        val COLOR_METHOD_CALL = DefaultLanguageHighlighterColors.STATIC_METHOD      // Вызов функции/метода (Shell.Log, . AttemptFix)
-        val COLOR_FIELD = DefaultLanguageHighlighterColors.INSTANCE_FIELD           // Поля структур (CleanLog, Retries, Head)
-        val COLOR_PARAM = DefaultLanguageHighlighterColors.PARAMETER                // Параметры функций (ErrorLog, Cmd)
-        val COLOR_VARIABLE = DefaultLanguageHighlighterColors.LOCAL_VARIABLE        // Переменные / аргументы
-        val COLOR_NATIVE = DefaultLanguageHighlighterColors.PREDEFINED_SYMBOL       // Системные вызовы (native_print)
-    }
-
-    override fun annotate(element: PsiElement, holder: AnnotationHolder) {
-        // 1. Строки, Escape-последовательности и интерполяция
-        if (element.node.elementType == RazomyTypes.STRING || element.textContains('\"') || element.textContains('\'')) {
-            if (element.node.elementType == RazomyTypes.STRING) annotateString(element, holder)
-            return
-        }
-
-        if (element !is RazomyPath) return
-        val text = element.text.trim()
-
-        if (text.isEmpty() || text.endsWith(".") || text.contains("IntellijIdeaRulezzz")) return
-
-        // 2. Wildcard и подстановки (_ и _.)
-        if (text == "_" || text.startsWith("_.")) {
-            highlight(element, holder, DefaultLanguageHighlighterColors.KEYWORD)
-            return
-        }
-
-        // 3. Нативные вызовы
-        if (text.startsWith("native_") || text.contains("native_")) {
-            highlight(element, holder, COLOR_NATIVE)
-            return
-        }
-
-        val isDecl = RazomyUtil.isDeclaration(element)
-        val isMemberAccess = text.contains(".")
-
-        // =========================================================================
-        // 4. СТРОГАЯ ВАЛИДАЦИЯ И ПРОВЕРКА ОШИБОК
-        // =========================================================================
-        if (!isDecl) {
-            val resolved = RazomyResolver.resolvePath(element, text)
-            val scope = RazomyTypeSystem.buildScope(element)
-            val isResolvedLocally = !isMemberAccess && (scope.variables.containsKey(text) || scope.unpackedFields.containsKey(text))
-
-            if (resolved == null && !isResolvedLocally) {
-                if (isMemberAccess) {
-                    val parts = text.split(".")
-                    holder.newAnnotation(HighlightSeverity.ERROR, "Неразрешенное поле: '${parts.last()}' в '${parts.dropLast(1).joinToString(".")}'")
-                        .range(element.textRange)
-                        .highlightType(ProblemHighlightType.LIKE_UNKNOWN_SYMBOL)
-                        .create()
-                } else {
-                    holder.newAnnotation(HighlightSeverity.ERROR, "Неразрешенная ссылка: '$text'")
-                        .range(element.textRange)
-                        .highlightType(ProblemHighlightType.LIKE_UNKNOWN_SYMBOL)
-                        .create()
-                }
-                return // При ошибке прерываем цепочку, чтобы не перетирать красное подчеркивание
-            }
-        }
-
-        // =========================================================================
-        // 5. СЕМАНТИЧЕСКАЯ ОТРИСОВКА
-        // =========================================================================
-
-        // А. Обращение через точку (Shell.Log, NewErr.Log) — красим каждую часть раздельно
-        if (isMemberAccess) {
-            annotateMemberAccess(element, holder)
-            return
-        }
-
-        // Б. Параметры в слотах: AttemptFix(ErrorLog) или BuildError(NewErr)
-        val enclosingSlot = PsiTreeUtil.getParentOfType(element, RazomySlot::class.java)
-        if (enclosingSlot != null && isParameterInsideSlot(element, enclosingSlot)) {
-            highlight(element, holder, COLOR_PARAM)
-            return
-        }
-
-        // В. Объявления (Декларации)
-        if (isDecl) {
-            annotateDeclaration(element, holder)
-            return
-        }
-
-        // Г. Использования (Ссылки и вызовы)
-        annotateUsage(element, holder, text)
-    }
-
-    // -------------------------------------------------------------------------
-    // Составные пути: Shell.Log, User.Id, NewErr.Log
-    // -------------------------------------------------------------------------
-    private fun annotateMemberAccess(element: RazomyPath, holder: AnnotationHolder) {
-        val children = element.node.getChildren(null).filter {
-            it.elementType != TokenType.WHITE_SPACE && it.elementType != RazomyTypes.CRLF2
-        }
-
-        var isAfterDot = false
-        for (node in children) {
-            if (node.elementType == RazomyTypes.DOT) {
-                isAfterDot = true
-                continue
-            }
-
-            val partText = node.text
-            if (!isAfterDot) {
-                // Левая часть: Shell (Модуль) или NewErr (Переменная)
-                if (partText.firstOrNull()?.isUpperCase() == true) {
-                    highlightRange(node.textRange, holder, COLOR_MODULE)
-                } else {
-                    highlightRange(node.textRange, holder, COLOR_VARIABLE)
-                }
-            } else {
-                // Правая часть: Log / Exec (Метод) или Size / Id (Поле)
-                val isMethod = partText.firstOrNull()?.isUpperCase() == true
-                val rightColor = if (isMethod) COLOR_METHOD_CALL else COLOR_FIELD
-                highlightRange(node.textRange, holder, rightColor)
-            }
-        }
-    }
-
-    // -------------------------------------------------------------------------
-    // Определение сущностей при объявлении
-    // -------------------------------------------------------------------------
-    private fun annotateDeclaration(element: RazomyPath, holder: AnnotationHolder) {
-        val parent = element.parent
-
-        // 1. Прямая связь: Name [ ... ] или Name { ... }
-        if (parent is RazomyTypedFlowBlock) {
-            highlight(element, holder, COLOR_FUNCTION_DEF)
-            return
-        }
-        if (parent is RazomyTypedFormBlock) {
-            if (isModuleForm(parent.formBlock)) {
-                highlight(element, holder, COLOR_MODULE)
-            } else {
-                highlight(element, holder, COLOR_TYPE)
-            }
-            return
-        }
-
-        // 2. Сигнатуры с аргументами: Func(A) [ ... ] или Type(T) { ... }
-        val grandParent = parent?.parent
-        if (grandParent is RazomyTypedFlowBlock && parent is RazomyCallExpr) {
-            highlight(element, holder, COLOR_FUNCTION_DEF)
-            return
-        }
-        if (grandParent is RazomyTypedFormBlock && parent is RazomyCallExpr) {
-            highlight(element, holder, COLOR_TYPE)
-            return
-        }
-
-        // 3. Анализ элементов деклараций через выражения: expr expr?
-        val targetItem = PsiTreeUtil.getParentOfType(element, RazomyDeclaration::class.java, RazomyFormItem::class.java)
-        if (targetItem != null) {
-            val expressions = PsiTreeUtil.getChildrenOfType(targetItem, RazomyExpr::class.java)
-            if (expressions != null && expressions.size >= 2) {
-                val valueExpr = expressions[1]
-
-                // За именем следует блок потока [ ... ] -> Функция
-                if (PsiTreeUtil.findChildOfType(valueExpr, RazomyFlowBlock::class.java) != null) {
-                    highlight(element, holder, COLOR_FUNCTION_DEF)
-                    return
-                }
-
-                // За именем следует форма { ... } -> Структура или Модуль
-                val formBlock = PsiTreeUtil.findChildOfType(valueExpr, RazomyFormBlock::class.java)
-                if (formBlock != null) {
-                    if (isModuleForm(formBlock)) {
-                        highlight(element, holder, COLOR_MODULE)
-                    } else {
-                        highlight(element, holder, COLOR_TYPE)
-                    }
-                    return
-                }
-
-                // Внутри формы левая часть — поле: CleanLog String
-                if (targetItem is RazomyFormItem) {
-                    highlight(element, holder, COLOR_FIELD)
-                    return
-                }
-            } else if (expressions != null && expressions.size == 1 && targetItem is RazomyFormItem) {
-                highlight(element, holder, COLOR_FIELD)
-                return
-            }
-        }
-
-        // По умолчанию
-        if (element.text.firstOrNull()?.isUpperCase() == true) {
-            highlight(element, holder, COLOR_TYPE)
-        } else {
-            highlight(element, holder, COLOR_FIELD)
-        }
-    }
-
-    // -------------------------------------------------------------------------
-    // Определение сущностей при использовании
-    // -------------------------------------------------------------------------
-    private fun annotateUsage(element: RazomyPath, holder: AnnotationHolder, text: String) {
-        val parent = element.parent
-
-        // 1. Поле инициализации в форме: TaskPolicy { CleanLog Log, Retries 3 }
-        if (parent is RazomyFormItem) {
-            val firstExpr = PsiTreeUtil.findChildOfType(parent, RazomyExpr::class.java)
-            if (firstExpr != null && PsiTreeUtil.isAncestor(firstExpr, element, false)) {
-                highlight(element, holder, COLOR_FIELD)
-                return
-            }
-        }
-
-        // 2. Шаг в пайплайне: ErrorLog . BuildSystemPrompt или . RetryLoop
-        if (isInsidePipeline(element)) {
-            highlight(element, holder, COLOR_METHOD_CALL)
-            return
-        }
-
-        // 3. Вызов или инициализация типа
-        if (parent is RazomyTypedFormBlock || (parent is RazomyCallExpr && text.firstOrNull()?.isUpperCase() == true)) {
-            highlight(element, holder, COLOR_TYPE)
-            return
-        }
-
-        // 4. По регистру
-        if (text.firstOrNull()?.isUpperCase() == true) {
-            highlight(element, holder, COLOR_TYPE)
-        } else {
-            highlight(element, holder, COLOR_VARIABLE)
-        }
-    }
-
-    // -------------------------------------------------------------------------
-    // Вспомогательные методы
-    // -------------------------------------------------------------------------
-
-    private fun isModuleForm(formBlock: RazomyFormBlock?): Boolean {
-        if (formBlock == null) return false
-        return PsiTreeUtil.findChildOfType(formBlock, RazomyFlowBlock::class.java) != null
-    }
-
-    private fun isParameterInsideSlot(element: RazomyPath, slot: RazomySlot): Boolean {
-        val slotParent = slot.parent
-        return slotParent is RazomyCallExpr || slotParent is RazomyTypedFlowBlock || slotParent is RazomyTypedFormBlock
-    }
-
-    private fun isInsidePipeline(element: RazomyPath): Boolean {
-        val pipelineExpr = PsiTreeUtil.getParentOfType(element, RazomyPipelineExpr::class.java) ?: return false
-        return pipelineExpr.text.contains(".") && pipelineExpr.firstChild != element
-    }
-
-    private fun highlight(element: PsiElement, holder: AnnotationHolder, colorKey: TextAttributesKey) {
-        holder.newSilentAnnotation(HighlightSeverity.TEXT_ATTRIBUTES)
-            .range(element.textRange)
-            .textAttributes(colorKey)
-            .create()
-    }
-
-    private fun highlightRange(range: TextRange, holder: AnnotationHolder, colorKey: TextAttributesKey) {
-        holder.newSilentAnnotation(HighlightSeverity.TEXT_ATTRIBUTES)
-            .range(range)
-            .textAttributes(colorKey)
-            .create()
-    }
-
-    private fun annotateString(element: PsiElement, holder: AnnotationHolder) {
-        val text = element.text
-        val offset = element.textOffset
-
-        for (match in ESCAPE_PATTERN.findAll(text)) {
-            val range = TextRange(offset + match.range.first, offset + match.range.last + 1)
-            holder.newSilentAnnotation(HighlightSeverity.INFORMATION)
-                .range(range)
-                .textAttributes(DefaultLanguageHighlighterColors.VALID_STRING_ESCAPE)
-                .create()
-        }
-
-        for (match in INTERPOLATION_PATTERN.findAll(text)) {
-            holder.newSilentAnnotation(HighlightSeverity.INFORMATION)
-                .range(TextRange(offset + match.range.first, offset + match.range.first + 1))
-                .textAttributes(DefaultLanguageHighlighterColors.BRACES)
-                .create()
-
-            holder.newSilentAnnotation(HighlightSeverity.INFORMATION)
-                .range(TextRange(offset + match.range.last, offset + match.range.last + 1))
-                .textAttributes(DefaultLanguageHighlighterColors.BRACES)
-                .create()
-
-            val innerRange = TextRange(offset + match.range.first + 1, offset + match.range.last)
-            if (!innerRange.isEmpty) {
-                holder.newSilentAnnotation(HighlightSeverity.INFORMATION)
-                    .range(innerRange)
-                    .textAttributes(DefaultLanguageHighlighterColors.IDENTIFIER)
-                    .create()
-            }
-        }
-    }
-}// --- COMPLETION ---
-
 // --- COMPLETION ---
 
 class RazomyCompletionContributor : CompletionContributor() {
@@ -1390,4 +688,681 @@ class RazomyInlayParameterHintsProvider : InlayParameterHintsProvider {
 
     override fun getDefaultBlackList(): MutableSet<String> = mutableSetOf()
     override fun getHintInfo(element: PsiElement): com.intellij.codeInsight.hints.HintInfo? = null
+}
+
+
+// --- LANGUAGE & FILE TYPE ---
+
+object RazomyIcons {
+    val FILE: Icon = IconLoader.getIcon("icons/rl.svg", RazomyIcons::class.java)
+}
+
+class RazomyLanguage : Language("RL") {
+    companion object {
+        val INSTANCE = RazomyLanguage()
+    }
+}
+
+class RazomyFileType : LanguageFileType(RazomyLanguage.INSTANCE) {
+    override fun getName() = "Razomy File"
+    override fun getDescription() = "Razomy language file"
+    override fun getDefaultExtension() = "rl"
+    override fun getIcon() = RazomyIcons.FILE
+
+    companion object {
+        val INSTANCE = RazomyFileType()
+    }
+}
+
+// --- UTILITY (THE CORE ENGINE) ---
+
+object RazomyUtil {
+    fun isDeclaration(path: RazomyPath): Boolean {
+        if (path.text == "_" || path.text.startsWith("_.")) return false
+
+        val parentItem = PsiTreeUtil.getParentOfType(
+            path,
+            RazomyDeclaration::class.java,
+            RazomyFormItem::class.java,
+            RazomySlotItem::class.java
+        ) ?: return false
+
+        val firstPath = PsiTreeUtil.findChildOfType(parentItem, RazomyPath::class.java)
+        return firstPath == path
+    }
+
+    fun isImportPath(text: String): Boolean {
+        if (text.isBlank() || text == "_") return false
+        return text.first().isLowerCase()
+    }
+}
+
+// --- СИСТЕМА ИМПОРТОВ И РЕЗОЛВА МОДУЛЕЙ ---
+
+object RazomyImportResolver {
+    fun resolveImportedFile(context: PsiElement, importPath: String): PsiFile? {
+        val project = context.project
+        val fileName = importPath.substringAfterLast('.') + ".rl"
+        val expectedPath = importPath.replace('.', '/') + ".rl"
+
+        val virtualFiles = FilenameIndex.getVirtualFilesByName(fileName, GlobalSearchScope.projectScope(project))
+        for (vf in virtualFiles) {
+            if (vf.path.replace('\\', '/').endsWith(expectedPath)) {
+                return PsiManager.getInstance(project).findFile(vf)
+            }
+        }
+        return null
+    }
+
+    fun findExportedSymbol(file: PsiFile, name: String): PsiElement? {
+        val globalDecls = PsiTreeUtil.findChildrenOfType(file, RazomyDeclaration::class.java)
+        for (decl in globalDecls) {
+            val leftExpr = decl.children.firstOrNull()
+            val path = PsiTreeUtil.findChildOfType(leftExpr, RazomyPath::class.java)
+            if (path != null && path.text == name && path.textOffset == leftExpr?.textOffset) {
+                return path
+            }
+        }
+        return null
+    }
+}
+
+// --- СИСТЕМА ТИПОВ И СЕМАНТИЧЕСКИЙ РЕЗОЛВЕР (Razomy Type System V2.6 - Modules Edition) ---
+
+object RazomyTypeSystem {
+    private val LOG = Logger.getInstance("RazomyTypeSystem")
+
+    fun inferTypeByName(name: String, context: PsiElement): RazomyType {
+        val file = context.containingFile ?: return RazomyType.Unknown
+        val globalDecls = PsiTreeUtil.findChildrenOfType(file, RazomyDeclaration::class.java)
+
+        // 1. Проверяем импорты в начале файла
+        for (decl in globalDecls) {
+            val leftExpr = decl.children.firstOrNull()
+            val rightExpr = decl.children.getOrNull(1)
+
+            val leftPath = PsiTreeUtil.findChildOfType(leftExpr, RazomyPath::class.java)
+            val rightPath = PsiTreeUtil.findChildOfType(rightExpr, RazomyPath::class.java)
+            val leftForm = PsiTreeUtil.findChildOfType(leftExpr, RazomyFormBlock::class.java)
+
+            if (rightPath != null && rightPath.textOffset == rightExpr?.textOffset && RazomyUtil.isImportPath(rightPath.text)) {
+                // Alias import: Age package.age
+                if (leftPath != null && leftPath.text == name && leftPath.textOffset == leftExpr?.textOffset) {
+                    val importedFile = RazomyImportResolver.resolveImportedFile(context, rightPath.text)
+                    return if (importedFile != null) RazomyType.Module(importedFile) else RazomyType.Unknown
+                }
+                // Destructured import: { Old } package.age
+                else if (leftForm != null && leftForm.textOffset == leftExpr?.textOffset) {
+                    val items = PsiTreeUtil.findChildrenOfType(leftForm, RazomyFormItem::class.java)
+                    if (items.any { PsiTreeUtil.findChildOfType(it, RazomyPath::class.java)?.text == name }) {
+                        val importedFile = RazomyImportResolver.resolveImportedFile(context, rightPath.text)
+                        if (importedFile != null) {
+                            val foreignSymbol = RazomyImportResolver.findExportedSymbol(importedFile, name)
+                            if (foreignSymbol != null) return inferTypeOfElement(foreignSymbol)
+                        }
+                        return RazomyType.Unknown
+                    }
+                }
+            }
+        }
+
+        // 2. Локальный поиск по файлу
+        for (decl in globalDecls) {
+            val leftExpr = decl.children.firstOrNull()
+            val path = PsiTreeUtil.findChildOfType(leftExpr, RazomyPath::class.java)
+            if (path?.text == name && path.textOffset == leftExpr?.textOffset) {
+
+                // Форма { ... }
+                val formBlock = PsiTreeUtil.findChildOfType(decl, RazomyFormBlock::class.java)
+                if (formBlock != null) {
+                    val fields = mutableMapOf<String, PsiElement>()
+                    val items = PsiTreeUtil.findChildrenOfType(formBlock, RazomyFormItem::class.java)
+                    for (item in items) {
+                        val fieldPath = PsiTreeUtil.findChildOfType(item, RazomyPath::class.java)
+                        if (fieldPath != null) {
+                            fields[fieldPath.text] = fieldPath
+                        }
+                    }
+                    return RazomyType.Form(name, path, fields)
+                }
+
+                // Алиас / Наследование (User & Identifiable)
+                val allPaths = PsiTreeUtil.findChildrenOfType(decl, RazomyPath::class.java).toList()
+                val baseTypePath = allPaths.drop(1).firstOrNull { it.text.firstOrNull()?.isUpperCase() == true }
+                if (baseTypePath != null) {
+                    return inferTypeByName(baseTypePath.text, context)
+                }
+            }
+        }
+        return RazomyType.Unknown
+    }
+
+    fun inferTypeOfElement(element: PsiElement): RazomyType {
+        if (element is RazomyPath) {
+            val slotItem = PsiTreeUtil.getParentOfType(element, RazomySlotItem::class.java)
+            if (slotItem != null) {
+                val paths = PsiTreeUtil.findChildrenOfType(slotItem, RazomyPath::class.java).toList()
+                if (paths.size > 1 && paths[0] == element) return inferTypeByName(paths[1].text, element)
+
+                val callExpr = PsiTreeUtil.getParentOfType(slotItem, RazomyCallExpr::class.java)
+                if (callExpr != null) {
+                    val callerPath = PsiTreeUtil.getChildOfType(callExpr, RazomyPath::class.java)
+                    if (callerPath != null && callerPath.text.firstOrNull()?.isUpperCase() == true) {
+                        return inferTypeByName(callerPath.text, element)
+                    }
+                }
+            }
+        }
+
+        val text = element.text
+        if (text.firstOrNull()?.isUpperCase() == true) {
+            val resolvedType = inferTypeByName(text, element)
+            if (resolvedType !is RazomyType.Unknown) return resolvedType
+        }
+        return RazomyType.Unknown
+    }
+
+    fun buildScope(element: PsiElement): RazomyScope {
+        val scope = RazomyScope()
+        var current: PsiElement? = element.parent
+
+        while (current != null) {
+            if (current is RazomyFormItem) {
+                val firstPath = PsiTreeUtil.findChildOfType(current, RazomyPath::class.java)
+                if (firstPath != null && firstPath.text.firstOrNull()?.isUpperCase() == true) {
+                    val resolvedType = inferTypeByName(firstPath.text, element)
+                    scope.unpackedFields.putAll(RazomyType.extractFields(resolvedType))
+                }
+            }
+            if (current is RazomyFormBlock) {
+                val items = PsiTreeUtil.findChildrenOfType(current, RazomyFormItem::class.java)
+                for (item in items) {
+                    val fieldPath = PsiTreeUtil.findChildOfType(item, RazomyPath::class.java)
+                    if (fieldPath != null) scope.variables[fieldPath.text] = fieldPath
+                }
+            }
+            if (current is RazomyFlowBlock) {
+                val precedingForms = PsiTreeUtil.findChildrenOfType(current, RazomyFormBlock::class.java)
+                for (formBlock in precedingForms) {
+                    if (formBlock.textOffset < element.textOffset) {
+                        val items = PsiTreeUtil.findChildrenOfType(formBlock, RazomyFormItem::class.java)
+                        for (item in items) {
+                            val fieldPath = PsiTreeUtil.findChildOfType(item, RazomyPath::class.java)
+                            if (fieldPath != null) scope.unpackedFields[fieldPath.text] = fieldPath
+                        }
+                    }
+                }
+            }
+            if (current is RazomyDeclaration || current is RazomyFormItem || current is RazomyCallExpr) {
+                val slot = PsiTreeUtil.findChildOfType(current, RazomySlot::class.java)
+                if (slot != null && slot.textOffset < element.textOffset) {
+                    val items = PsiTreeUtil.findChildrenOfType(slot, RazomySlotItem::class.java)
+                    for (item in items) {
+                        val paths = PsiTreeUtil.findChildrenOfType(item, RazomyPath::class.java).toList()
+                        if (paths.isNotEmpty()) {
+                            val varName = paths[0]
+                            scope.variables[varName.text] = varName
+
+                            val resolvedType = inferTypeOfElement(varName)
+                            if (resolvedType !is RazomyType.Unknown) {
+                                scope.unpackedFields.putAll(RazomyType.extractFields(resolvedType))
+                            } else {
+                                val fallbackType = inferTypeByName(varName.text, element)
+                                scope.unpackedFields.putAll(RazomyType.extractFields(fallbackType))
+                            }
+                        }
+                    }
+                }
+            }
+            current = current.parent
+        }
+
+        // ГЛОБАЛЬНЫЙ СКОУП С ИМПОРТАМИ
+        val file = element.containingFile
+        if (file != null) {
+            val globalDecls = PsiTreeUtil.findChildrenOfType(file, RazomyDeclaration::class.java)
+            for (decl in globalDecls) {
+                val leftExpr = decl.children.firstOrNull()
+                val rightExpr = decl.children.getOrNull(1)
+
+                val leftPath = PsiTreeUtil.findChildOfType(leftExpr, RazomyPath::class.java)
+                val rightPath = PsiTreeUtil.findChildOfType(rightExpr, RazomyPath::class.java)
+                val leftForm = PsiTreeUtil.findChildOfType(leftExpr, RazomyFormBlock::class.java)
+
+                if (leftPath != null && rightPath != null && leftPath.textOffset == leftExpr?.textOffset && rightPath.textOffset == rightExpr?.textOffset && RazomyUtil.isImportPath(
+                        rightPath.text
+                    )
+                ) {
+                    val alias = leftPath.text
+                    scope.variables[alias] = leftPath
+                    scope.imports[alias] = rightPath
+                } else if (leftForm != null && rightPath != null && leftForm.textOffset == leftExpr?.textOffset && rightPath.textOffset == rightExpr?.textOffset && RazomyUtil.isImportPath(
+                        rightPath.text
+                    )
+                ) {
+                    val items = PsiTreeUtil.findChildrenOfType(leftForm, RazomyFormItem::class.java)
+                    for (item in items) {
+                        val path = PsiTreeUtil.findChildOfType(item, RazomyPath::class.java)
+                        if (path != null) {
+                            scope.variables[path.text] = path
+                            scope.imports[path.text] = rightPath
+                            scope.isDestructuredImport[path.text] = true
+                        }
+                    }
+                } else {
+                    if (leftPath != null && leftPath.textOffset == leftExpr?.textOffset) {
+                        scope.variables[leftPath.text] = leftPath
+                    }
+                }
+            }
+        }
+        return scope
+    }
+}
+
+object RazomyResolver {
+    private val LOG = Logger.getInstance("RazomyResolver")
+
+    fun resolvePath(context: PsiElement, pathText: String): PsiElement? {
+        if (pathText == "_" || pathText.startsWith("_.")) return null
+
+        val cleanPath = pathText.replace("\\s+\\.\\s+".toRegex(), ".")
+        val parts = cleanPath.split(".")
+        if (parts.isEmpty()) return null
+
+        val rootName = parts[0]
+        val scope = RazomyTypeSystem.buildScope(context)
+
+        var current: PsiElement? = scope.variables[rootName] ?: scope.unpackedFields[rootName]
+
+        // Если корень — это импорт
+        if (current != null && scope.imports.containsKey(rootName)) {
+            val importPath = scope.imports[rootName]!!
+            val importedFile = RazomyImportResolver.resolveImportedFile(context, importPath.text)
+
+            if (importedFile != null) {
+                if (scope.isDestructuredImport[rootName] == true) {
+                    current = RazomyImportResolver.findExportedSymbol(importedFile, rootName) ?: current
+                } else {
+                    if (parts.size == 1) return importedFile
+                    current = importedFile
+                }
+            }
+        }
+
+        if (current == null) return null
+
+        for (i in 1 until parts.size) {
+            val nextMember = parts[i]
+            val resolvedMember = resolveMember(current!!, nextMember)
+            if (resolvedMember == null) {
+                LOG.warn("ОШИБКА: Поле '$nextMember' не найдено в '$rootName'")
+                return null
+            }
+            current = resolvedMember
+        }
+        return current
+    }
+
+    private fun resolveMember(owner: PsiElement, memberName: String): PsiElement? {
+        if (owner is PsiFile) {
+            return RazomyImportResolver.findExportedSymbol(owner, memberName)
+        }
+        val type = RazomyTypeSystem.inferTypeOfElement(owner)
+        val fields = RazomyType.extractFields(type)
+        return fields[memberName]
+    }
+}
+
+class RazomyScope(
+    val variables: MutableMap<String, PsiElement> = mutableMapOf(),
+    val unpackedFields: MutableMap<String, PsiElement> = mutableMapOf(),
+    val imports: MutableMap<String, RazomyPath> = mutableMapOf(),
+    val isDestructuredImport: MutableMap<String, Boolean> = mutableMapOf()
+)
+
+sealed class RazomyType {
+    class Form(val name: String, val declaration: PsiElement, val fields: Map<String, PsiElement>) : RazomyType()
+    class Module(val file: PsiFile) : RazomyType()
+    class Union(val left: RazomyType, val right: RazomyType) : RazomyType()
+    class Intersection(val left: RazomyType, val right: RazomyType) : RazomyType() {
+        fun getResolvedFields(): Map<String, PsiElement> {
+            val leftFields = extractFields(left)
+            val rightFields = extractFields(right)
+            val result = mutableMapOf<String, PsiElement>()
+            result.putAll(leftFields.filterKeys { it !in rightFields.keys })
+            result.putAll(rightFields.filterKeys { it !in leftFields.keys })
+            return result
+        }
+    }
+
+    object Unknown : RazomyType()
+
+    companion object {
+        fun extractFields(type: RazomyType): Map<String, PsiElement> {
+            return when (type) {
+                is Form -> type.fields
+                is Intersection -> type.getResolvedFields()
+                is Module -> {
+                    val result = mutableMapOf<String, PsiElement>()
+                    val globalDecls = PsiTreeUtil.findChildrenOfType(type.file, RazomyDeclaration::class.java)
+                    for (decl in globalDecls) {
+                        val leftExpr = decl.children.firstOrNull()
+                        val path = PsiTreeUtil.findChildOfType(leftExpr, RazomyPath::class.java)
+                        if (path != null && path.textOffset == leftExpr?.textOffset) {
+                            result[path.text] = path
+                        }
+                    }
+                    result
+                }
+
+                else -> emptyMap()
+            }
+        }
+    }
+}
+
+// --- GOTO DECLARATION ---
+
+class RazomyGotoDeclarationHandler : GotoDeclarationHandler {
+    override fun getGotoDeclarationTargets(
+        sourceElement: PsiElement?,
+        offset: Int,
+        editor: Editor?
+    ): Array<PsiElement>? {
+        if (sourceElement == null) return null
+        val word = sourceElement.text
+        if (word.isBlank() || word == "_") return null
+
+        val currentPath = PsiTreeUtil.getParentOfType(sourceElement, RazomyPath::class.java) ?: return null
+        val file = sourceElement.containingFile ?: return null
+
+        // 1. Если кликаем по файловому пути в импорте (правая часть)
+        val parentDecl = currentPath.parent?.parent as? RazomyDeclaration
+        if (parentDecl != null) {
+            val rightExpr = parentDecl.children.getOrNull(1)
+            val rightPath = PsiTreeUtil.findChildOfType(rightExpr, RazomyPath::class.java)
+            if (currentPath == rightPath && rightPath.textOffset == rightExpr?.textOffset && RazomyUtil.isImportPath(
+                    currentPath.text
+                )
+            ) {
+                val fileTarget = RazomyImportResolver.resolveImportedFile(sourceElement, currentPath.text)
+                if (fileTarget != null) return arrayOf(fileTarget)
+                return null
+            }
+        }
+
+        // 2. Если кликаем по самому определению
+        if (RazomyUtil.isDeclaration(currentPath)) {
+            val targets = findUsages(currentPath, file)
+            return if (targets.isNotEmpty()) targets.toTypedArray() else null
+        }
+
+        // 3. Стандартный семантический резолв
+        val resolved = RazomyResolver.resolvePath(currentPath, word)
+            ?: RazomyResolver.resolvePath(currentPath, currentPath.text)
+            ?: resolveLocalDeclaration(currentPath, word, file)
+
+        return if (resolved != null) arrayOf(resolved) else null
+    }
+
+    private fun findUsages(element: RazomyPath, file: PsiFile): List<PsiElement> {
+        val currentName = element.text
+        val results = LinkedHashSet<PsiElement>()
+        val allPaths = PsiTreeUtil.findChildrenOfType(file, RazomyPath::class.java)
+        for (path in allPaths) {
+            if (path != element && matchesName(path.text, currentName)) {
+                results.add(path)
+            }
+        }
+        return results.toList()
+    }
+
+    private fun resolveLocalDeclaration(from: RazomyPath, name: String, file: PsiFile): RazomyPath? {
+        var scope = from.parent
+        while (scope != null) {
+            if (scope is RazomyFormBlock || scope is RazomyFlowBlock) {
+                val parentDecl =
+                    PsiTreeUtil.getParentOfType(scope, RazomyDeclaration::class.java, RazomyFormItem::class.java)
+                val leftExpr = parentDecl?.children?.firstOrNull()
+                val slot = PsiTreeUtil.findChildOfType(leftExpr, RazomySlot::class.java)
+                if (slot != null) {
+                    val slotItems = PsiTreeUtil.findChildrenOfType(slot, RazomySlotItem::class.java)
+                    for (item in slotItems) {
+                        val firstExpr = item.children.firstOrNull()
+                        val paramPath = PsiTreeUtil.findChildOfType(firstExpr, RazomyPath::class.java)
+                        if (paramPath != null && paramPath.textOffset == firstExpr?.textOffset && matchesName(
+                                paramPath.text,
+                                name
+                            )
+                        ) {
+                            return paramPath
+                        }
+                    }
+                }
+            }
+            scope = scope.parent
+        }
+        return null
+    }
+
+    private fun matchesName(declarationText: String, searchName: String): Boolean {
+        return declarationText == searchName || declarationText.endsWith(".$searchName") || searchName.endsWith(".$declarationText")
+    }
+}
+
+
+// --- ANNOTATOR ---
+
+class RazomyAnnotator : Annotator {
+
+    companion object {
+        private val ESCAPE_PATTERN = Regex("""\\[ntr\"'\\{}]""")
+        private val INTERPOLATION_PATTERN = Regex("""(?<!\\)\{([^}]+)\}""")
+
+        val COLOR_MODULE = DefaultLanguageHighlighterColors.CLASS_NAME
+        val COLOR_TYPE = DefaultLanguageHighlighterColors.CLASS_REFERENCE
+        val COLOR_FUNCTION_DEF = DefaultLanguageHighlighterColors.FUNCTION_DECLARATION
+        val COLOR_METHOD_CALL = DefaultLanguageHighlighterColors.STATIC_METHOD
+        val COLOR_FIELD = DefaultLanguageHighlighterColors.INSTANCE_FIELD
+        val COLOR_PARAM = DefaultLanguageHighlighterColors.PARAMETER
+        val COLOR_VARIABLE = DefaultLanguageHighlighterColors.LOCAL_VARIABLE
+        val COLOR_NATIVE = DefaultLanguageHighlighterColors.PREDEFINED_SYMBOL
+        val COLOR_IMPORT = DefaultLanguageHighlighterColors.STRING
+    }
+
+    override fun annotate(element: PsiElement, holder: AnnotationHolder) {
+        if (element.node.elementType == RazomyTypes.STRING || element.textContains('\"') || element.textContains('\'')) {
+            if (element.node.elementType == RazomyTypes.STRING) annotateString(element, holder)
+            return
+        }
+
+        if (element !is RazomyPath) return
+        val text = element.text.trim()
+        if (text.isEmpty() || text.endsWith(".") || text.contains("IntellijIdeaRulezzz")) return
+
+        if (text == "_" || text.startsWith("_.")) {
+            highlight(element, holder, DefaultLanguageHighlighterColors.KEYWORD)
+            return
+        }
+
+        if (text.startsWith("native_") || text.contains("native_")) {
+            highlight(element, holder, COLOR_NATIVE)
+            return
+        }
+
+        val isDecl = RazomyUtil.isDeclaration(element)
+        val isMemberAccess = text.contains(".")
+
+        // ВЫДЕЛЕНИЕ ИМПОРТОВ (Спец. Обработка)
+        val parentExpr = element.parent as? RazomyExpr
+        val grandParent = parentExpr?.parent
+        if (grandParent is RazomyDeclaration) {
+            val leftExpr = grandParent.children.firstOrNull()
+            val rightExpr = grandParent.children.getOrNull(1)
+
+            val rightPath = PsiTreeUtil.findChildOfType(rightExpr, RazomyPath::class.java)
+            if (rightPath != null && rightPath.textOffset == rightExpr?.textOffset && RazomyUtil.isImportPath(rightPath.text)) {
+                // Если красим правую часть (Путь к файлу)
+                if (element == rightPath) {
+                    highlight(element, holder, COLOR_IMPORT)
+                    return
+                }
+                // Если красим левую часть (Алиас модуля)
+                if (leftExpr != null && leftExpr.textOffset == element.textOffset) {
+                    highlight(element, holder, COLOR_MODULE)
+                    return
+                }
+                // Если красим внутренности деструктуризации { Old }
+                val leftForm = PsiTreeUtil.findChildOfType(leftExpr, RazomyFormBlock::class.java)
+                if (leftForm != null && PsiTreeUtil.isAncestor(leftForm, element, false)) {
+                    highlight(element, holder, COLOR_TYPE)
+                    return
+                }
+            }
+        }
+
+        if (!isDecl) {
+            val resolved = RazomyResolver.resolvePath(element, text)
+            val scope = RazomyTypeSystem.buildScope(element)
+            val isResolvedLocally =
+                !isMemberAccess && (scope.variables.containsKey(text) || scope.unpackedFields.containsKey(text))
+
+            if (resolved == null && !isResolvedLocally) {
+                if (isMemberAccess) {
+                    val parts = text.split(".")
+                    holder.newAnnotation(
+                        HighlightSeverity.ERROR,
+                        "Неразрешенное поле: '${parts.last()}' в '${parts.dropLast(1).joinToString(".")}'"
+                    )
+                        .range(element.textRange)
+                        .highlightType(ProblemHighlightType.LIKE_UNKNOWN_SYMBOL)
+                        .create()
+                } else {
+                    holder.newAnnotation(HighlightSeverity.ERROR, "Неразрешенная ссылка: '$text'")
+                        .range(element.textRange)
+                        .highlightType(ProblemHighlightType.LIKE_UNKNOWN_SYMBOL)
+                        .create()
+                }
+                return
+            }
+        }
+
+        if (isMemberAccess) {
+            annotateMemberAccess(element, holder)
+            return
+        }
+
+        val enclosingSlot = PsiTreeUtil.getParentOfType(element, RazomySlot::class.java)
+        if (enclosingSlot != null && isParameterInsideSlot(element, enclosingSlot)) {
+            highlight(element, holder, COLOR_PARAM)
+            return
+        }
+
+        if (isDecl) {
+            annotateDeclaration(element, holder)
+            return
+        }
+        annotateUsage(element, holder, text)
+    }
+
+    private fun annotateMemberAccess(element: RazomyPath, holder: AnnotationHolder) {
+        val children = element.node.getChildren(null).filter {
+            it.elementType != TokenType.WHITE_SPACE && it.elementType != RazomyTypes.CRLF2
+        }
+
+        var isAfterDot = false
+        for (node in children) {
+            if (node.elementType == RazomyTypes.DOT) {
+                isAfterDot = true
+                continue
+            }
+            val partText = node.text
+            if (!isAfterDot) {
+                if (partText.firstOrNull()?.isUpperCase() == true) {
+                    highlightRange(node.textRange, holder, COLOR_MODULE)
+                } else {
+                    highlightRange(node.textRange, holder, COLOR_VARIABLE)
+                }
+            } else {
+                val isMethod = partText.firstOrNull()?.isUpperCase() == true
+                val rightColor = if (isMethod) COLOR_METHOD_CALL else COLOR_FIELD
+                highlightRange(node.textRange, holder, rightColor)
+            }
+        }
+    }
+
+    private fun annotateDeclaration(element: RazomyPath, holder: AnnotationHolder) {
+        val parent = element.parent
+        if (parent is RazomyTypedFlowBlock) {
+            highlight(element, holder, COLOR_FUNCTION_DEF)
+            return
+        }
+        if (parent is RazomyTypedFormBlock) {
+            if (PsiTreeUtil.findChildOfType(parent.formBlock, RazomyFlowBlock::class.java) != null) {
+                highlight(element, holder, COLOR_MODULE)
+            } else {
+                highlight(element, holder, COLOR_TYPE)
+            }
+            return
+        }
+
+        if (element.text.firstOrNull()?.isUpperCase() == true) {
+            highlight(element, holder, COLOR_TYPE)
+        } else {
+            highlight(element, holder, COLOR_FIELD)
+        }
+    }
+
+    private fun annotateUsage(element: RazomyPath, holder: AnnotationHolder, text: String) {
+        if (element.text.firstOrNull()?.isUpperCase() == true) {
+            highlight(element, holder, COLOR_TYPE)
+        } else {
+            highlight(element, holder, COLOR_VARIABLE)
+        }
+    }
+
+    private fun isParameterInsideSlot(element: RazomyPath, slot: RazomySlot): Boolean {
+        val slotParent = slot.parent
+        return slotParent is RazomyCallExpr || slotParent is RazomyTypedFlowBlock || slotParent is RazomyTypedFormBlock
+    }
+
+    private fun highlight(element: PsiElement, holder: AnnotationHolder, colorKey: TextAttributesKey) {
+        holder.newSilentAnnotation(HighlightSeverity.TEXT_ATTRIBUTES)
+            .range(element.textRange)
+            .textAttributes(colorKey)
+            .create()
+    }
+
+    private fun highlightRange(range: TextRange, holder: AnnotationHolder, colorKey: TextAttributesKey) {
+        holder.newSilentAnnotation(HighlightSeverity.TEXT_ATTRIBUTES)
+            .range(range)
+            .textAttributes(colorKey)
+            .create()
+    }
+
+    private fun annotateString(element: PsiElement, holder: AnnotationHolder) {
+        val text = element.text
+        val offset = element.textOffset
+        for (match in ESCAPE_PATTERN.findAll(text)) {
+            val range = TextRange(offset + match.range.first, offset + match.range.last + 1)
+            holder.newSilentAnnotation(HighlightSeverity.INFORMATION)
+                .range(range)
+                .textAttributes(DefaultLanguageHighlighterColors.VALID_STRING_ESCAPE)
+                .create()
+        }
+        for (match in INTERPOLATION_PATTERN.findAll(text)) {
+            holder.newSilentAnnotation(HighlightSeverity.INFORMATION)
+                .range(TextRange(offset + match.range.first, offset + match.range.first + 1))
+                .textAttributes(DefaultLanguageHighlighterColors.BRACES).create()
+            holder.newSilentAnnotation(HighlightSeverity.INFORMATION)
+                .range(TextRange(offset + match.range.last, offset + match.range.last + 1))
+                .textAttributes(DefaultLanguageHighlighterColors.BRACES).create()
+            val innerRange = TextRange(offset + match.range.first + 1, offset + match.range.last)
+            if (!innerRange.isEmpty) {
+                holder.newSilentAnnotation(HighlightSeverity.INFORMATION).range(innerRange)
+                    .textAttributes(DefaultLanguageHighlighterColors.IDENTIFIER).create()
+            }
+        }
+    }
 }
