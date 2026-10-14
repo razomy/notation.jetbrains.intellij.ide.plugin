@@ -537,21 +537,25 @@ class RazomyUnusedInspection : LocalInspectionTool() {
 
 // --- DOCUMENTATION ---
 
+// --- DOCUMENTATION (Компактный Hover + Вычисление итогового типа) ---
+
 class RazomyDocumentationProvider : AbstractDocumentationProvider() {
+
     override fun generateDoc(element: PsiElement?, originalElement: PsiElement?): String? {
         val origPath = PsiTreeUtil.getParentOfType(originalElement, RazomyPath::class.java)
 
-        // 1. Если навели курсор на `_` — показываем выведенный контекстный тип `_`
+        // 1. Контекстный символ `_`
         if (originalElement?.text == "_" || origPath?.text == "_") {
             val ctxElem = origPath ?: originalElement ?: return null
-            val underscoreType = org.razomy.language.RazomyTypeSystem.inferUnderscoreType(ctxElem)
-            val fields = org.razomy.language.RazomyType.extractFields(underscoreType).keys
+            val underscoreType = RazomyTypeSystem.inferUnderscoreType(ctxElem)
+            val computedBlock = RazomyTypeSystem.renderComputedTypePreview(underscoreType, ctxElem)
             return buildString {
-                append("<div style='font-family: monospace; padding: 4px;'>")
-                append("<span>Contextual Symbol:</span> <code><b>_</b></code><br/>")
-                append("<span>Inferred Type:</span> <code><b>${escapeHtml(underscoreType.presentableName())}</b></code><br/>")
-                if (fields.isNotEmpty()) {
-                    append("<span>Available Fields:</span> <code>${escapeHtml(fields.joinToString(", "))}</code>")
+                append("<div style='font-family: monospace; font-size: 12px; line-height: 1.35;'>")
+                append("<b>_</b> : <code>${escapeHtml(underscoreType.presentableName())}</code>")
+                if (computedBlock.isNotBlank()) {
+                    append("<pre style='margin: 4px 0 0 0; padding: 4px; background: rgba(128,128,128,0.1);'>")
+                    append(escapeHtml(computedBlock))
+                    append("</pre>")
                 }
                 append("</div>")
             }
@@ -563,44 +567,50 @@ class RazomyDocumentationProvider : AbstractDocumentationProvider() {
             else -> origPath
         } ?: return null
 
-        val decl = if (org.razomy.language.RazomyUtil.isDeclaration(target)) {
+        val decl = if (RazomyUtil.isDeclaration(target)) {
             target
         } else {
-            (org.razomy.language.RazomyResolver.resolvePath(target, target.text) as? RazomyPath)
+            (RazomyResolver.resolvePath(target, target.text) as? RazomyPath)
                 ?: target.containingFile?.let { file ->
                     PsiTreeUtil.findChildrenOfType(file, RazomyPath::class.java)
-                        .firstOrNull { it.text == target.text && org.razomy.language.RazomyUtil.isDeclaration(it) }
+                        .firstOrNull { it.text == target.text && RazomyUtil.isDeclaration(it) }
                 }
         } ?: return null
 
-        val inferredType = org.razomy.language.RazomyTypeSystem.inferTypeOfElement(decl)
+        val inferredType = RazomyTypeSystem.inferTypeOfElement(decl)
         val container = PsiTreeUtil.getParentOfType(
             decl,
             RazomyDeclaration::class.java,
             RazomyFormItem::class.java,
             RazomySlotItem::class.java
         ) ?: decl
+
+        val kind = RazomyTypeSystem.getSymbolKindLabel(decl, inferredType)
+        val signature = RazomyTypeSystem.getSymbolSignature(decl, container)
+        val typeName = inferredType.presentableName()
+        val computedPreview = RazomyTypeSystem.renderComputedTypePreview(inferredType, decl)
         val formattedComments = collectPrecedingCommentsHtml(container)
 
-        val doc = StringBuilder()
-        doc.append("<div style='font-family: monospace; padding: 4px;'>")
-        doc.append("<span>Symbol:</span> <code><b>${escapeHtml(decl.text)}</b></code><br/>")
-        if (inferredType !is org.razomy.language.RazomyType.Unknown) {
-            doc.append("<span>Inferred Type:</span> <code>${escapeHtml(inferredType.presentableName())}</code><br/>")
+        return buildString {
+            append("<div style='font-family: monospace; font-size: 12px; line-height: 1.35;'>")
+            append("<span style='color: #888;'>$kind</span> <b>${escapeHtml(signature)}</b>")
+            if (inferredType !is RazomyType.Unknown && typeName != signature) {
+                append(" : <code>${escapeHtml(typeName)}</code>")
+            }
+
+            if (computedPreview.isNotBlank()) {
+                append("<pre style='margin: 6px 0 2px 0; padding: 4px;'>")
+                append(escapeHtml(computedPreview))
+                append("</pre>")
+            }
+            append("</div>")
+
+            if (formattedComments.isNotBlank()) {
+                append("<hr style='margin: 4px 0;'/><div style='font-size: 12px;'>")
+                append(formattedComments)
+                append("</div>")
+            }
         }
-
-        var presentationText = container.text
-        if (presentationText.length > 120) presentationText = presentationText.substring(0, 120) + "..."
-        doc.append("<span>Declaration:</span> <br/> <code>${escapeHtml(presentationText)}</code>")
-        doc.append("</div>")
-
-        if (formattedComments.isNotBlank()) {
-            doc.append("<hr/><div style='padding: 4px;'>")
-            doc.append(formattedComments)
-            doc.append("</div>")
-        }
-
-        return doc.toString()
     }
 
     private fun collectPrecedingCommentsHtml(element: PsiElement): String {
@@ -624,18 +634,12 @@ class RazomyDocumentationProvider : AbstractDocumentationProvider() {
                         trimmed.isEmpty() -> null
                         trimmed.startsWith("title ", ignoreCase = true) -> {
                             val titleText = trimmed.substring(6).trim()
-                            "<div style='font-weight: bold; font-size: 1.1em; margin-bottom: 4px;'>${
-                                escapeHtml(
-                                    titleText
-                                )
-                            }</div>"
+                            "<div style='font-weight: bold;'>${escapeHtml(titleText)}</div>"
                         }
-
                         trimmed.startsWith("T ") -> {
                             val bodyText = trimmed.substring(2).trim()
-                            "<div style='margin-bottom: 2px;'>${escapeHtml(bodyText)}</div>"
+                            "<div>${escapeHtml(bodyText)}</div>"
                         }
-
                         else -> "<div>${escapeHtml(trimmed)}</div>"
                     }
                 }.joinToString("")
@@ -652,7 +656,6 @@ class RazomyDocumentationProvider : AbstractDocumentationProvider() {
 
     private fun escapeHtml(text: String) = text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 }
-
 
 // --- STRUCTURE VIEW ---
 
