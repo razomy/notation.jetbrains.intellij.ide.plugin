@@ -8,17 +8,17 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.util.PsiTreeUtil;
 import static org.razomy.language.psi.RazomyTypes.*;
-import com.intellij.extapi.psi.ASTWrapperPsiElement;
 import org.razomy.language.psi.*;
 
-public class RazomyTypedFormBlockImpl extends ASTWrapperPsiElement implements RazomyTypedFormBlock {
+public class RazomyShiftExprImpl extends RazomyExprImpl implements RazomyShiftExpr {
 
-  public RazomyTypedFormBlockImpl(@NotNull ASTNode node) {
+  public RazomyShiftExprImpl(@NotNull ASTNode node) {
     super(node);
   }
 
+  @Override
   public void accept(@NotNull RazomyVisitor visitor) {
-    visitor.visitTypedFormBlock(this);
+    visitor.visitShiftExpr(this);
   }
 
   @Override
@@ -29,14 +29,14 @@ public class RazomyTypedFormBlockImpl extends ASTWrapperPsiElement implements Ra
 
   @Override
   @NotNull
-  public RazomyFormBlock getFormBlock() {
-    return findNotNullChildByClass(RazomyFormBlock.class);
+  public List<RazomyExpr> getExprList() {
+    return PsiTreeUtil.getChildrenOfTypeAsList(this, RazomyExpr.class);
   }
 
   @Override
   @NotNull
-  public RazomyPath getPath() {
-    return findNotNullChildByClass(RazomyPath.class);
+  public List<RazomyShiftOp> getShiftOpList() {
+    return PsiTreeUtil.getChildrenOfTypeAsList(this, RazomyShiftOp.class);
   }
 
 }

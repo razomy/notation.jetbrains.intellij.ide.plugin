@@ -29,8 +29,8 @@ public class RazomyFlowItemImpl extends ASTWrapperPsiElement implements RazomyFl
 
   @Override
   @NotNull
-  public RazomyExpr getExpr() {
-    return findNotNullChildByClass(RazomyExpr.class);
+  public List<RazomyExpr> getExprList() {
+    return PsiTreeUtil.getChildrenOfTypeAsList(this, RazomyExpr.class);
   }
 
 }

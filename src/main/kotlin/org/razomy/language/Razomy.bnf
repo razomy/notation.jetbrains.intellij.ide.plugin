@@ -13,9 +13,9 @@
   elementTypeClass="org.razomy.language.psi.RazomyElementType"
   tokenTypeClass="org.razomy.language.psi.RazomyTokenType"
 
-  // Схлопывает пустые промежуточные узлы приоритетов выражений
+  // Схлопывает все промежуточные узлы приоритетов выражений, оставляя чистые атомы!
   extends(".*_expr")=expr
-
+  extends("literal|path|slot|form_block|flow_block")=expr
   tokens=[
     LBRACE='{'
     RBRACE='}'
@@ -24,11 +24,16 @@
     LPAREN='('
     RPAREN=')'
 
+    // Операторы пайплайна (Морфизмы)
     DOT_GT='.>'
     DOT_AMP='.&'
+    DOT_PIPE='.|'
+    DOT_QM='.?'
+    DOT_RANGE='..'
     PIPE_DOT='.'
     DOT='.'
 
+    // Сравнение и логика
     EQ_EQ='=='
     NOT_EQ='!='
     LTE='<='
@@ -36,23 +41,37 @@
     LANGLE='<'
     RANGLE='>'
     EQ='='
+    AND_AND='&&'
+    OR_OR='||'
 
+    // Сдвиги и степень
+    POW='**'
+    SHIFT_L='<<'
+    SHIFT_R='>>'
+
+    // Алгебра типов и арифметика
     AMP='&'
     PIPE='|'
     SLASH='/'
     PLUS='+'
     MINUS='-'
     MUL='*'
+    MOD='%'
+    BANG='!'
+    QM='?'
 
+    // Разделители
     COMMA=','
+    COLON=':'
     UNDERSCORE='_'
     SEMICOLON=';'
 
+    // Литералы
     TRUE='true'
     FALSE='false'
 
     IDENTIFIER="regexp:[a-zA-Z][a-zA-Z0-9_]*|_[a-zA-Z0-9_]+"
-    NUMBER="regexp:\d+(\.\d+)?"
+    NUMBER="regexp:0x[0-9a-fA-F]+|\d+(\.\d+)?"
     STRING="regexp:\"([^\"\\]|\\.)*\"|'([^'\\]|\\.)*'"
 
     DOC_COMMENT="regexp:#[^#]*#"
@@ -65,69 +84,80 @@
 // 1. Корень файла
 razomyFile ::= (CRLF2 | SEMICOLON | declaration)*
 
-// 2. Декларация на уровне файла (включая импорты: Base root.base, {Str} root.base, _ root.base, _ base)
-declaration ::= expr expr? {pin=1}
+// 2. Декларация (поддерживает: Name Type, Fn(X) [ ... ], Name Type DefaultVal, и одиночные пайплайны)
+declaration ::= expr expr* {pin=1}
 
 // =============================================================================
-// ИЕРАРХИЯ ВЫРАЖЕНИЙ
+// ИЕРАРХИЯ ВЫРАЖЕНИЙ (От низшего приоритета к высшему)
 // =============================================================================
 
 expr ::= pipeline_expr
 
+// 1. Цепочки пайплайнов (., .., .?, .&, .>, .|)
 pipeline_expr ::= union_expr ( (CRLF2)* pipeline_op (CRLF2)* union_expr )*
-pipeline_op ::= DOT_GT | DOT_AMP | PIPE_DOT
+pipeline_op ::= DOT_GT | DOT_AMP | DOT_PIPE | DOT_QM | DOT_RANGE | PIPE_DOT
 
-union_expr ::= merge_expr ( (CRLF2)* PIPE (CRLF2)* merge_expr )*
-merge_expr ::= subtract_expr ( (CRLF2)* AMP (CRLF2)* subtract_expr )*
-subtract_expr ::= compare_expr ( (CRLF2)* SLASH (CRLF2)* compare_expr )*
+// 2. Алгебра типов и морфизмов (|, &, /)
+union_expr    ::= merge_expr ( (CRLF2)* PIPE (CRLF2)* merge_expr )*
+merge_expr    ::= subtract_expr ( (CRLF2)* AMP (CRLF2)* subtract_expr )*
+subtract_expr ::= logic_expr ( (CRLF2)* SLASH (CRLF2)* logic_expr )*
 
-compare_expr ::= add_expr ( (CRLF2)* compare_op (CRLF2)* add_expr )*
-compare_op ::= EQ_EQ | NOT_EQ | LANGLE | RANGLE | LTE | GTE
+// 3. Булева логика (&&, ||) и Сравнения (==, !=, <, >, <=, >=)
+logic_expr   ::= compare_expr ( (CRLF2)* logic_op (CRLF2)* compare_expr )*
+logic_op     ::= AND_AND | OR_OR
+
+compare_expr ::= shift_expr ( (CRLF2)* compare_op (CRLF2)* shift_expr )*
+compare_op   ::= EQ_EQ | NOT_EQ | LANGLE | RANGLE | LTE | GTE
+
+// 4. Битовые сдвиги и Арифметика (<<, >>, +, -, *, %, **)
+shift_expr ::= add_expr ( (CRLF2)* shift_op (CRLF2)* add_expr )*
+shift_op   ::= SHIFT_L | SHIFT_R
 
 add_expr ::= mul_expr ( (CRLF2)* add_op (CRLF2)* mul_expr )*
-add_op ::= PLUS | MINUS
+add_op   ::= PLUS | MINUS
 
-mul_expr ::= primary_expr ( (CRLF2)* mul_op (CRLF2)* primary_expr )*
-mul_op ::= MUL
+mul_expr ::= pow_expr ( (CRLF2)* mul_op (CRLF2)* pow_expr )*
+mul_op   ::= MUL | MOD
 
-// =============================================================================
-// БАЗОВЫЕ СТРУКТУРЫ
-// =============================================================================
+pow_expr ::= unary_expr ( (CRLF2)* POW (CRLF2)* unary_expr )*
 
-primary_expr ::= literal
-               | call_expr
-               | typed_form_block
-               | typed_flow_block
-               | form_block
-               | flow_block
-               | path
-               | slot
+// 5. Унарные операторы (!X, -5)
+unary_expr ::= unary_op+ postfix_expr | postfix_expr
+unary_op   ::= BANG | MINUS
+
+// 6. Постфиксные цепочки: схлопнется в чистый path/literal, если нет суффиксов (), {}, []!
+postfix_expr ::= primary_expr postfix_suffix*
+private postfix_suffix ::= slot | form_block | flow_block
+
+// primary_expr — просто прозрачный маршрутизатор к атомам
+private primary_expr ::= literal
+                       | form_block
+                       | flow_block
+                       | slot
+                       | path
 
 literal ::= NUMBER | STRING | TRUE | FALSE
 
-call_expr ::= path slot
-typed_form_block ::= path form_block
-typed_flow_block ::= path flow_block
-
-// Обращение к полям слитное: User.Id, Err.Log, _.Age
-path ::= path_root (DOT IDENTIFIER)* {
+// Обращение к полям слитное: User.Id, Err.Log, _.Age, Jonn.0, Jonn.-1
+path ::= path_root (DOT path_node)* {
     mixin="org.razomy.language.RazomyPathMixin"
     implements="com.intellij.psi.PsiNameIdentifierOwner"
 }
 private path_root ::= IDENTIFIER | UNDERSCORE
+private path_node ::= IDENTIFIER | NUMBER | (MINUS NUMBER)
 
 // =============================================================================
-// СКОБКИ И БЛОКИ
+// ТРИ СКОБКИ: СЛОТ (), ФОРМА {}, ПОТОК []
 // =============================================================================
 
-// () — Слот поддерживает любые разделители (запятая, перенос, точка с запятой)
+// () — Слот (кортежи, аргументы, группировка приоритетов)
 slot ::= LPAREN (CRLF2 | SEMICOLON | COMMA | slot_item)* RPAREN
-slot_item ::= expr expr? {pin=1}
+slot_item ::= expr expr* {pin=1}
 
-// {} — Форма
+// {} — Форма (структуры данных, паттерн-матчинг, словари)
 form_block ::= LBRACE (CRLF2 | SEMICOLON | COMMA | form_item)* RBRACE
-form_item ::= expr expr? {pin=1}
+form_item ::= expr expr* {pin=1}
 
-// [] — Поток
-flow_block ::= LBRACKET (CRLF2 | SEMICOLON | flow_item)* RBRACKET
-flow_item ::= expr {pin=1}
+// [] — Поток (морфизмы/функции, пайплайны, предикаты, списки)
+flow_block ::= LBRACKET (CRLF2 | SEMICOLON | COMMA | flow_item)* RBRACKET
+flow_item ::= expr expr* {pin=1}

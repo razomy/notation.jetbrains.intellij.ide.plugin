@@ -8,15 +8,15 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.util.PsiTreeUtil;
 import static org.razomy.language.psi.RazomyTypes.*;
-import com.intellij.extapi.psi.ASTWrapperPsiElement;
 import org.razomy.language.psi.*;
 
-public class RazomyFormBlockImpl extends ASTWrapperPsiElement implements RazomyFormBlock {
+public class RazomyFormBlockImpl extends RazomyExprImpl implements RazomyFormBlock {
 
   public RazomyFormBlockImpl(@NotNull ASTNode node) {
     super(node);
   }
 
+  @Override
   public void accept(@NotNull RazomyVisitor visitor) {
     visitor.visitFormBlock(this);
   }

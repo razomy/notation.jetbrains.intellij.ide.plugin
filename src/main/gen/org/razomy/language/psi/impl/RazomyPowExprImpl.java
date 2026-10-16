@@ -8,17 +8,17 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.util.PsiTreeUtil;
 import static org.razomy.language.psi.RazomyTypes.*;
-import com.intellij.extapi.psi.ASTWrapperPsiElement;
 import org.razomy.language.psi.*;
 
-public class RazomyTypedFlowBlockImpl extends ASTWrapperPsiElement implements RazomyTypedFlowBlock {
+public class RazomyPowExprImpl extends RazomyExprImpl implements RazomyPowExpr {
 
-  public RazomyTypedFlowBlockImpl(@NotNull ASTNode node) {
+  public RazomyPowExprImpl(@NotNull ASTNode node) {
     super(node);
   }
 
+  @Override
   public void accept(@NotNull RazomyVisitor visitor) {
-    visitor.visitTypedFlowBlock(this);
+    visitor.visitPowExpr(this);
   }
 
   @Override
@@ -29,14 +29,8 @@ public class RazomyTypedFlowBlockImpl extends ASTWrapperPsiElement implements Ra
 
   @Override
   @NotNull
-  public RazomyFlowBlock getFlowBlock() {
-    return findNotNullChildByClass(RazomyFlowBlock.class);
-  }
-
-  @Override
-  @NotNull
-  public RazomyPath getPath() {
-    return findNotNullChildByClass(RazomyPath.class);
+  public List<RazomyExpr> getExprList() {
+    return PsiTreeUtil.getChildrenOfTypeAsList(this, RazomyExpr.class);
   }
 
 }

@@ -6,6 +6,6 @@ import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiNameIdentifierOwner;
 
-public interface RazomyPath extends PsiNameIdentifierOwner {
+public interface RazomyPath extends RazomyExpr, PsiNameIdentifierOwner {
 
 }

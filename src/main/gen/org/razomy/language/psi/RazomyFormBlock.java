@@ -5,7 +5,7 @@ import java.util.List;
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
 
-public interface RazomyFormBlock extends PsiElement {
+public interface RazomyFormBlock extends RazomyExpr {
 
   @NotNull
   List<RazomyFormItem> getFormItemList();

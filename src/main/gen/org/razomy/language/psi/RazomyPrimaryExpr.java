@@ -22,10 +22,4 @@ public interface RazomyPrimaryExpr extends RazomyExpr {
   @Nullable
   RazomySlot getSlot();
 
-  @Nullable
-  RazomyTypedFlowBlock getTypedFlowBlock();
-
-  @Nullable
-  RazomyTypedFormBlock getTypedFormBlock();
-
 }

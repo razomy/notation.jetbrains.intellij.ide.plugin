@@ -16,10 +16,6 @@ public class RazomyVisitor extends PsiElementVisitor {
     visitPsiElement(o);
   }
 
-  public void visitCallExpr(@NotNull RazomyCallExpr o) {
-    visitExpr(o);
-  }
-
   public void visitCompareExpr(@NotNull RazomyCompareExpr o) {
     visitExpr(o);
   }
@@ -37,7 +33,7 @@ public class RazomyVisitor extends PsiElementVisitor {
   }
 
   public void visitFlowBlock(@NotNull RazomyFlowBlock o) {
-    visitPsiElement(o);
+    visitExpr(o);
   }
 
   public void visitFlowItem(@NotNull RazomyFlowItem o) {
@@ -45,7 +41,7 @@ public class RazomyVisitor extends PsiElementVisitor {
   }
 
   public void visitFormBlock(@NotNull RazomyFormBlock o) {
-    visitPsiElement(o);
+    visitExpr(o);
   }
 
   public void visitFormItem(@NotNull RazomyFormItem o) {
@@ -53,6 +49,14 @@ public class RazomyVisitor extends PsiElementVisitor {
   }
 
   public void visitLiteral(@NotNull RazomyLiteral o) {
+    visitExpr(o);
+  }
+
+  public void visitLogicExpr(@NotNull RazomyLogicExpr o) {
+    visitExpr(o);
+  }
+
+  public void visitLogicOp(@NotNull RazomyLogicOp o) {
     visitPsiElement(o);
   }
 
@@ -69,7 +73,8 @@ public class RazomyVisitor extends PsiElementVisitor {
   }
 
   public void visitPath(@NotNull RazomyPath o) {
-    visitPsiNameIdentifierOwner(o);
+    visitExpr(o);
+    // visitPsiNameIdentifierOwner(o);
   }
 
   public void visitPipelineExpr(@NotNull RazomyPipelineExpr o) {
@@ -80,12 +85,24 @@ public class RazomyVisitor extends PsiElementVisitor {
     visitPsiElement(o);
   }
 
-  public void visitPrimaryExpr(@NotNull RazomyPrimaryExpr o) {
+  public void visitPostfixExpr(@NotNull RazomyPostfixExpr o) {
     visitExpr(o);
   }
 
-  public void visitSlot(@NotNull RazomySlot o) {
+  public void visitPowExpr(@NotNull RazomyPowExpr o) {
+    visitExpr(o);
+  }
+
+  public void visitShiftExpr(@NotNull RazomyShiftExpr o) {
+    visitExpr(o);
+  }
+
+  public void visitShiftOp(@NotNull RazomyShiftOp o) {
     visitPsiElement(o);
+  }
+
+  public void visitSlot(@NotNull RazomySlot o) {
+    visitExpr(o);
   }
 
   public void visitSlotItem(@NotNull RazomySlotItem o) {
@@ -96,20 +113,16 @@ public class RazomyVisitor extends PsiElementVisitor {
     visitExpr(o);
   }
 
-  public void visitTypedFlowBlock(@NotNull RazomyTypedFlowBlock o) {
-    visitPsiElement(o);
+  public void visitUnaryExpr(@NotNull RazomyUnaryExpr o) {
+    visitExpr(o);
   }
 
-  public void visitTypedFormBlock(@NotNull RazomyTypedFormBlock o) {
+  public void visitUnaryOp(@NotNull RazomyUnaryOp o) {
     visitPsiElement(o);
   }
 
   public void visitUnionExpr(@NotNull RazomyUnionExpr o) {
     visitExpr(o);
-  }
-
-  public void visitPsiNameIdentifierOwner(@NotNull PsiNameIdentifierOwner o) {
-    visitElement(o);
   }
 
   public void visitPsiElement(@NotNull PsiElement o) {

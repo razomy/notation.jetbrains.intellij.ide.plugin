@@ -8,6 +8,6 @@ import com.intellij.psi.PsiElement;
 public interface RazomyFlowItem extends PsiElement {
 
   @NotNull
-  RazomyExpr getExpr();
+  List<RazomyExpr> getExprList();
 
 }

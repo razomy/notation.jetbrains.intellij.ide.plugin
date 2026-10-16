@@ -36,9 +36,11 @@ public class RazomyParser implements PsiParser, LightPsiParser {
   }
 
   public static final TokenSet[] EXTENDS_SETS_ = new TokenSet[] {
-    create_token_set_(ADD_EXPR, CALL_EXPR, COMPARE_EXPR, EXPR,
-      MERGE_EXPR, MUL_EXPR, PIPELINE_EXPR, PRIMARY_EXPR,
-      SUBTRACT_EXPR, UNION_EXPR),
+    create_token_set_(ADD_EXPR, COMPARE_EXPR, EXPR, FLOW_BLOCK,
+      FORM_BLOCK, LITERAL, LOGIC_EXPR, MERGE_EXPR,
+      MUL_EXPR, PATH, PIPELINE_EXPR, POSTFIX_EXPR,
+      POW_EXPR, SHIFT_EXPR, SLOT, SUBTRACT_EXPR,
+      UNARY_EXPR, UNION_EXPR),
   };
 
   /* ********************************************************** */
@@ -113,31 +115,18 @@ public class RazomyParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // path slot
-  public static boolean call_expr(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "call_expr")) return false;
-    if (!nextTokenIs(b, "<call expr>", IDENTIFIER, UNDERSCORE)) return false;
-    boolean r;
-    Marker m = enter_section_(b, l, _NONE_, CALL_EXPR, "<call expr>");
-    r = path(b, l + 1);
-    r = r && slot(b, l + 1);
-    exit_section_(b, l, m, r, false, null);
-    return r;
-  }
-
-  /* ********************************************************** */
-  // add_expr ( (CRLF2)* compare_op (CRLF2)* add_expr )*
+  // shift_expr ( (CRLF2)* compare_op (CRLF2)* shift_expr )*
   public static boolean compare_expr(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "compare_expr")) return false;
     boolean r;
     Marker m = enter_section_(b, l, _COLLAPSE_, COMPARE_EXPR, "<compare expr>");
-    r = add_expr(b, l + 1);
+    r = shift_expr(b, l + 1);
     r = r && compare_expr_1(b, l + 1);
     exit_section_(b, l, m, r, false, null);
     return r;
   }
 
-  // ( (CRLF2)* compare_op (CRLF2)* add_expr )*
+  // ( (CRLF2)* compare_op (CRLF2)* shift_expr )*
   private static boolean compare_expr_1(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "compare_expr_1")) return false;
     while (true) {
@@ -148,7 +137,7 @@ public class RazomyParser implements PsiParser, LightPsiParser {
     return true;
   }
 
-  // (CRLF2)* compare_op (CRLF2)* add_expr
+  // (CRLF2)* compare_op (CRLF2)* shift_expr
   private static boolean compare_expr_1_0(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "compare_expr_1_0")) return false;
     boolean r;
@@ -156,7 +145,7 @@ public class RazomyParser implements PsiParser, LightPsiParser {
     r = compare_expr_1_0_0(b, l + 1);
     r = r && compare_op(b, l + 1);
     r = r && compare_expr_1_0_2(b, l + 1);
-    r = r && add_expr(b, l + 1);
+    r = r && shift_expr(b, l + 1);
     exit_section_(b, m, null, r);
     return r;
   }
@@ -200,7 +189,7 @@ public class RazomyParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // expr expr?
+  // expr expr*
   public static boolean declaration(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "declaration")) return false;
     boolean r, p;
@@ -212,10 +201,14 @@ public class RazomyParser implements PsiParser, LightPsiParser {
     return r || p;
   }
 
-  // expr?
+  // expr*
   private static boolean declaration_1(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "declaration_1")) return false;
-    expr(b, l + 1);
+    while (true) {
+      int c = current_position_(b);
+      if (!expr(b, l + 1)) break;
+      if (!empty_element_parsed_guard_(b, "declaration_1", c)) break;
+    }
     return true;
   }
 
@@ -231,7 +224,7 @@ public class RazomyParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // LBRACKET (CRLF2 | SEMICOLON | flow_item)* RBRACKET
+  // LBRACKET (CRLF2 | SEMICOLON | COMMA | flow_item)* RBRACKET
   public static boolean flow_block(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "flow_block")) return false;
     if (!nextTokenIs(b, LBRACKET)) return false;
@@ -244,7 +237,7 @@ public class RazomyParser implements PsiParser, LightPsiParser {
     return r;
   }
 
-  // (CRLF2 | SEMICOLON | flow_item)*
+  // (CRLF2 | SEMICOLON | COMMA | flow_item)*
   private static boolean flow_block_1(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "flow_block_1")) return false;
     while (true) {
@@ -255,25 +248,39 @@ public class RazomyParser implements PsiParser, LightPsiParser {
     return true;
   }
 
-  // CRLF2 | SEMICOLON | flow_item
+  // CRLF2 | SEMICOLON | COMMA | flow_item
   private static boolean flow_block_1_0(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "flow_block_1_0")) return false;
     boolean r;
     r = consumeToken(b, CRLF2);
     if (!r) r = consumeToken(b, SEMICOLON);
+    if (!r) r = consumeToken(b, COMMA);
     if (!r) r = flow_item(b, l + 1);
     return r;
   }
 
   /* ********************************************************** */
-  // expr
+  // expr expr*
   public static boolean flow_item(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "flow_item")) return false;
-    boolean r;
+    boolean r, p;
     Marker m = enter_section_(b, l, _NONE_, FLOW_ITEM, "<flow item>");
     r = expr(b, l + 1);
-    exit_section_(b, l, m, r, false, null);
-    return r;
+    p = r; // pin = 1
+    r = r && flow_item_1(b, l + 1);
+    exit_section_(b, l, m, r, p, null);
+    return r || p;
+  }
+
+  // expr*
+  private static boolean flow_item_1(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "flow_item_1")) return false;
+    while (true) {
+      int c = current_position_(b);
+      if (!expr(b, l + 1)) break;
+      if (!empty_element_parsed_guard_(b, "flow_item_1", c)) break;
+    }
+    return true;
   }
 
   /* ********************************************************** */
@@ -313,7 +320,7 @@ public class RazomyParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // expr expr?
+  // expr expr*
   public static boolean form_item(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "form_item")) return false;
     boolean r, p;
@@ -325,10 +332,14 @@ public class RazomyParser implements PsiParser, LightPsiParser {
     return r || p;
   }
 
-  // expr?
+  // expr*
   private static boolean form_item_1(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "form_item_1")) return false;
-    expr(b, l + 1);
+    while (true) {
+      int c = current_position_(b);
+      if (!expr(b, l + 1)) break;
+      if (!empty_element_parsed_guard_(b, "form_item_1", c)) break;
+    }
     return true;
   }
 
@@ -342,6 +353,77 @@ public class RazomyParser implements PsiParser, LightPsiParser {
     if (!r) r = consumeToken(b, STRING);
     if (!r) r = consumeToken(b, TRUE);
     if (!r) r = consumeToken(b, FALSE);
+    exit_section_(b, l, m, r, false, null);
+    return r;
+  }
+
+  /* ********************************************************** */
+  // compare_expr ( (CRLF2)* logic_op (CRLF2)* compare_expr )*
+  public static boolean logic_expr(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "logic_expr")) return false;
+    boolean r;
+    Marker m = enter_section_(b, l, _COLLAPSE_, LOGIC_EXPR, "<logic expr>");
+    r = compare_expr(b, l + 1);
+    r = r && logic_expr_1(b, l + 1);
+    exit_section_(b, l, m, r, false, null);
+    return r;
+  }
+
+  // ( (CRLF2)* logic_op (CRLF2)* compare_expr )*
+  private static boolean logic_expr_1(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "logic_expr_1")) return false;
+    while (true) {
+      int c = current_position_(b);
+      if (!logic_expr_1_0(b, l + 1)) break;
+      if (!empty_element_parsed_guard_(b, "logic_expr_1", c)) break;
+    }
+    return true;
+  }
+
+  // (CRLF2)* logic_op (CRLF2)* compare_expr
+  private static boolean logic_expr_1_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "logic_expr_1_0")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = logic_expr_1_0_0(b, l + 1);
+    r = r && logic_op(b, l + 1);
+    r = r && logic_expr_1_0_2(b, l + 1);
+    r = r && compare_expr(b, l + 1);
+    exit_section_(b, m, null, r);
+    return r;
+  }
+
+  // (CRLF2)*
+  private static boolean logic_expr_1_0_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "logic_expr_1_0_0")) return false;
+    while (true) {
+      int c = current_position_(b);
+      if (!consumeToken(b, CRLF2)) break;
+      if (!empty_element_parsed_guard_(b, "logic_expr_1_0_0", c)) break;
+    }
+    return true;
+  }
+
+  // (CRLF2)*
+  private static boolean logic_expr_1_0_2(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "logic_expr_1_0_2")) return false;
+    while (true) {
+      int c = current_position_(b);
+      if (!consumeToken(b, CRLF2)) break;
+      if (!empty_element_parsed_guard_(b, "logic_expr_1_0_2", c)) break;
+    }
+    return true;
+  }
+
+  /* ********************************************************** */
+  // AND_AND | OR_OR
+  public static boolean logic_op(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "logic_op")) return false;
+    if (!nextTokenIs(b, "<logic op>", AND_AND, OR_OR)) return false;
+    boolean r;
+    Marker m = enter_section_(b, l, _NONE_, LOGIC_OP, "<logic op>");
+    r = consumeToken(b, AND_AND);
+    if (!r) r = consumeToken(b, OR_OR);
     exit_section_(b, l, m, r, false, null);
     return r;
   }
@@ -405,18 +487,18 @@ public class RazomyParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // primary_expr ( (CRLF2)* mul_op (CRLF2)* primary_expr )*
+  // pow_expr ( (CRLF2)* mul_op (CRLF2)* pow_expr )*
   public static boolean mul_expr(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "mul_expr")) return false;
     boolean r;
     Marker m = enter_section_(b, l, _COLLAPSE_, MUL_EXPR, "<mul expr>");
-    r = primary_expr(b, l + 1);
+    r = pow_expr(b, l + 1);
     r = r && mul_expr_1(b, l + 1);
     exit_section_(b, l, m, r, false, null);
     return r;
   }
 
-  // ( (CRLF2)* mul_op (CRLF2)* primary_expr )*
+  // ( (CRLF2)* mul_op (CRLF2)* pow_expr )*
   private static boolean mul_expr_1(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "mul_expr_1")) return false;
     while (true) {
@@ -427,7 +509,7 @@ public class RazomyParser implements PsiParser, LightPsiParser {
     return true;
   }
 
-  // (CRLF2)* mul_op (CRLF2)* primary_expr
+  // (CRLF2)* mul_op (CRLF2)* pow_expr
   private static boolean mul_expr_1_0(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "mul_expr_1_0")) return false;
     boolean r;
@@ -435,7 +517,7 @@ public class RazomyParser implements PsiParser, LightPsiParser {
     r = mul_expr_1_0_0(b, l + 1);
     r = r && mul_op(b, l + 1);
     r = r && mul_expr_1_0_2(b, l + 1);
-    r = r && primary_expr(b, l + 1);
+    r = r && pow_expr(b, l + 1);
     exit_section_(b, m, null, r);
     return r;
   }
@@ -463,19 +545,20 @@ public class RazomyParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // MUL
+  // MUL | MOD
   public static boolean mul_op(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "mul_op")) return false;
-    if (!nextTokenIs(b, MUL)) return false;
+    if (!nextTokenIs(b, "<mul op>", MOD, MUL)) return false;
     boolean r;
-    Marker m = enter_section_(b);
+    Marker m = enter_section_(b, l, _NONE_, MUL_OP, "<mul op>");
     r = consumeToken(b, MUL);
-    exit_section_(b, m, MUL_OP, r);
+    if (!r) r = consumeToken(b, MOD);
+    exit_section_(b, l, m, r, false, null);
     return r;
   }
 
   /* ********************************************************** */
-  // path_root (DOT IDENTIFIER)*
+  // path_root (DOT path_node)*
   public static boolean path(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "path")) return false;
     if (!nextTokenIs(b, "<path>", IDENTIFIER, UNDERSCORE)) return false;
@@ -487,7 +570,7 @@ public class RazomyParser implements PsiParser, LightPsiParser {
     return r;
   }
 
-  // (DOT IDENTIFIER)*
+  // (DOT path_node)*
   private static boolean path_1(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "path_1")) return false;
     while (true) {
@@ -498,12 +581,36 @@ public class RazomyParser implements PsiParser, LightPsiParser {
     return true;
   }
 
-  // DOT IDENTIFIER
+  // DOT path_node
   private static boolean path_1_0(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "path_1_0")) return false;
     boolean r;
     Marker m = enter_section_(b);
-    r = consumeTokens(b, 0, DOT, IDENTIFIER);
+    r = consumeToken(b, DOT);
+    r = r && path_node(b, l + 1);
+    exit_section_(b, m, null, r);
+    return r;
+  }
+
+  /* ********************************************************** */
+  // IDENTIFIER | NUMBER | (MINUS NUMBER)
+  static boolean path_node(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "path_node")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = consumeToken(b, IDENTIFIER);
+    if (!r) r = consumeToken(b, NUMBER);
+    if (!r) r = path_node_2(b, l + 1);
+    exit_section_(b, m, null, r);
+    return r;
+  }
+
+  // MINUS NUMBER
+  private static boolean path_node_2(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "path_node_2")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = consumeTokens(b, 0, MINUS, NUMBER);
     exit_section_(b, m, null, r);
     return r;
   }
@@ -578,40 +685,127 @@ public class RazomyParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // DOT_GT | DOT_AMP | PIPE_DOT
+  // DOT_GT | DOT_AMP | DOT_PIPE | DOT_QM | DOT_RANGE | PIPE_DOT
   public static boolean pipeline_op(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "pipeline_op")) return false;
     boolean r;
     Marker m = enter_section_(b, l, _NONE_, PIPELINE_OP, "<pipeline op>");
     r = consumeToken(b, DOT_GT);
     if (!r) r = consumeToken(b, DOT_AMP);
+    if (!r) r = consumeToken(b, DOT_PIPE);
+    if (!r) r = consumeToken(b, DOT_QM);
+    if (!r) r = consumeToken(b, DOT_RANGE);
     if (!r) r = consumeToken(b, PIPE_DOT);
     exit_section_(b, l, m, r, false, null);
     return r;
   }
 
   /* ********************************************************** */
-  // literal
-  //                | call_expr
-  //                | typed_form_block
-  //                | typed_flow_block
-  //                | form_block
-  //                | flow_block
-  //                | path
-  //                | slot
-  public static boolean primary_expr(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "primary_expr")) return false;
+  // primary_expr postfix_suffix*
+  public static boolean postfix_expr(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "postfix_expr")) return false;
     boolean r;
-    Marker m = enter_section_(b, l, _COLLAPSE_, PRIMARY_EXPR, "<primary expr>");
-    r = literal(b, l + 1);
-    if (!r) r = call_expr(b, l + 1);
-    if (!r) r = typed_form_block(b, l + 1);
-    if (!r) r = typed_flow_block(b, l + 1);
+    Marker m = enter_section_(b, l, _COLLAPSE_, POSTFIX_EXPR, "<postfix expr>");
+    r = primary_expr(b, l + 1);
+    r = r && postfix_expr_1(b, l + 1);
+    exit_section_(b, l, m, r, false, null);
+    return r;
+  }
+
+  // postfix_suffix*
+  private static boolean postfix_expr_1(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "postfix_expr_1")) return false;
+    while (true) {
+      int c = current_position_(b);
+      if (!postfix_suffix(b, l + 1)) break;
+      if (!empty_element_parsed_guard_(b, "postfix_expr_1", c)) break;
+    }
+    return true;
+  }
+
+  /* ********************************************************** */
+  // slot | form_block | flow_block
+  static boolean postfix_suffix(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "postfix_suffix")) return false;
+    boolean r;
+    r = slot(b, l + 1);
     if (!r) r = form_block(b, l + 1);
     if (!r) r = flow_block(b, l + 1);
-    if (!r) r = path(b, l + 1);
-    if (!r) r = slot(b, l + 1);
+    return r;
+  }
+
+  /* ********************************************************** */
+  // unary_expr ( (CRLF2)* POW (CRLF2)* unary_expr )*
+  public static boolean pow_expr(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "pow_expr")) return false;
+    boolean r;
+    Marker m = enter_section_(b, l, _COLLAPSE_, POW_EXPR, "<pow expr>");
+    r = unary_expr(b, l + 1);
+    r = r && pow_expr_1(b, l + 1);
     exit_section_(b, l, m, r, false, null);
+    return r;
+  }
+
+  // ( (CRLF2)* POW (CRLF2)* unary_expr )*
+  private static boolean pow_expr_1(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "pow_expr_1")) return false;
+    while (true) {
+      int c = current_position_(b);
+      if (!pow_expr_1_0(b, l + 1)) break;
+      if (!empty_element_parsed_guard_(b, "pow_expr_1", c)) break;
+    }
+    return true;
+  }
+
+  // (CRLF2)* POW (CRLF2)* unary_expr
+  private static boolean pow_expr_1_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "pow_expr_1_0")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = pow_expr_1_0_0(b, l + 1);
+    r = r && consumeToken(b, POW);
+    r = r && pow_expr_1_0_2(b, l + 1);
+    r = r && unary_expr(b, l + 1);
+    exit_section_(b, m, null, r);
+    return r;
+  }
+
+  // (CRLF2)*
+  private static boolean pow_expr_1_0_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "pow_expr_1_0_0")) return false;
+    while (true) {
+      int c = current_position_(b);
+      if (!consumeToken(b, CRLF2)) break;
+      if (!empty_element_parsed_guard_(b, "pow_expr_1_0_0", c)) break;
+    }
+    return true;
+  }
+
+  // (CRLF2)*
+  private static boolean pow_expr_1_0_2(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "pow_expr_1_0_2")) return false;
+    while (true) {
+      int c = current_position_(b);
+      if (!consumeToken(b, CRLF2)) break;
+      if (!empty_element_parsed_guard_(b, "pow_expr_1_0_2", c)) break;
+    }
+    return true;
+  }
+
+  /* ********************************************************** */
+  // literal
+  //                        | form_block
+  //                        | flow_block
+  //                        | slot
+  //                        | path
+  static boolean primary_expr(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "primary_expr")) return false;
+    boolean r;
+    r = literal(b, l + 1);
+    if (!r) r = form_block(b, l + 1);
+    if (!r) r = flow_block(b, l + 1);
+    if (!r) r = slot(b, l + 1);
+    if (!r) r = path(b, l + 1);
     return r;
   }
 
@@ -634,6 +828,77 @@ public class RazomyParser implements PsiParser, LightPsiParser {
     r = consumeToken(b, CRLF2);
     if (!r) r = consumeToken(b, SEMICOLON);
     if (!r) r = declaration(b, l + 1);
+    return r;
+  }
+
+  /* ********************************************************** */
+  // add_expr ( (CRLF2)* shift_op (CRLF2)* add_expr )*
+  public static boolean shift_expr(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "shift_expr")) return false;
+    boolean r;
+    Marker m = enter_section_(b, l, _COLLAPSE_, SHIFT_EXPR, "<shift expr>");
+    r = add_expr(b, l + 1);
+    r = r && shift_expr_1(b, l + 1);
+    exit_section_(b, l, m, r, false, null);
+    return r;
+  }
+
+  // ( (CRLF2)* shift_op (CRLF2)* add_expr )*
+  private static boolean shift_expr_1(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "shift_expr_1")) return false;
+    while (true) {
+      int c = current_position_(b);
+      if (!shift_expr_1_0(b, l + 1)) break;
+      if (!empty_element_parsed_guard_(b, "shift_expr_1", c)) break;
+    }
+    return true;
+  }
+
+  // (CRLF2)* shift_op (CRLF2)* add_expr
+  private static boolean shift_expr_1_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "shift_expr_1_0")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = shift_expr_1_0_0(b, l + 1);
+    r = r && shift_op(b, l + 1);
+    r = r && shift_expr_1_0_2(b, l + 1);
+    r = r && add_expr(b, l + 1);
+    exit_section_(b, m, null, r);
+    return r;
+  }
+
+  // (CRLF2)*
+  private static boolean shift_expr_1_0_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "shift_expr_1_0_0")) return false;
+    while (true) {
+      int c = current_position_(b);
+      if (!consumeToken(b, CRLF2)) break;
+      if (!empty_element_parsed_guard_(b, "shift_expr_1_0_0", c)) break;
+    }
+    return true;
+  }
+
+  // (CRLF2)*
+  private static boolean shift_expr_1_0_2(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "shift_expr_1_0_2")) return false;
+    while (true) {
+      int c = current_position_(b);
+      if (!consumeToken(b, CRLF2)) break;
+      if (!empty_element_parsed_guard_(b, "shift_expr_1_0_2", c)) break;
+    }
+    return true;
+  }
+
+  /* ********************************************************** */
+  // SHIFT_L | SHIFT_R
+  public static boolean shift_op(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "shift_op")) return false;
+    if (!nextTokenIs(b, "<shift op>", SHIFT_L, SHIFT_R)) return false;
+    boolean r;
+    Marker m = enter_section_(b, l, _NONE_, SHIFT_OP, "<shift op>");
+    r = consumeToken(b, SHIFT_L);
+    if (!r) r = consumeToken(b, SHIFT_R);
+    exit_section_(b, l, m, r, false, null);
     return r;
   }
 
@@ -674,7 +939,7 @@ public class RazomyParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // expr expr?
+  // expr expr*
   public static boolean slot_item(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "slot_item")) return false;
     boolean r, p;
@@ -686,26 +951,30 @@ public class RazomyParser implements PsiParser, LightPsiParser {
     return r || p;
   }
 
-  // expr?
+  // expr*
   private static boolean slot_item_1(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "slot_item_1")) return false;
-    expr(b, l + 1);
+    while (true) {
+      int c = current_position_(b);
+      if (!expr(b, l + 1)) break;
+      if (!empty_element_parsed_guard_(b, "slot_item_1", c)) break;
+    }
     return true;
   }
 
   /* ********************************************************** */
-  // compare_expr ( (CRLF2)* SLASH (CRLF2)* compare_expr )*
+  // logic_expr ( (CRLF2)* SLASH (CRLF2)* logic_expr )*
   public static boolean subtract_expr(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "subtract_expr")) return false;
     boolean r;
     Marker m = enter_section_(b, l, _COLLAPSE_, SUBTRACT_EXPR, "<subtract expr>");
-    r = compare_expr(b, l + 1);
+    r = logic_expr(b, l + 1);
     r = r && subtract_expr_1(b, l + 1);
     exit_section_(b, l, m, r, false, null);
     return r;
   }
 
-  // ( (CRLF2)* SLASH (CRLF2)* compare_expr )*
+  // ( (CRLF2)* SLASH (CRLF2)* logic_expr )*
   private static boolean subtract_expr_1(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "subtract_expr_1")) return false;
     while (true) {
@@ -716,7 +985,7 @@ public class RazomyParser implements PsiParser, LightPsiParser {
     return true;
   }
 
-  // (CRLF2)* SLASH (CRLF2)* compare_expr
+  // (CRLF2)* SLASH (CRLF2)* logic_expr
   private static boolean subtract_expr_1_0(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "subtract_expr_1_0")) return false;
     boolean r;
@@ -724,7 +993,7 @@ public class RazomyParser implements PsiParser, LightPsiParser {
     r = subtract_expr_1_0_0(b, l + 1);
     r = r && consumeToken(b, SLASH);
     r = r && subtract_expr_1_0_2(b, l + 1);
-    r = r && compare_expr(b, l + 1);
+    r = r && logic_expr(b, l + 1);
     exit_section_(b, m, null, r);
     return r;
   }
@@ -752,27 +1021,52 @@ public class RazomyParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // path flow_block
-  public static boolean typed_flow_block(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "typed_flow_block")) return false;
-    if (!nextTokenIs(b, "<typed flow block>", IDENTIFIER, UNDERSCORE)) return false;
+  // unary_op+ postfix_expr | postfix_expr
+  public static boolean unary_expr(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "unary_expr")) return false;
     boolean r;
-    Marker m = enter_section_(b, l, _NONE_, TYPED_FLOW_BLOCK, "<typed flow block>");
-    r = path(b, l + 1);
-    r = r && flow_block(b, l + 1);
+    Marker m = enter_section_(b, l, _COLLAPSE_, UNARY_EXPR, "<unary expr>");
+    r = unary_expr_0(b, l + 1);
+    if (!r) r = postfix_expr(b, l + 1);
     exit_section_(b, l, m, r, false, null);
     return r;
   }
 
-  /* ********************************************************** */
-  // path form_block
-  public static boolean typed_form_block(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "typed_form_block")) return false;
-    if (!nextTokenIs(b, "<typed form block>", IDENTIFIER, UNDERSCORE)) return false;
+  // unary_op+ postfix_expr
+  private static boolean unary_expr_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "unary_expr_0")) return false;
     boolean r;
-    Marker m = enter_section_(b, l, _NONE_, TYPED_FORM_BLOCK, "<typed form block>");
-    r = path(b, l + 1);
-    r = r && form_block(b, l + 1);
+    Marker m = enter_section_(b);
+    r = unary_expr_0_0(b, l + 1);
+    r = r && postfix_expr(b, l + 1);
+    exit_section_(b, m, null, r);
+    return r;
+  }
+
+  // unary_op+
+  private static boolean unary_expr_0_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "unary_expr_0_0")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = unary_op(b, l + 1);
+    while (r) {
+      int c = current_position_(b);
+      if (!unary_op(b, l + 1)) break;
+      if (!empty_element_parsed_guard_(b, "unary_expr_0_0", c)) break;
+    }
+    exit_section_(b, m, null, r);
+    return r;
+  }
+
+  /* ********************************************************** */
+  // BANG | MINUS
+  public static boolean unary_op(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "unary_op")) return false;
+    if (!nextTokenIs(b, "<unary op>", BANG, MINUS)) return false;
+    boolean r;
+    Marker m = enter_section_(b, l, _NONE_, UNARY_OP, "<unary op>");
+    r = consumeToken(b, BANG);
+    if (!r) r = consumeToken(b, MINUS);
     exit_section_(b, l, m, r, false, null);
     return r;
   }

@@ -5,7 +5,7 @@ import java.util.List;
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
 
-public interface RazomyFlowBlock extends PsiElement {
+public interface RazomyFlowBlock extends RazomyExpr {
 
   @NotNull
   List<RazomyFlowItem> getFlowItemList();

@@ -5,7 +5,7 @@ import java.util.List;
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
 
-public interface RazomyLiteral extends PsiElement {
+public interface RazomyLiteral extends RazomyExpr {
 
   @Nullable
   PsiElement getNumber();

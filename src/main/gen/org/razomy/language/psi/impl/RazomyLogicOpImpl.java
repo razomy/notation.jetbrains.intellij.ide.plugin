@@ -8,35 +8,23 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.util.PsiTreeUtil;
 import static org.razomy.language.psi.RazomyTypes.*;
+import com.intellij.extapi.psi.ASTWrapperPsiElement;
 import org.razomy.language.psi.*;
 
-public class RazomyCallExprImpl extends RazomyExprImpl implements RazomyCallExpr {
+public class RazomyLogicOpImpl extends ASTWrapperPsiElement implements RazomyLogicOp {
 
-  public RazomyCallExprImpl(@NotNull ASTNode node) {
+  public RazomyLogicOpImpl(@NotNull ASTNode node) {
     super(node);
   }
 
-  @Override
   public void accept(@NotNull RazomyVisitor visitor) {
-    visitor.visitCallExpr(this);
+    visitor.visitLogicOp(this);
   }
 
   @Override
   public void accept(@NotNull PsiElementVisitor visitor) {
     if (visitor instanceof RazomyVisitor) accept((RazomyVisitor)visitor);
     else super.accept(visitor);
-  }
-
-  @Override
-  @NotNull
-  public RazomyPath getPath() {
-    return findNotNullChildByClass(RazomyPath.class);
-  }
-
-  @Override
-  @NotNull
-  public RazomySlot getSlot() {
-    return findNotNullChildByClass(RazomySlot.class);
   }
 
 }
