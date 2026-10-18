@@ -4,8 +4,8 @@ package org.razomy.notation
 import com.intellij.codeInsight.completion.*
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.patterns.PlatformPatterns
-import com.intellij.util.ProcessingContext
 import com.intellij.psi.PsiElement
+import com.intellij.util.ProcessingContext
 import org.razomy.notation.parser.RnTypes
 
 internal class RnCompletionContributor : CompletionContributor() {
@@ -27,7 +27,7 @@ internal class RnCompletionContributor : CompletionContributor() {
                         return
                     }
 
-                    val prefix: String = result.getPrefixMatcher().getPrefix()
+                    val prefix: String = result.prefixMatcher.prefix
                     if (prefix == "") {
                         LanguageAliases.forEach { result.addElement(LookupElementBuilder.create(it.key)) }
                     }

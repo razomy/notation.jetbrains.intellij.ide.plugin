@@ -2,7 +2,6 @@
 package org.razomy.notation.parser
 
 import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiElementVisitor
 import org.razomy.notation.RnElement
 
 class RnVisitor : com.intellij.psi.PsiElementVisitor() {

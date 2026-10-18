@@ -1,7 +1,7 @@
 package org.razomy.notation
 
-import com.intellij.lang.folding.FoldingBuilder
 import com.intellij.lang.ASTNode
+import com.intellij.lang.folding.FoldingBuilder
 import com.intellij.lang.folding.FoldingDescriptor
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.util.TextRange
@@ -15,8 +15,7 @@ fun substringWithDots(input: String, maxLength: Int): String {
     var s_part: Int
     var t_part: Int
 
-    val remainder = maxLength % 3
-    when (remainder) {
+    when (val remainder = maxLength % 3) {
         0 -> {
             // 120 + 40 / 40 / 40
             val base = maxLength / 3
@@ -92,18 +91,18 @@ class RnFoldingBuilder : FoldingBuilder {
         val descriptors: MutableList<FoldingDescriptor> = ArrayList()
 
         fun add(propertyNode: ASTNode) {
-            val trailingSpaces = countTrailingSpacesWithNewLines(propertyNode.text);
-            val removed_last_line_spaces = propertyNode.textRange.endOffset - trailingSpaces;
+            val trailingSpaces = countTrailingSpacesWithNewLines(propertyNode.text)
+            val removed_last_line_spaces = propertyNode.textRange.endOffset - trailingSpaces
             val range = TextRange(propertyNode.textRange.startOffset, removed_last_line_spaces)
             if (range.length == 0) {
                 return
             }
-            var prevtext = propertyNode.treePrev?.text;
+            var prevtext = propertyNode.treePrev?.text
             if (prevtext == null) {
                 prevtext = ""
             }
 
-            val leadingSpaces = countTrailingSpaces(prevtext);
+            val leadingSpaces = countTrailingSpaces(prevtext)
             val from_text_in_range_120_with_ellipces = substringWithDotsEnd(propertyNode.text, 120 - leadingSpaces)
             val placeholderText = from_text_in_range_120_with_ellipces
 

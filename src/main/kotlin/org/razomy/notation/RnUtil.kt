@@ -27,9 +27,9 @@ object RnUtil {
         val result: MutableList<RnProperty> = ArrayList<RnProperty>()
         val virtualFiles =
             FileTypeIndex.getFiles(RnFileType, GlobalSearchScope.allScope(project))
-        var manger = PsiManager.getInstance(project);
+        var manger = PsiManager.getInstance(project)
         for (virtualFile in virtualFiles) {
-            val RnFile = manger.findFile(virtualFile);
+            val RnFile = manger.findFile(virtualFile)
             if (RnFile !is RnFile) {
                 continue
             }
@@ -50,9 +50,9 @@ object RnUtil {
         val result: MutableList<RnProperty> = ArrayList<RnProperty>()
         val virtualFiles =
             FileTypeIndex.getFiles(RnFileType, GlobalSearchScope.allScope(project))
-        var manger = PsiManager.getInstance(project);
+        var manger = PsiManager.getInstance(project)
         for (virtualFile in virtualFiles) {
-            val RnFile = manger.findFile(virtualFile);
+            val RnFile = manger.findFile(virtualFile)
             if (RnFile !is RnFile) {
                 continue
             }
@@ -72,7 +72,7 @@ object RnUtil {
         var element: PsiElement = property.prevSibling
         while (element is PsiComment || element is PsiWhiteSpace) {
             if (element is PsiComment) {
-                val commentText = element.getText().replaceFirst("[!# ]+".toRegex(), "")
+                val commentText = element.text.replaceFirst("[!# ]+".toRegex(), "")
                 result.add(commentText)
             }
             element = element.prevSibling

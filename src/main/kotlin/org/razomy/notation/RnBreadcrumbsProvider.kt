@@ -2,7 +2,7 @@ package org.razomy.notation
 
 import com.intellij.lang.Language
 import com.intellij.psi.PsiElement
-import com.intellij.ui.breadcrumbs.BreadcrumbsProvider;
+import com.intellij.ui.breadcrumbs.BreadcrumbsProvider
 import org.razomy.notation.parser.RnProperty
 
 internal class RnBreadcrumbsProvider : BreadcrumbsProvider {
@@ -20,7 +20,7 @@ internal class RnBreadcrumbsProvider : BreadcrumbsProvider {
     }
 
     override fun getElementInfo(element: PsiElement): String {
-        val name = (element as RnProperty).getName() ?: ""
+        val name = (element as RnProperty).getName()
         return substringWithDots(name, 7)
     }
 }

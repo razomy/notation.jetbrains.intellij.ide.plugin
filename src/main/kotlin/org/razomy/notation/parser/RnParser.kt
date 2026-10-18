@@ -4,11 +4,10 @@ import com.intellij.lang.ASTNode
 import com.intellij.lang.PsiBuilder
 import com.intellij.lang.PsiParser
 import com.intellij.psi.tree.IElementType
-import org.razomy.notation.parser.ctx.NotationCtx
-import org.razomy.notation.parser.ctx.NotationLexeme
-import org.razomy.notation.parser.parse.create_ctx_exceptions
-import org.razomy.notation.parser.parse.lexeme_to_vrd_ctx
-import java.util.ArrayDeque
+import java.util.*
+import org.razomy.notation.parser.lexeme.*
+import org.razomy.notation.parser.ctx.*
+import org.razomy.notation.parser.parse.*
 
 data class StackFrame(
     val marker: PsiBuilder.Marker,
@@ -20,9 +19,9 @@ class RnParser : PsiParser {
         val rootMarker = builder.mark()
         val stack = ArrayDeque<StackFrame>()
         // TODO:refactor
-        var freezeLexeme: org.razomy.notation.parser.ctx.NotationLexeme? = null
+        var freezeLexeme: NotationLexeme? = null
 
-        fun lexeme_iterator(ctx: org.razomy.notation.parser.ctx.NotationCtx): org.razomy.notation.parser.ctx.NotationLexeme? {
+        fun lexeme_iterator(ctx: NotationCtx): NotationLexeme? {
             if (freezeLexeme != null) {
                 freezeLexeme!!.deep = ctx.prev_deep
                 return freezeLexeme
@@ -30,7 +29,7 @@ class RnParser : PsiParser {
             return null
         }
 
-        var ctx = _root_ide_package_.org.razomy.notation.parser.parse.lexeme_to_vrd_ctx({ c -> lexeme_iterator(c) });
+        var ctx = lexeme_to_vrd_ctx({ c -> lexeme_iterator(c) })
         fun tryUnfreeze() {
             if (freezeLexeme == null) return
             try {
@@ -54,7 +53,7 @@ class RnParser : PsiParser {
 
             val type = builder.tokenType
             if (type != null) {
-                freezeLexeme = _root_ide_package_.org.razomy.notation.parser.ctx.NotationLexeme(element_to_lexeme(type))
+                freezeLexeme = NotationLexeme(element_to_lexeme(type))
                 freezeLexeme!!.value = builder.tokenText ?: ""
                 tryUnfreeze()
             }
@@ -63,9 +62,7 @@ class RnParser : PsiParser {
 
 
         while (!builder.eof()) {
-            val type = builder.tokenType
-
-            when (type) {
+            when (val type = builder.tokenType) {
                 RnTypes.ERROR -> {
                     tryUnfreeze()
                     while (stack.isNotEmpty()) {
@@ -79,7 +76,7 @@ class RnParser : PsiParser {
                 RnTypes.ASSIGN, RnTypes.NEW_LINE_ASSIGN -> {
                     tryUnfreeze()
                     freezeLexeme =
-                        _root_ide_package_.org.razomy.notation.parser.ctx.NotationLexeme(element_to_lexeme(type))
+                        NotationLexeme(element_to_lexeme(type))
                     freezeLexeme!!.value = builder.tokenText ?: ""
                     next()
                 }
@@ -87,7 +84,7 @@ class RnParser : PsiParser {
                 RnTypes.BREAK_, RnTypes.NEW_LINE_BREAK -> {
                     tryUnfreeze()
                     freezeLexeme =
-                        _root_ide_package_.org.razomy.notation.parser.ctx.NotationLexeme(element_to_lexeme(type))
+                        NotationLexeme(element_to_lexeme(type))
                     freezeLexeme!!.value = builder.tokenText ?: ""
                     next()
                 }
@@ -115,7 +112,7 @@ class RnParser : PsiParser {
                     if (nextType == RnTypes.ASSIGN || nextType == RnTypes.NEW_LINE_ASSIGN) {
                         keyMarker.done(RnTypes.KEY)
                         freezeLexeme =
-                            _root_ide_package_.org.razomy.notation.parser.ctx.NotationLexeme(element_to_lexeme(nextType))
+                            NotationLexeme(element_to_lexeme(nextType))
                         freezeLexeme!!.value = builder.tokenText ?: ""
                         next()
                         stack.addLast(StackFrame(marker))

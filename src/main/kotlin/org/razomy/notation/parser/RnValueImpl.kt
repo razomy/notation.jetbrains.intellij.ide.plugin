@@ -17,8 +17,6 @@ import org.razomy.notation.RnPsiImplUtil.getValue
 import org.razomy.notation.RnPsiImplUtil.isValidHost
 import org.razomy.notation.RnPsiImplUtil.setName
 import org.razomy.notation.RnPsiImplUtil.updateText
-import org.razomy.notation.parser.RnValue
-import org.razomy.notation.parser.RnVisitor
 
 class RnValueImpl(node: ASTNode) : ASTWrapperPsiElement(node), RnValue {
     fun accept(visitor: RnVisitor) {

@@ -1,20 +1,17 @@
 package org.razomy.notation
 
-import com.intellij.execution.configurations.RunConfigurationOptions
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.*
-import com.intellij.execution.runners.ExecutionEnvironment
-import com.intellij.openapi.options.SettingsEditor
-import com.intellij.openapi.project.Project
-import com.intellij.execution.configurations.CommandLineState
-import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.execution.process.ProcessHandler
 import com.intellij.execution.process.ProcessHandlerFactory
 import com.intellij.execution.process.ProcessTerminatedListener
-import java.nio.charset.StandardCharsets
+import com.intellij.execution.runners.ExecutionEnvironment
+import com.intellij.openapi.options.SettingsEditor
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.ui.dsl.builder.bindText
 import com.intellij.ui.dsl.builder.panel
+import java.nio.charset.StandardCharsets
 import javax.swing.JComponent
 
 
@@ -63,9 +60,9 @@ class RnProfileState(
 ) : CommandLineState(environment) {
 
     override fun startProcess(): ProcessHandler {
-        var args = config.scriptCommand?.split(" ") ?: List(1, { " " });
-        var command = args[0];
-        var arguments = args.subList(1, args.size);
+        var args = config.scriptCommand?.split(" ") ?: List(1, { " " })
+        var command = args[0]
+        var arguments = args.subList(1, args.size)
         val commandLine = GeneralCommandLine()
             .withExePath(command)
             .withParameters(arguments)

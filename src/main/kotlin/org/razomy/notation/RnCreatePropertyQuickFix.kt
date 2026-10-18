@@ -38,12 +38,12 @@ internal class RnCreatePropertyQuickFix(private val key: String) : BaseIntention
     override fun invoke(project: Project, editor: Editor, file: PsiFile) {
         ApplicationManager.getApplication().invokeLater {
             val virtualFiles =
-                    FileTypeIndex.getFiles(RnFileType, GlobalSearchScope.allScope(project))
+                FileTypeIndex.getFiles(RnFileType, GlobalSearchScope.allScope(project))
             if (virtualFiles.size == 1) {
                 createProperty(project, virtualFiles.iterator().next())
             } else {
                 val descriptor: FileChooserDescriptor =
-                        FileChooserDescriptorFactory.createSingleFileDescriptor(RnFileType)
+                    FileChooserDescriptorFactory.createSingleFileDescriptor(RnFileType)
                 descriptor.setRoots(project.guessProjectDir())
                 val file1 = FileChooser.chooseFile(descriptor, project, null)
                 if (file1 != null) {

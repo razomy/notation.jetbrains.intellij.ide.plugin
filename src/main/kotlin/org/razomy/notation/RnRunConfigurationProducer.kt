@@ -20,20 +20,20 @@ class RnRunConfigurationProducer : LazyRunConfigurationProducer<RnConfiguration>
         context: ConfigurationContext,
         sourceElement: Ref<PsiElement>
     ): Boolean {
-        var contextLocation = context.getLocation();
+        var contextLocation = context.location
         if (contextLocation == null) {
-            return false;
+            return false
         }
         if (contextLocation.getPsiElement() is PsiCompiledElement) {
-            return false;
+            return false
         }
-        var element = contextLocation.getPsiElement();
-        if (!element.isPhysical()) {
-            return false;
+        var element = contextLocation.getPsiElement()
+        if (!element.isPhysical) {
+            return false
         }
 
         if (element.text.length < 4) {
-            return false;
+            return false
         }
 
         val file = context.psiLocation?.containingFile ?: return false

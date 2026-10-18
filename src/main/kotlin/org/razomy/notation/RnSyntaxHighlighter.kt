@@ -7,9 +7,9 @@ import com.intellij.openapi.editor.colors.TextAttributesKey
 import com.intellij.openapi.editor.colors.TextAttributesKey.createTextAttributesKey
 import com.intellij.openapi.fileTypes.SyntaxHighlighterBase
 import com.intellij.psi.tree.IElementType
+import org.jetbrains.annotations.NotNull
 import org.razomy.notation.parser.RnLexer
 import org.razomy.notation.parser.RnTypes
-import org.jetbrains.annotations.NotNull
 
 class RnSyntaxHighlighter : SyntaxHighlighterBase() {
     @NotNull

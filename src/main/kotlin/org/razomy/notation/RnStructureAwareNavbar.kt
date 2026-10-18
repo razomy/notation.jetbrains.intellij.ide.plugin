@@ -7,12 +7,12 @@ import org.razomy.notation.parser.RnProperty
 import javax.swing.Icon
 
 
-internal class RnStructureAwareNavbar() : StructureAwareNavBarModelExtension() {
+internal class RnStructureAwareNavbar : StructureAwareNavBarModelExtension() {
     override val language: Language = RnLanguage
     override fun getPresentableText(`object`: Any): String? {
-        var name = "";
+        var name = ""
         if (`object` is RnProperty) {
-            name = `object`.getName() ?: ""
+            name = `object`.getName()
         }
 
         name = substringWithDots(name, 7)
@@ -21,7 +21,7 @@ internal class RnStructureAwareNavbar() : StructureAwareNavBarModelExtension() {
             return null
         }
 
-        return name;
+        return name
     }
 
 

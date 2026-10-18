@@ -1,18 +1,17 @@
 package org.razomy.notation.parser.lexeme
 
-import org.razomy.notation.parser.ctx.NotationLexeme
-import org.razomy.notation.parser.ctx.WithString
-
-
+import org.razomy.notation.parser.lexeme.*
+import org.razomy.notation.parser.ctx.*
+import org.razomy.notation.parser.parse.*
 const val multiline_char = '`'
 
 interface MultilineLexeme : WithLexemeType
 
-fun <T> is_open(ctx: T): Boolean where T : org.razomy.notation.parser.ctx.WithString, T : WithOffset {
+fun <T> is_open(ctx: T): Boolean where T : WithString, T : WithOffset {
     return curr_char(ctx) == multiline_char
 }
 
-fun <T> is_close(ctx: T): Boolean where T : org.razomy.notation.parser.ctx.WithString, T : WithOffset {
+fun <T> is_close(ctx: T): Boolean where T : WithString, T : WithOffset {
     while (true) {
         val close = ctx.string.indexOf(multiline_char, ctx.offset)
         if (close == -1) {
@@ -31,7 +30,7 @@ fun <T> is_close(ctx: T): Boolean where T : org.razomy.notation.parser.ctx.WithS
 }
 
 fun <T> is_start_multiline_pipe(ctx: T): Boolean
-        where T : WithCreateLexemePipes<T, org.razomy.notation.parser.ctx.NotationLexeme>, T : org.razomy.notation.parser.ctx.WithString, T : WithOffset {
+        where T : WithCreateLexemePipes<T, NotationLexeme>, T : WithString, T : WithOffset {
     if (is_open(ctx)) {
         ctx.offset += 1
         return true
@@ -41,11 +40,12 @@ fun <T> is_start_multiline_pipe(ctx: T): Boolean
 }
 
 fun <T> try_finish_multiline_pipe(ctx: T): Boolean
-        where T : WithCreateLexemePipes<T, org.razomy.notation.parser.ctx.NotationLexeme>, T : org.razomy.notation.parser.ctx.WithString, T : WithOffset {
+        where T : WithCreateLexemePipes<T, NotationLexeme>, T : WithString, T : WithOffset {
     if (is_close(ctx)) {
         ctx.offset += 1
-        ctx.create_lexeme_fn(ctx,
-            _root_ide_package_.org.razomy.notation.parser.ctx.NotationLexeme(LexemeType.multiline_value)
+        ctx.create_lexeme_fn(
+            ctx,
+            NotationLexeme(LexemeType.multiline_value)
         )
 
         return true
@@ -55,15 +55,16 @@ fun <T> try_finish_multiline_pipe(ctx: T): Boolean
 }
 
 fun <T> finish_error_multiline_pipe(ctx: T): Boolean
-        where T : WithCreateLexemePipes<T, org.razomy.notation.parser.ctx.NotationLexeme>, T : org.razomy.notation.parser.ctx.WithString, T : WithOffset {
-    ctx.create_lexeme_fn(ctx,
-        _root_ide_package_.org.razomy.notation.parser.ctx.NotationLexeme(LexemeType.not_closed_error_multiline_value)
+        where T : WithCreateLexemePipes<T, NotationLexeme>, T : WithString, T : WithOffset {
+    ctx.create_lexeme_fn(
+        ctx,
+        NotationLexeme(LexemeType.not_closed_error_multiline_value)
     )
     return true
 }
 
 fun <T> try_multiline_value_p(ctx: T): Boolean
-        where T : WithCreateLexemePipes<T, org.razomy.notation.parser.ctx.NotationLexeme>, T : org.razomy.notation.parser.ctx.WithString, T : WithOffset {
+        where T : WithCreateLexemePipes<T, NotationLexeme>, T : WithString, T : WithOffset {
     return is_start_multiline_pipe(ctx) &&
             (try_finish_multiline_pipe(ctx) || finish_error_multiline_pipe(ctx))
 }

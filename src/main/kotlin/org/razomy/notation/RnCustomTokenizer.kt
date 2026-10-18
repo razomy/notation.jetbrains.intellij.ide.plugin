@@ -24,12 +24,12 @@ class RnCustomTokenizer : Tokenizer<PsiElement>() {
         val elementType = element.node.elementType
 
         return TokenSet.create(
-                RnTypes.COMMENT,
-                RnTypes.STRING,
-                RnTypes.KEY,
-                RnTypes.VALUE_,
-                RnTypes.MULTILINE_VALUE,
-                RnTypes.TAIL_VALUE,
+            RnTypes.COMMENT,
+            RnTypes.STRING,
+            RnTypes.KEY,
+            RnTypes.VALUE_,
+            RnTypes.MULTILINE_VALUE,
+            RnTypes.TAIL_VALUE,
         ).contains(elementType)
     }
 }

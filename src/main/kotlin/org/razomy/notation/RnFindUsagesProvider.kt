@@ -10,7 +10,7 @@ import org.razomy.notation.parser.RnLexer
 import org.razomy.notation.parser.RnProperty
 
 internal class RnFindUsagesProvider : FindUsagesProvider {
-    override fun getWordsScanner(): WordsScanner? {
+    override fun getWordsScanner(): WordsScanner {
         return DefaultWordsScanner(
             RnLexer(),
             RnTokenSets.IDENTIFIERS,
@@ -19,33 +19,33 @@ internal class RnFindUsagesProvider : FindUsagesProvider {
         )
     }
 
-    override fun canFindUsagesFor( psiElement: PsiElement): Boolean {
+    override fun canFindUsagesFor(psiElement: PsiElement): Boolean {
         return psiElement is PsiNamedElement
     }
 
 
-    override fun getHelpId( psiElement: PsiElement): String? {
+    override fun getHelpId(psiElement: PsiElement): String? {
         return null
     }
 
-    
-    override fun getType( element: PsiElement): String {
+
+    override fun getType(element: PsiElement): String {
         if (element is RnProperty) {
             return "Rn property"
         }
         return ""
     }
 
-    
-    override fun getDescriptiveName( element: PsiElement): String {
+
+    override fun getDescriptiveName(element: PsiElement): String {
         if (element is RnProperty) {
             return (element).getKey()
         }
         return ""
     }
 
-    
-    override fun getNodeText( element: PsiElement, useFullName: Boolean): String {
+
+    override fun getNodeText(element: PsiElement, useFullName: Boolean): String {
         if (element is RnProperty) {
             return (element).getKey() +
                     '.' +

@@ -13,13 +13,11 @@ class RnAnnotator : Annotator {
             holder.newSilentAnnotation(HighlightSeverity.INFORMATION)
                 .textAttributes(RnSyntaxHighlighter.RN_KEY)
                 .create()
-        }
-        else if (element.elementType == RnTypes.PROPERTY && element.text.startsWith("#")) {
+        } else if (element.elementType == RnTypes.PROPERTY && element.text.startsWith("#")) {
             holder.newSilentAnnotation(HighlightSeverity.INFORMATION)
                 .textAttributes(RnSyntaxHighlighter.RN_COMMENT)
                 .create()
-        }
-        else if (element.elementType == RnTypes.STRING && element.text.startsWith("#")) {
+        } else if (element.elementType == RnTypes.STRING && element.text.startsWith("#")) {
             holder.newSilentAnnotation(HighlightSeverity.INFORMATION)
                 .textAttributes(RnSyntaxHighlighter.RN_COMMENT)
                 .create()

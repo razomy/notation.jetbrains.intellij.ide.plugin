@@ -23,7 +23,9 @@ import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.TextRange
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.psi.*
+import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiFile
+import com.intellij.psi.TokenType
 import com.intellij.psi.tree.IElementType
 import com.intellij.psi.tree.TokenSet
 import com.intellij.psi.util.CachedValueProvider
@@ -455,8 +457,7 @@ object RazomyUtil {
 
         if (container is RazomyDeclaration || container is RazomyFormItem || container is RazomyFlowItem) {
             val (leftExpr, bodyExpr) = splitDeclaration(container) ?: return false
-            if (bodyExpr == null) return false
-            return (leftExpr == postfixExpr || PsiTreeUtil.isAncestor(leftExpr, postfixExpr, false)) &&
+            return bodyExpr != null && (leftExpr == postfixExpr || PsiTreeUtil.isAncestor(leftExpr, postfixExpr, false)) &&
                     postfixExpr.textOffset == leftExpr.textOffset
         }
         return false
@@ -508,16 +509,11 @@ object RazomyUtil {
 
         // 3. Путь на верхнем уровне файла (RazomyDeclaration)
         val decl = PsiTreeUtil.getParentOfType(path, RazomyDeclaration::class.java)
-        if (decl != null) {
-            return getDeclaredPath(decl) == path
-        }
-
-        return false
+        return decl != null && getDeclaredPath(decl) == path
     }
 
     fun isImportPath(text: String): Boolean {
-        if (text.isBlank() || text == "_" || text in RazomyTypeSystem.BUILTIN_TYPES) return false
-        return text.first().isLowerCase()
+        return !(text.isBlank() || text == "_" || text in RazomyTypeSystem.BUILTIN_TYPES) && text.first().isLowerCase()
     }
 
     enum class ImportContext { RIGHT_PATH, LEFT_ALIAS_OR_DESTRUCT }

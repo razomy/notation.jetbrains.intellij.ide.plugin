@@ -12,8 +12,8 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.psi.NavigatablePsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.elementType
-import org.razomy.notation.parser.RnPropertyImpl
 import org.razomy.notation.parser.RnProperty
+import org.razomy.notation.parser.RnPropertyImpl
 import org.razomy.notation.parser.RnTypes
 
 class RnStructureViewElement(private val myElement: NavigatablePsiElement) : StructureViewTreeElement,
@@ -47,7 +47,7 @@ class RnStructureViewElement(private val myElement: NavigatablePsiElement) : Str
     override fun getChildren(): Array<out TreeElement> {
         if (myElement is RnFile || myElement is RnProperty) {
 
-            var properties = myElement.children.filterIsInstance<RnPropertyImpl>();
+            var properties = myElement.children.filterIsInstance<RnPropertyImpl>()
             val treeElements: MutableList<TreeElement> = ArrayList(properties.size)
             for (property in properties) {
                 if (property.elementType == RnTypes.PROPERTY) {
@@ -85,7 +85,7 @@ class RnStructureViewModel(editor: Editor?, psiFile: PsiFile?) :
 }
 
 internal class RnStructureViewFactory : PsiStructureViewFactory {
-    override fun getStructureViewBuilder(psiFile: PsiFile): StructureViewBuilder? {
+    override fun getStructureViewBuilder(psiFile: PsiFile): StructureViewBuilder {
         return object : TreeBasedStructureViewBuilder() {
             override fun createStructureViewModel(editor: Editor?): StructureViewModel {
                 return RnStructureViewModel(editor, psiFile)

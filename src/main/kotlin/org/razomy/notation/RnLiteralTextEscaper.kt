@@ -7,7 +7,7 @@ import com.intellij.psi.PsiLanguageInjectionHost
 class RnLiteralTextEscaper(host: PsiLanguageInjectionHost) :
     LiteralTextEscaper<PsiLanguageInjectionHost?>(host) {
     override fun decode(rangeInsideHost: TextRange, outChars: StringBuilder): Boolean {
-        outChars.append(myHost!!.getText(), rangeInsideHost.getStartOffset(), rangeInsideHost.getEndOffset())
+        outChars.append(myHost!!.text, rangeInsideHost.startOffset, rangeInsideHost.endOffset)
         return true
     }
 
@@ -20,7 +20,7 @@ class RnLiteralTextEscaper(host: PsiLanguageInjectionHost) :
     }
 
     override fun isOneLine(): Boolean {
-        val value = myHost!!.getText()
+        val value = myHost!!.text
         return value != null && value.indexOf('\n') < 0
     }
 }

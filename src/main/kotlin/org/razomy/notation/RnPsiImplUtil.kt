@@ -10,8 +10,8 @@ import javax.swing.Icon
 object RnPsiImplUtil {
     @JvmStatic
     fun getKey(element: RnElement): String {
-        val keyNode = element.getNode().findChildByType(RnTypes.VALUE_)
-        return if (keyNode != null) keyNode.getText() else ""
+        val keyNode = element.node.findChildByType(RnTypes.VALUE_)
+        return if (keyNode != null) keyNode.text else ""
     }
 
     @JvmStatic
@@ -21,37 +21,37 @@ object RnPsiImplUtil {
 
     @JvmStatic
     fun setName(element: RnElement, newName: String): PsiElement {
-        val keyNode = element.getNode().findChildByType(RnTypes.VALUE_)
+        val keyNode = element.node.findChildByType(RnTypes.VALUE_)
         if (keyNode != null) {
-            val property = RnElementFactory.createProperty(element.getProject(), newName)
-            val newKeyNode = property.getFirstChild().getNode()
-            element.getNode().replaceChild(keyNode, newKeyNode)
+            val property = RnElementFactory.createProperty(element.project, newName)
+            val newKeyNode = property.firstChild.node
+            element.node.replaceChild(keyNode, newKeyNode)
         }
         return element
     }
 
     @JvmStatic
     fun getValue(element: RnElement): String? {
-        val valueNode = element.getNode().findChildByType(RnTypes.VALUE_)
-        return if (valueNode != null) valueNode.getText() else null
+        val valueNode = element.node.findChildByType(RnTypes.VALUE_)
+        return if (valueNode != null) valueNode.text else null
     }
 
     @JvmStatic
     fun getNameIdentifier(element: RnElement): PsiElement? {
-        val keyNode = element.getNode().findChildByType(RnTypes.VALUE_)
-        return if (keyNode != null) keyNode.getPsi() else null
+        val keyNode = element.node.findChildByType(RnTypes.VALUE_)
+        return if (keyNode != null) keyNode.psi else null
     }
 
     @JvmStatic
     fun getPresentation(element: RnElement): ItemPresentation {
         return object : ItemPresentation {
-            override fun getPresentableText(): String? {
+            override fun getPresentableText(): String {
                 return element.getKey()
             }
 
             override fun getLocationString(): String? {
-                val containingFile = element.getContainingFile()
-                return if (containingFile == null) null else containingFile.getName()
+                val containingFile = element.containingFile
+                return if (containingFile == null) null else containingFile.name
             }
 
             override fun getIcon(unused: Boolean): Icon? {
@@ -62,7 +62,7 @@ object RnPsiImplUtil {
 
     @JvmStatic
     fun isValidHost(element: RnElement): Boolean {
-        return element.isValid()
+        return element.isValid
     }
 
     @JvmStatic
@@ -70,7 +70,7 @@ object RnPsiImplUtil {
         if (element.lastChild != null) {
             element.lastChild.delete()
         }
-        element.getNode().addLeaf(RnTypes.VALUE_, text, null)
+        element.node.addLeaf(RnTypes.VALUE_, text, null)
         return element
     }
 

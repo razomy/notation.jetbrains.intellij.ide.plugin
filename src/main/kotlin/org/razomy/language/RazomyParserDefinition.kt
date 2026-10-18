@@ -15,7 +15,7 @@ import org.razomy.language.parser.RazomyParser
 import org.razomy.language.psi.RazomyFile
 import org.razomy.language.psi.RazomyTypes
 
-public class RazomyParserDefinition : ParserDefinition {
+class RazomyParserDefinition : ParserDefinition {
     companion object {
         val WHITE_SPACES = TokenSet.create(TokenType.WHITE_SPACE)
         val COMMENTS = TokenSet.create(RazomyTypes.LINE_COMMENT, RazomyTypes.DOC_COMMENT)

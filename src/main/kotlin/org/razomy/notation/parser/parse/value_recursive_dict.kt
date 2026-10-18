@@ -1,14 +1,8 @@
 package org.razomy.notation.parser.parse
 
-import org.razomy.notation.parser.ctx.UnknownTypeArgumentException
-import org.razomy.notation.parser.ctx.WithString
-import org.razomy.notation.parser.ctx.at
-import org.razomy.notation.parser.lexeme.LexemeType
-import org.razomy.notation.parser.lexeme.WithDeep
-import org.razomy.notation.parser.lexeme.WithLexemeType
-import org.razomy.notation.parser.lexeme.WithOffset
-import org.razomy.notation.parser.ctx.at
-import kotlin.collections.get
+import org.razomy.notation.parser.lexeme.*
+import org.razomy.notation.parser.ctx.*
+import org.razomy.notation.parser.parse.*
 
 class ValueRecursiveDict : HashMap<String, Any>()
 typealias ValueRecursiveDictOrValue = Any
@@ -41,7 +35,7 @@ fun <T : ParentValueRecursiveDict> get_path(ctx: T): String {
 
 
 fun <T> try_assign_value_parent(ctx: T): Boolean
-        where T : WithExceptions, T : org.razomy.notation.parser.lexeme.WithOffset, T : org.razomy.notation.parser.ctx.WithString, T : ParentValueRecursiveDict {
+        where T : WithExceptions, T : WithOffset, T : WithString, T : ParentValueRecursiveDict {
 
     val node = ctx.parent_value_recursive.at(-1)!!
     val parent = ctx.parent_value_recursive.at(-2)
@@ -57,8 +51,8 @@ fun <T> try_assign_value_parent(ctx: T): Boolean
 }
 
 fun <T, L> assign(ctx: T, lexeme: L)
-        where T : WithExceptions, T : org.razomy.notation.parser.lexeme.WithOffset, T : org.razomy.notation.parser.ctx.WithString, T : ParentValueRecursiveDict,
-              L : org.razomy.notation.parser.lexeme.WithOffset, L : org.razomy.notation.parser.lexeme.WithDeep, L : org.razomy.notation.parser.lexeme.WithLexemeType {
+        where T : WithExceptions, T : WithOffset, T : WithString, T : ParentValueRecursiveDict,
+              L : WithOffset, L : WithDeep, L : WithLexemeType {
 
     val parent = ctx.parent_value_recursive.last()
     if (parent.value_recursive_last == null || parent.value_recursive_last == "") {
@@ -78,7 +72,7 @@ fun <T, L> assign(ctx: T, lexeme: L)
             parent.value_recursive_last += parent.increment++
         }
 
-        parentValue[parent.value_recursive_last!!] = ValueRecursiveDict();
+        parentValue[parent.value_recursive_last!!] = ValueRecursiveDict()
 
         val last = object : WithValueRecursiveDict {
             override var value_recursive = parentValue[parent.value_recursive_last]!!
@@ -91,8 +85,8 @@ fun <T, L> assign(ctx: T, lexeme: L)
 }
 
 fun <T, L> value(ctx: T, lexeme: L)
-        where T : WithExceptions, T : org.razomy.notation.parser.lexeme.WithOffset, T : org.razomy.notation.parser.ctx.WithString, T : ParentValueRecursiveDict,
-              L : org.razomy.notation.parser.lexeme.WithOffset, L : org.razomy.notation.parser.lexeme.WithDeep, L : org.razomy.notation.parser.lexeme.WithLexemeType, L : WithValue {
+        where T : WithExceptions, T : WithOffset, T : WithString, T : ParentValueRecursiveDict,
+              L : WithOffset, L : WithDeep, L : WithLexemeType, L : WithValue {
 
     var valueStr = lexeme.value
     val parent = ctx.parent_value_recursive.last()
@@ -112,20 +106,24 @@ fun <T, L> value(ctx: T, lexeme: L)
 }
 
 fun <T, L> create_lexeme_value_recursive_dict(ctx: T, lexeme: L): L
-        where T : WithExceptions, T : org.razomy.notation.parser.lexeme.WithOffset, T : org.razomy.notation.parser.ctx.WithString, T : ParentValueRecursiveDict,
-              L : org.razomy.notation.parser.lexeme.WithOffset, L : org.razomy.notation.parser.lexeme.WithDeep, L : org.razomy.notation.parser.lexeme.WithLexemeType, L : WithValue {
+        where T : WithExceptions, T : WithOffset, T : WithString, T : ParentValueRecursiveDict,
+              L : WithOffset, L : WithDeep, L : WithLexemeType, L : WithValue {
 
 
     when (lexeme.type) {
-        _root_ide_package_.org.razomy.notation.parser.lexeme.LexemeType.value_ -> value(ctx, lexeme)
-        _root_ide_package_.org.razomy.notation.parser.lexeme.LexemeType.tail_value -> {
+        LexemeType.value_ -> value(ctx, lexeme)
+        LexemeType.tail_value -> {
             value(ctx, lexeme)
             try_assign_value_parent(ctx)
         }
 
-        _root_ide_package_.org.razomy.notation.parser.lexeme.LexemeType.multiline_value -> value(ctx, lexeme)
-        _root_ide_package_.org.razomy.notation.parser.lexeme.LexemeType.assign, _root_ide_package_.org.razomy.notation.parser.lexeme.LexemeType.new_line_assign -> assign(ctx, lexeme)
-        _root_ide_package_.org.razomy.notation.parser.lexeme.LexemeType.new_line_break -> {
+        LexemeType.multiline_value -> value(ctx, lexeme)
+        LexemeType.assign, LexemeType.new_line_assign -> assign(
+            ctx,
+            lexeme
+        )
+
+        LexemeType.new_line_break -> {
             val parent_index = ctx.parent_value_recursive.indexOfFirst { it.value_recursive_deep == lexeme.deep }
             if (parent_index == -1) {
                 ctx.exception_fn(
@@ -140,7 +138,7 @@ fun <T, L> create_lexeme_value_recursive_dict(ctx: T, lexeme: L): L
             }
         }
 
-        _root_ide_package_.org.razomy.notation.parser.lexeme.LexemeType.break_ -> {
+        LexemeType.break_ -> {
             if (ctx.parent_value_recursive.isEmpty()) {
                 ctx.exception_fn(
                     InvalidNotation(
@@ -154,13 +152,13 @@ fun <T, L> create_lexeme_value_recursive_dict(ctx: T, lexeme: L): L
             }
         }
 
-        _root_ide_package_.org.razomy.notation.parser.lexeme.LexemeType.error,
-        _root_ide_package_.org.razomy.notation.parser.lexeme.LexemeType.separate,
-        _root_ide_package_.org.razomy.notation.parser.lexeme.LexemeType.not_closed_error_multiline_value,
-        _root_ide_package_.org.razomy.notation.parser.lexeme.LexemeType.new_line_separate -> {
+        LexemeType.error,
+        LexemeType.separate,
+        LexemeType.not_closed_error_multiline_value,
+        LexemeType.new_line_separate -> {
         }
 
-        else -> throw _root_ide_package_.org.razomy.notation.parser.ctx.UnknownTypeArgumentException(
+        else -> throw UnknownTypeArgumentException(
             mapOf(
                 "lexeme" to lexeme,
                 "path" to get_path(ctx)

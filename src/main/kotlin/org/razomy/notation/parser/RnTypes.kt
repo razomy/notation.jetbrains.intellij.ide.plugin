@@ -4,18 +4,16 @@ package org.razomy.notation.parser
 import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElement
 import com.intellij.psi.tree.IElementType
-import org.razomy.notation.parser.ctx.UnknownTypeArgumentException
-import org.razomy.notation.parser.RnPropertyImpl
-import org.razomy.notation.parser.RnValueImpl
-import org.razomy.notation.parser.lexeme.LexemeType
+import org.razomy.notation.parser.lexeme.*
+import org.razomy.notation.parser.ctx.*
 
 interface RnTypes {
     object Factory {
         fun createElement(node: ASTNode): PsiElement {
-            val type = node.getElementType()
+            val type = node.elementType
             if (type === PROPERTY) {
                 return RnPropertyImpl(node)
-            } else   {
+            } else {
                 return RnValueImpl(node)
             }
             throw AssertionError("Unknown element type: " + type)
@@ -45,42 +43,42 @@ interface RnTypes {
     }
 }
 
-fun lexeme_to_element(type: org.razomy.notation.parser.lexeme.LexemeType): IElementType {
+fun lexeme_to_element(type: LexemeType): IElementType {
     return when (type) {
-        _root_ide_package_.org.razomy.notation.parser.lexeme.LexemeType.new_line_assign -> RnTypes.NEW_LINE_ASSIGN
-        _root_ide_package_.org.razomy.notation.parser.lexeme.LexemeType.multiline_value -> RnTypes.MULTILINE_VALUE
-        _root_ide_package_.org.razomy.notation.parser.lexeme.LexemeType.new_line_break -> RnTypes.NEW_LINE_BREAK
-        _root_ide_package_.org.razomy.notation.parser.lexeme.LexemeType.separate -> RnTypes.SEPARATE
-        _root_ide_package_.org.razomy.notation.parser.lexeme.LexemeType.value_ -> RnTypes.VALUE_
-        _root_ide_package_.org.razomy.notation.parser.lexeme.LexemeType.tail_value -> RnTypes.TAIL_VALUE
-        _root_ide_package_.org.razomy.notation.parser.lexeme.LexemeType.assign -> RnTypes.ASSIGN
-        _root_ide_package_.org.razomy.notation.parser.lexeme.LexemeType.break_ -> RnTypes.BREAK_
-        _root_ide_package_.org.razomy.notation.parser.lexeme.LexemeType.new_line_separate -> RnTypes.NEW_LINE_SEPARATE
-        _root_ide_package_.org.razomy.notation.parser.lexeme.LexemeType.not_closed_error_multiline_value -> RnTypes.NOT_CLOSED_ERROR_MULTILINE_VALUE
-        _root_ide_package_.org.razomy.notation.parser.lexeme.LexemeType.error -> RnTypes.ERROR
-        null -> throw _root_ide_package_.org.razomy.notation.parser.ctx.UnknownTypeArgumentException("Unknown lexeme type ${type}")
+        LexemeType.new_line_assign -> RnTypes.NEW_LINE_ASSIGN
+        LexemeType.multiline_value -> RnTypes.MULTILINE_VALUE
+        LexemeType.new_line_break -> RnTypes.NEW_LINE_BREAK
+        LexemeType.separate -> RnTypes.SEPARATE
+        LexemeType.value_ -> RnTypes.VALUE_
+        LexemeType.tail_value -> RnTypes.TAIL_VALUE
+        LexemeType.assign -> RnTypes.ASSIGN
+        LexemeType.break_ -> RnTypes.BREAK_
+        LexemeType.new_line_separate -> RnTypes.NEW_LINE_SEPARATE
+        LexemeType.not_closed_error_multiline_value -> RnTypes.NOT_CLOSED_ERROR_MULTILINE_VALUE
+        LexemeType.error -> RnTypes.ERROR
+        null -> throw UnknownTypeArgumentException("Unknown lexeme type ${type}")
     }
 }
 
-fun element_to_lexeme(type: IElementType): org.razomy.notation.parser.lexeme.LexemeType {
+fun element_to_lexeme(type: IElementType): LexemeType {
     return when (type) {
-        RnTypes.NEW_LINE_ASSIGN -> _root_ide_package_.org.razomy.notation.parser.lexeme.LexemeType.new_line_assign
-        RnTypes.MULTILINE_VALUE -> _root_ide_package_.org.razomy.notation.parser.lexeme.LexemeType.multiline_value
-        RnTypes.NEW_LINE_BREAK -> _root_ide_package_.org.razomy.notation.parser.lexeme.LexemeType.new_line_break
-        RnTypes.SEPARATE -> _root_ide_package_.org.razomy.notation.parser.lexeme.LexemeType.separate
-        RnTypes.VALUE_ -> _root_ide_package_.org.razomy.notation.parser.lexeme.LexemeType.value_
-        RnTypes.TAIL_VALUE -> _root_ide_package_.org.razomy.notation.parser.lexeme.LexemeType.tail_value
-        RnTypes.ASSIGN -> _root_ide_package_.org.razomy.notation.parser.lexeme.LexemeType.assign
-        RnTypes.BREAK_ -> _root_ide_package_.org.razomy.notation.parser.lexeme.LexemeType.break_
-        RnTypes.NEW_LINE_SEPARATE -> _root_ide_package_.org.razomy.notation.parser.lexeme.LexemeType.new_line_separate
-        RnTypes.NOT_CLOSED_ERROR_MULTILINE_VALUE -> _root_ide_package_.org.razomy.notation.parser.lexeme.LexemeType.not_closed_error_multiline_value
-        RnTypes.ERROR -> _root_ide_package_.org.razomy.notation.parser.lexeme.LexemeType.error
+        RnTypes.NEW_LINE_ASSIGN -> LexemeType.new_line_assign
+        RnTypes.MULTILINE_VALUE -> LexemeType.multiline_value
+        RnTypes.NEW_LINE_BREAK -> LexemeType.new_line_break
+        RnTypes.SEPARATE -> LexemeType.separate
+        RnTypes.VALUE_ -> LexemeType.value_
+        RnTypes.TAIL_VALUE -> LexemeType.tail_value
+        RnTypes.ASSIGN -> LexemeType.assign
+        RnTypes.BREAK_ -> LexemeType.break_
+        RnTypes.NEW_LINE_SEPARATE -> LexemeType.new_line_separate
+        RnTypes.NOT_CLOSED_ERROR_MULTILINE_VALUE -> LexemeType.not_closed_error_multiline_value
+        RnTypes.ERROR -> LexemeType.error
         // other
-        RnTypes.INDENT -> _root_ide_package_.org.razomy.notation.parser.lexeme.LexemeType.error
-        RnTypes.PROPERTY -> _root_ide_package_.org.razomy.notation.parser.lexeme.LexemeType.error
-        RnTypes.DEDENT -> _root_ide_package_.org.razomy.notation.parser.lexeme.LexemeType.error
-        RnTypes.STRING -> _root_ide_package_.org.razomy.notation.parser.lexeme.LexemeType.value_
-        RnTypes.KEY -> _root_ide_package_.org.razomy.notation.parser.lexeme.LexemeType.value_
+        RnTypes.INDENT -> LexemeType.error
+        RnTypes.PROPERTY -> LexemeType.error
+        RnTypes.DEDENT -> LexemeType.error
+        RnTypes.STRING -> LexemeType.value_
+        RnTypes.KEY -> LexemeType.value_
         else -> throw IllegalArgumentException("Unknown element type ${type}")
     }
 }

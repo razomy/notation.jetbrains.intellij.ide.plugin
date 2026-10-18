@@ -1,4 +1,3 @@
-
 package org.razomy.language
 
 import com.intellij.codeInsight.completion.*
@@ -11,8 +10,11 @@ import com.intellij.codeInsight.navigation.actions.GotoDeclarationHandler
 import com.intellij.codeInspection.*
 import com.intellij.codeInspection.util.IntentionName
 import com.intellij.icons.AllIcons
-import com.intellij.ide.structureView.*
+import com.intellij.ide.structureView.StructureViewBuilder
 import com.intellij.ide.structureView.StructureViewModel.ElementInfoProvider
+import com.intellij.ide.structureView.StructureViewModelBase
+import com.intellij.ide.structureView.StructureViewTreeElement
+import com.intellij.ide.structureView.TreeBasedStructureViewBuilder
 import com.intellij.ide.util.treeView.smartTree.TreeElement
 import com.intellij.lang.Commenter
 import com.intellij.lang.Language
@@ -34,7 +36,6 @@ import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.patterns.PlatformPatterns
 import com.intellij.psi.*
 import com.intellij.psi.impl.source.resolve.ResolveCache
-import com.intellij.psi.search.FileTypeIndex
 import com.intellij.psi.search.FilenameIndex
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.searches.ReferencesSearch
@@ -511,7 +512,9 @@ class RazomyUnusedInspection : LocalInspectionTool() {
                             return@any false
                         }
                         val pathText = path.text
-                        pathText == name || pathText.startsWith("$name.") || pathText.endsWith(".$name") || pathText.contains(".$name.")
+                        pathText == name || pathText.startsWith("$name.") || pathText.endsWith(".$name") || pathText.contains(
+                            ".$name."
+                        )
                     }
 
                     if (isUsedLocally) return
@@ -520,7 +523,8 @@ class RazomyUnusedInspection : LocalInspectionTool() {
                     if (RazomyUtil.isUsedInStringInterpolations(file, name)) return
 
                     // 3. Проверка в других файлах через индекс ссылок IntelliJ (без перебора всех файлов вручную)
-                    val crossFileRef = ReferencesSearch.search(element, GlobalSearchScope.projectScope(element.project)).findFirst()
+                    val crossFileRef =
+                        ReferencesSearch.search(element, GlobalSearchScope.projectScope(element.project)).findFirst()
                     if (crossFileRef == null) {
                         holder.registerProblem(
                             element,
@@ -634,10 +638,12 @@ class RazomyDocumentationProvider : AbstractDocumentationProvider() {
                             val titleText = trimmed.substring(6).trim()
                             "<div style='font-weight: bold;'>${escapeHtml(titleText)}</div>"
                         }
+
                         trimmed.startsWith("T ") -> {
                             val bodyText = trimmed.substring(2).trim()
                             "<div>${escapeHtml(bodyText)}</div>"
                         }
+
                         else -> "<div>${escapeHtml(trimmed)}</div>"
                     }
                 }.joinToString("")
@@ -731,7 +737,11 @@ class RazomyLineMarkerProvider : RelatedItemLineMarkerProvider() {
 
         // 1. Предки (Супертипы — в том числе из импортированных файлов)
         val statement = PsiTreeUtil.getParentOfType(element, RazomyDeclaration::class.java, RazomyFormItem::class.java)
-        if (statement != null && PsiTreeUtil.findChildOfType(statement.children.firstOrNull(), RazomyPath::class.java) == element) {
+        if (statement != null && PsiTreeUtil.findChildOfType(
+                statement.children.firstOrNull(),
+                RazomyPath::class.java
+            ) == element
+        ) {
             val rightExpr = statement.children.getOrNull(1)
             if (rightExpr != null) {
                 val pathsInRight = PsiTreeUtil.findChildrenOfType(rightExpr, RazomyPath::class.java)
@@ -918,6 +928,7 @@ class RazomyGotoDeclarationHandler : GotoDeclarationHandler {
             .map { it.element }
             .distinct()
     }
+
     private fun resolveLocalDeclaration(from: RazomyPath, name: String): RazomyPath? {
         var scope = from.parent
         while (scope != null) {

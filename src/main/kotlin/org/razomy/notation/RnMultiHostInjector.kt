@@ -101,20 +101,20 @@ fun createLanguageAliases(): MutableMap<String, String> {
         // My Extension
         "ts" to "TypeScript"
     )
-    var system = Language.getRegisteredLanguages();
+    var system = Language.getRegisteredLanguages()
     system.remove(Language.ANY)
-    system.forEach { value -> aliases[value.id.lowercase()] = value.id };
+    system.forEach { value -> aliases[value.id.lowercase()] = value.id }
 
-    return aliases;
+    return aliases
 }
 
-val LanguageAliases = createLanguageAliases();
+val LanguageAliases = createLanguageAliases()
 
 fun langAliases(codeBlock: String): Language? {
     val key = codeBlock.lowercase()
     if (LanguageAliases.containsKey(key)) {
-        val id = LanguageAliases.getValue(key);
-        return Language.findLanguageByID(id);
+        val id = LanguageAliases.getValue(key)
+        return Language.findLanguageByID(id)
     }
     return null
 }

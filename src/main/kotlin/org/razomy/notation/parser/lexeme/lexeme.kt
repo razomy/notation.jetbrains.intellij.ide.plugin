@@ -1,8 +1,8 @@
 package org.razomy.notation.parser.lexeme
-
-import org.razomy.notation.parser.ctx.NotationLexeme
-
-interface WithLexeme<T:WithLexemeType> {
+import org.razomy.notation.parser.lexeme.*
+import org.razomy.notation.parser.ctx.*
+import org.razomy.notation.parser.parse.*
+interface WithLexeme<T : WithLexemeType> {
     var lexeme: T
 }
 
@@ -30,7 +30,7 @@ fun <T, L> create_lexeme(
 fun <T, L> create_ctx_lexeme(ctx: T): T
         where T : WithLexeme<L>, T : WithCreateLexemePipes<T, L>, L : WithLexemeType {
 
-    ctx.lexeme = _root_ide_package_.org.razomy.notation.parser.ctx.NotationLexeme(LexemeType.error) as L
+    ctx.lexeme = NotationLexeme(LexemeType.error) as L
     ctx.create_lexeme_fn = ::create_lexeme
     return ctx
 }

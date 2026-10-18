@@ -1,8 +1,7 @@
 package org.razomy.notation.parser.lexeme
-
-import org.razomy.notation.parser.parse.InvalidNotation
-import org.razomy.notation.parser.parse.WithExceptions
-
+import org.razomy.notation.parser.lexeme.*
+import org.razomy.notation.parser.ctx.*
+import org.razomy.notation.parser.parse.*
 
 interface WithPrevDeep {
     var prev_deep: Int
@@ -18,12 +17,12 @@ fun <T : WithPrevDeep> create_ctx_deep(ctx: T): T {
 }
 
 fun <T, L> create_lexeme_deep(ctx: T, lexeme: L): L
-        where T : WithOffset, T : WithPrevDeep, L : WithDeep, L : WithLexemeType, T: org.razomy.notation.parser.parse.WithExceptions {
+        where T : WithOffset, T : WithPrevDeep, L : WithDeep, L : WithLexemeType, T : WithExceptions {
     if (lexeme.type == LexemeType.assign) {
         ctx.prev_deep = ctx.prev_deep + 1
     } else if (lexeme.type == LexemeType.break_) {
         if (ctx.prev_deep == 0) {
-            ctx.exception_fn(_root_ide_package_.org.razomy.notation.parser.parse.InvalidNotation("break out of context"))
+            ctx.exception_fn(InvalidNotation("break out of context"))
         }
         ctx.prev_deep = ctx.prev_deep - 1
     }

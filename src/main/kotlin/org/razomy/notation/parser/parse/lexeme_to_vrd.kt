@@ -1,18 +1,16 @@
 package org.razomy.notation.parser.parse
 
-import org.razomy.notation.parser.ctx.NotationCtx
-import org.razomy.notation.parser.ctx.NotationLexeme
-import org.razomy.notation.parser.ctx.create_ctx
-import org.razomy.notation.parser.lexeme.create_ctx_deep
-import org.razomy.notation.parser.lexeme.create_ctx_lexeme
+import org.razomy.notation.parser.lexeme.*
+import org.razomy.notation.parser.ctx.*
+import org.razomy.notation.parser.parse.*
 
-fun lexeme_to_vrd_ctx(lexeme_iterator: (c: org.razomy.notation.parser.ctx.NotationCtx) -> org.razomy.notation.parser.ctx.NotationLexeme?): org.razomy.notation.parser.ctx.NotationCtx {
-    val ctx = _root_ide_package_.org.razomy.notation.parser.ctx.NotationCtx("")
+fun lexeme_to_vrd_ctx(lexeme_iterator: (c: NotationCtx) -> NotationLexeme?): NotationCtx {
+    val ctx = NotationCtx("")
 
     ctx.create_ctx_pipes = listOf(
         { c -> create_ctx_exceptions(c) },
-        { c -> _root_ide_package_.org.razomy.notation.parser.lexeme.create_ctx_lexeme(c) },
-        { c -> _root_ide_package_.org.razomy.notation.parser.lexeme.create_ctx_deep(c) },
+        { c -> create_ctx_lexeme(c) },
+        { c -> create_ctx_deep(c) },
         { c -> create_ctx_value_recursive_dict(c) },
     )
 
@@ -23,5 +21,5 @@ fun lexeme_to_vrd_ctx(lexeme_iterator: (c: org.razomy.notation.parser.ctx.Notati
         }
     }
 
-    return _root_ide_package_.org.razomy.notation.parser.ctx.create_ctx(ctx)
+    return create_ctx(ctx)
 }

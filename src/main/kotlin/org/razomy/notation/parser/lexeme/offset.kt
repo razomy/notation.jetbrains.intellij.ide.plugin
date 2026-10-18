@@ -1,8 +1,8 @@
 package org.razomy.notation.parser.lexeme
 
-import org.razomy.notation.parser.ctx.WithString
-
-
+import org.razomy.notation.parser.lexeme.*
+import org.razomy.notation.parser.ctx.*
+import org.razomy.notation.parser.parse.*
 interface WithOffset {
     var offset: Int
 }
@@ -13,18 +13,18 @@ fun <T : WithOffset> create_ctx_offset(ctx: T): T {
 }
 
 
-fun <T> next_char(ctx: T): Char where T : org.razomy.notation.parser.ctx.WithString, T : WithOffset {
+fun <T> next_char(ctx: T): Char where T : WithString, T : WithOffset {
     return ctx.string[ctx.offset + 1]
 }
 
-fun <T> prev_char(ctx: T): Char where T : org.razomy.notation.parser.ctx.WithString, T : WithOffset {
+fun <T> prev_char(ctx: T): Char where T : WithString, T : WithOffset {
     return ctx.string[ctx.offset - 1]
 }
 
-fun <T> curr_char(ctx: T): Char where T : org.razomy.notation.parser.ctx.WithString, T : WithOffset {
+fun <T> curr_char(ctx: T): Char where T : WithString, T : WithOffset {
     return ctx.string[ctx.offset]
 }
 
-fun <T> is_end(ctx: T): Boolean where T : org.razomy.notation.parser.ctx.WithString, T : WithOffset {
+fun <T> is_end(ctx: T): Boolean where T : WithString, T : WithOffset {
     return ctx.offset == ctx.string.length
 }
