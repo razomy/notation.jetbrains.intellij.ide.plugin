@@ -29,62 +29,62 @@
     <extensions defaultExtensionNs="com.intellij">
         <lang.psiStructureViewFactory
                 language="RN"
-                implementationClass="com.razomy.notation.jetbrains.intellij.ide.plugin.editor.RnStructureViewFactory"/>
+                implementationClass="org.razomy.notation.RnStructureViewFactory"/>
         <gotoSymbolContributor
-                implementation="com.razomy.notation.jetbrains.intellij.ide.plugin.editor.RnChooseByNameContributor"/>
+                implementation="org.razomy.notation.RnChooseByNameContributor"/>
         <completion.contributor
-                implementationClass="com.razomy.notation.jetbrains.intellij.ide.plugin.editor.RnCompletionContributor"
+                implementationClass="org.razomy.notation.RnCompletionContributor"
                 language="RN"
         />
-        <navbar implementation="com.razomy.notation.jetbrains.intellij.ide.plugin.editor.RnStructureAwareNavbar"/>
+        <navbar implementation="org.razomy.notation.RnStructureAwareNavbar"/>
         <breadcrumbsInfoProvider
-                implementation="com.razomy.notation.jetbrains.intellij.ide.plugin.editor.RnBreadcrumbsProvider"/>
+                implementation="org.razomy.notation.RnBreadcrumbsProvider"/>
         <fileType
                 name="RN"
-                implementationClass="com.razomy.notation.jetbrains.intellij.ide.plugin.editor.RnFileType"
+                implementationClass="org.razomy.notation.RnFileType"
                 fieldName="INSTANCE"
                 language="RN"
                 extensions="rn"/>
         <lang.parserDefinition
                 language="RN"
-                implementationClass="com.razomy.notation.jetbrains.intellij.ide.plugin.editor.RnParserDefinition"/>
+                implementationClass="org.razomy.notation.RnParserDefinition"/>
         <lang.syntaxHighlighterFactory
                 language="RN"
-                implementationClass="com.razomy.notation.jetbrains.intellij.ide.plugin.editor.RnSyntaxHighlighterFactory"/>
+                implementationClass="org.razomy.notation.RnSyntaxHighlighterFactory"/>
         <colorSettingsPage
-                implementation="com.razomy.notation.jetbrains.intellij.ide.plugin.editor.RnColorSettingsPage"/>
+                implementation="org.razomy.notation.RnColorSettingsPage"/>
         <lang.foldingBuilder
                 language="RN"
-                implementationClass="com.razomy.notation.jetbrains.intellij.ide.plugin.editor.RnFoldingBuilder"/>
+                implementationClass="org.razomy.notation.RnFoldingBuilder"/>
         <!--        <lang.findUsagesProvider-->
         <!--                language="RN"-->
-        <!--                implementationClass="com.razomy.notation.jetbrains.intellij.ide.plugin.editor.RnFindUsagesProvider"/>-->
+        <!--                implementationClass="org.razomy.notation.RnFindUsagesProvider"/>-->
         <!--        <lang.refactoringSupport-->
         <!--                language="RN"-->
-        <!--                implementationClass="com.razomy.notation.jetbrains.intellij.ide.plugin.editor.RnRefactoringSupportProvider"/>-->
+        <!--                implementationClass="org.razomy.notation.RnRefactoringSupportProvider"/>-->
         <lang.commenter
                 language="RN"
-                implementationClass="com.razomy.notation.jetbrains.intellij.ide.plugin.editor.RnCommenter"/>
+                implementationClass="org.razomy.notation.RnCommenter"/>
         <spellchecker.support language="RN"
-                              implementationClass="com.razomy.notation.jetbrains.intellij.ide.plugin.editor.RnSpellCheckingStrategy"/>
+                              implementationClass="org.razomy.notation.RnSpellCheckingStrategy"/>
         <lang.formatter
                 language="RN"
-                implementationClass="com.razomy.notation.jetbrains.intellij.ide.plugin.editor.RnFormattingModelBuilder"/>
+                implementationClass="org.razomy.notation.RnFormattingModelBuilder"/>
 
         <multiHostInjector
-                implementation="com.razomy.notation.jetbrains.intellij.ide.plugin.editor.RnMultiHostInjector"
+                implementation="org.razomy.notation.RnMultiHostInjector"
         />
         <projectViewPane
                 implementation="com.razomy.notation.jetbrains.intellij.ide.plugin.project.RnProjectViewPane"/>
         <annotator language="RN"
-                   implementationClass="com.razomy.notation.jetbrains.intellij.ide.plugin.editor.RnAnnotator"/>
+                   implementationClass="org.razomy.notation.RnAnnotator"/>
         <runLineMarkerContributor
                 language="RN"
-                implementationClass="com.razomy.notation.jetbrains.intellij.ide.plugin.editor.RnRunLineMarkerContributor"/>
+                implementationClass="org.razomy.notation.RnRunLineMarkerContributor"/>
         <configurationType
-                implementation="com.razomy.notation.jetbrains.intellij.ide.plugin.editor.RnConfigurationType"/>
+                implementation="org.razomy.notation.RnConfigurationType"/>
         <runConfigurationProducer
-                implementation="com.razomy.notation.jetbrains.intellij.ide.plugin.editor.RnRunConfigurationProducer"/>
+                implementation="org.razomy.notation.RnRunConfigurationProducer"/>
         <toolWindow id="Local AI Chat"
                     anchor="right"
                     factoryClass="com.razomy.notation.jetbrains.intellij.ide.plugin.ai.AiChatToolWindowFactory"

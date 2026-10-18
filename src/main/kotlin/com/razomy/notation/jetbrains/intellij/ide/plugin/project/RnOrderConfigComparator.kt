@@ -36,8 +36,8 @@ class RnOrderConfigComparator(private val project: Project?, private val paneId:
         var order = configOrder + rootConfigOrder()
         return order.indexOfFirst({
             it.replace("^\\.+".toRegex(), "") == fileName
-                .replace(".rn$".toRegex(), "")
-                .replace(".rl$".toRegex(), "")
+                .replace("\\.rn$".toRegex(), "")
+                .replace("\\.rl$".toRegex(), "")
         }).takeIf { it >= 0 } ?: Int.MAX_VALUE
     }
 
