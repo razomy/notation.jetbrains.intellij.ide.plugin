@@ -1,4 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16">
-    <rect x="0" y="0" width="16" height="16" rx="3" ry="3" fill="#777"/>
-    <text x="2" y="12" font-family="monospace" font-weight="bold" font-size="9" fill="#efefef">RN</text>
+    <text x="8" y="13" font-family="monospace" font-weight="bold" font-size="11" text-anchor="middle">
+        <tspan fill="#888888">R</tspan><tspan fill="#e06c45">N</tspan>
+    </text>
 </svg>
