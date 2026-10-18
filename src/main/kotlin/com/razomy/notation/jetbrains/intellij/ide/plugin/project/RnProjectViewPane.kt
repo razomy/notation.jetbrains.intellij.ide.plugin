@@ -21,7 +21,7 @@ import javax.swing.JPanel
 
 
 class RnProjectViewPane(project: Project) : ProjectViewPane(project) {
-    private var scopes: MutableList<ScopeDefinition?> = loadScopes(myProject)
+    private var scopes: List<ScopeDefinition?> = loadScopes(myProject)
 
     var ID = "RnProject"
     override fun getTitle(): String {
