@@ -141,12 +141,18 @@
                 language="RL"
                 implementationClass="org.razomy.language.RazomyInlayParameterHintsProvider"/>
 
+<!--        <localInspection language="RL"-->
+<!--                         groupName="Razomy"-->
+<!--                         displayName="Неиспользуемое объявление"-->
+<!--                         enabledByDefault="true"-->
+<!--                         level="WARNING"-->
+<!--                         implementationClass="org.razomy.language.RazomyUnusedInspection"/>-->
         <localInspection language="RL"
+                         displayName="Ambiguous context reference"
                          groupName="Razomy"
-                         displayName="Неиспользуемое объявление"
                          enabledByDefault="true"
                          level="WARNING"
-                         implementationClass="org.razomy.language.RazomyUnusedInspection"/>
+                         implementationClass="org.razomy.language.RazomyAmbiguousReferenceInspection"/>
     </extensions>
     <actions>
         <group id="com.razomy.notation.jetbrains.intellij.ide.plugin.OpenInApp"

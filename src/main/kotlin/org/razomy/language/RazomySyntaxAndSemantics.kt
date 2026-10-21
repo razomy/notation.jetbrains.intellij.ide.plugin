@@ -696,10 +696,40 @@ class RazomyAnnotator : Annotator {
         }
 
         if (!isDecl) {
+            val rootName = text.substringBefore('.')
+            val file = element.containingFile
+            val scope = RazomyTypeSystem.buildScope(element)
+
+            // Проверка на конфликт 2+ имен в контексте (если нет локального объявления и нет явного импорта `_ b` или `{ A } b`)
+            if (file != null &&
+                rootName.firstOrNull()?.isUpperCase() == true &&
+                !RazomyTypeSystem.getGlobalDeclarationsMap(file).containsKey(rootName) &&
+                !scope.imports.containsKey(rootName) &&
+                !scope.isDestructuredImport.containsKey(rootName)
+            ) {
+                val candidateFiles = RazomyImportResolver.findContextCandidateFiles(element, rootName)
+                if (candidateFiles.size > 1) {
+                    val moduleNames = candidateFiles.map { RazomyImportResolver.getRelativeModulePath(file, it) }
+                    val defaultFile = candidateFiles.first()
+                    val conflictBuilder = holder.newAnnotation(
+                        HighlightSeverity.ERROR,
+                        "Конфликт имен '$rootName' в файлах [${moduleNames.joinToString(", ")}] (по умолчанию взят '${defaultFile.name}'). Укажите импорт явно, например: '_ ${moduleNames.last()}'"
+                    )
+                        .range(element.textRange)
+                        .highlightType(ProblemHighlightType.GENERIC_ERROR)
+
+                    for (candFile in candidateFiles) {
+                        val modPath = RazomyImportResolver.getRelativeModulePath(file, candFile)
+                        conflictBuilder.withFix(RazomyImportQuickFix(rootName, modPath, useWildcardOverride = true))
+                        conflictBuilder.withFix(RazomyImportQuickFix(rootName, modPath, useWildcardOverride = false))
+                    }
+                    conflictBuilder.create()
+                }
+            }
+
             val resolved = RazomyResolver.resolvePath(element, text)
             if (resolved == null) {
                 val isResolvedLocally = if (!isMemberAccess) {
-                    val scope = RazomyTypeSystem.buildScope(element)
                     scope.variables.containsKey(text) ||
                             scope.unpackedFields.containsKey(text) ||
                             scope.isDestructuredImport.containsKey(text) ||
@@ -717,7 +747,8 @@ class RazomyAnnotator : Annotator {
                         val candidates =
                             RazomyImportResolver.findModuleByExportedSymbol(element.project, unresolvedName)
                         for (modulePath in candidates) {
-                            errorBuilder.withFix(RazomyImportQuickFix(unresolvedName, modulePath))
+                            errorBuilder.withFix(RazomyImportQuickFix(unresolvedName, modulePath, useWildcardOverride = true))
+                            errorBuilder.withFix(RazomyImportQuickFix(unresolvedName, modulePath, useWildcardOverride = false))
                         }
                     }
                     errorBuilder.create()
@@ -1193,8 +1224,7 @@ object RazomyTypeSystem {
     }
 
     /**
-     * Кэшированный базовый скоуп уровня файла (импорты + глобальные объявления).
-     * Вычисляется 1 раз на файл вместо тысяч раз на каждый узел AST!
+     * Кэшированный базовый скоуп уровня файла (импорты, переопределения `_ b` + глобальные объявления).
      */
     private fun getFileBaseScope(file: PsiFile): RazomyScope {
         return CachedValuesManager.getCachedValue(file) {
@@ -1209,32 +1239,46 @@ object RazomyTypeSystem {
                 val rightPath = RazomyUtil.firstPath(rightExpr)
                 val leftForm =
                     (leftExpr as? RazomyFormBlock) ?: PsiTreeUtil.findChildOfType(leftExpr, RazomyFormBlock::class.java)
+                val leftSlot =
+                    (leftExpr as? RazomySlot) ?: PsiTreeUtil.findChildOfType(leftExpr, RazomySlot::class.java)
 
-                if (rightPath != null && rightPath.textOffset == rightExpr?.textOffset && RazomyUtil.isImportPath(
-                        rightPath.text
-                    )
-                ) {
-                    if (leftPath != null && leftPath.text == "_" && leftPath.textOffset == leftExpr?.textOffset) {
-                        val importedFile = RazomyImportResolver.resolveImportedFile(file, rightPath.text)
+                val isWildcardImport = leftExpr?.text?.trim() == "_" && rightPath != null && RazomyUtil.isImportPath(rightPath.text)
+                val isRegularImport = rightPath != null && rightPath.textOffset == rightExpr?.textOffset && RazomyUtil.isImportPath(rightPath.text)
+
+                if (isWildcardImport || isRegularImport) {
+                    val impPath = rightPath!!
+                    if (leftExpr?.text?.trim() == "_" || (leftPath != null && leftPath.text == "_" && leftPath.textOffset == leftExpr?.textOffset)) {
+                        // Переопределение `_ b` перезаписывает экспортируемые символы в скоупе!
+                        val importedFile = RazomyImportResolver.resolveImportedFile(file, impPath.text)
                         if (importedFile != null) {
-                            for (exportName in RazomyImportResolver.getExportedSymbols(importedFile)) {
+                            for ((exportName, exportElem) in getGlobalDeclarationsMap(importedFile)) {
+                                scope.variables[exportName] = exportElem
                                 scope.isDestructuredImport[exportName] = true
-                                scope.imports[exportName] = rightPath
+                                scope.imports[exportName] = impPath
                             }
                         }
-                    } else if (leftPath != null && leftPath.textOffset == leftExpr?.textOffset) {
-                        val alias = leftPath.text
-                        scope.variables.putIfAbsent(alias, leftPath)
-                        scope.imports[alias] = rightPath
                     } else if (leftForm != null && leftForm.textOffset == leftExpr?.textOffset) {
                         for (item in PsiTreeUtil.getChildrenOfTypeAsList(leftForm, RazomyFormItem::class.java)) {
                             val path = RazomyUtil.firstPath(item)
                             if (path != null) {
-                                scope.variables.putIfAbsent(path.text, path)
-                                scope.imports[path.text] = rightPath
+                                scope.variables[path.text] = path
+                                scope.imports[path.text] = impPath
                                 scope.isDestructuredImport[path.text] = true
                             }
                         }
+                    } else if (leftSlot != null && leftSlot.textOffset == leftExpr?.textOffset) {
+                        for (item in PsiTreeUtil.getChildrenOfTypeAsList(leftSlot, RazomySlotItem::class.java)) {
+                            val path = RazomyUtil.firstPath(item)
+                            if (path != null) {
+                                scope.variables[path.text] = path
+                                scope.imports[path.text] = impPath
+                                scope.isDestructuredImport[path.text] = true
+                            }
+                        }
+                    } else if (leftPath != null && leftPath.textOffset == leftExpr?.textOffset) {
+                        val alias = leftPath.text
+                        scope.variables[alias] = leftPath
+                        scope.imports[alias] = impPath
                     }
                 } else {
                     val declared = RazomyUtil.getDeclaredPath(decl)
@@ -1985,7 +2029,7 @@ object RazomyTypeSystem {
                 }
             }
 
-            // 2. Быстрый поиск среди кэшированных импортов файла
+            // 2. Быстрый поиск среди кэшированных импортов файла (включая `_ b`)
             val fileScope = getFileBaseScope(file)
             val importRightPath = fileScope.imports[name]
             if (importRightPath != null) {
@@ -1999,6 +2043,12 @@ object RazomyTypeSystem {
                     }
                 }
                 return RazomyType.Unknown
+            }
+
+            // 3. Автоматический резолв первого попавшегося символа из других файлов контекста (`a.rl`, `b.rl`)
+            val contextSymbol = RazomyImportResolver.findFirstContextSymbol(context, name)
+            if (contextSymbol != null) {
+                return inferTypeOfElement(contextSymbol, visited)
             }
 
             if (name in BUILTIN_TYPES) {
@@ -2330,7 +2380,8 @@ object RazomyResolver {
 
         var current: PsiElement? = scope.variables[rootName] ?: scope.unpackedFields[rootName]
 
-        if (current != null && scope.imports.containsKey(rootName)) {
+        // 3. Если есть явный импорт или переопределение `_ b`
+        if (scope.imports.containsKey(rootName)) {
             val importPath = scope.imports[rootName]!!
             val importedFile = RazomyImportResolver.resolveImportedFile(context, importPath.text)
 
@@ -2380,13 +2431,19 @@ object RazomyResolver {
                 if (fieldMatch != null) return fieldMatch
             }
 
+            // 4. ГЛАВНОЕ: Если символ не объявлен и не импортирован явно — берем ПЕРВЫЙ ПОПАВШИЙСЯ из контекста (`a.rl`)!
+            if (current == null) {
+                current = RazomyImportResolver.findFirstContextSymbol(context, rootName)
+            }
+
             if (current == null) return null
         }
 
-        // 3. Пошаговый резолв цепочки `A.B.C`
+        // 5. Пошаговый резолв цепочки `A.B.C`
         var resolvedChain = resolveChainFrom(current, parts, visited)
         if (resolvedChain == null && parts.size > 1) {
             val globalFallback = file?.let { RazomyTypeSystem.getGlobalDeclarationsMap(it)[rootName] }
+                ?: RazomyImportResolver.findFirstContextSymbol(context, rootName)
             if (globalFallback != null && globalFallback != current) {
                 resolvedChain = resolveChainFrom(globalFallback, parts, visited)
             }
