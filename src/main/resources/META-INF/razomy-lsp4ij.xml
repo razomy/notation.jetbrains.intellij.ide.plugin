@@ -1,0 +1,11 @@
+<idea-plugin>
+    <extensions defaultExtensionNs="com.redhat.devtools.lsp4ij">
+        <server id="razomyLspServer"
+                name="Razomy Language Server (V5.7)"
+                factoryClass="org.razomy.language.RazomyLspServerFactory"/>
+
+        <!-- Привязываем к вашему языку "RL" (как указано в Language("RL")) -->
+        <languageMapping language="RL"
+                         serverId="razomyLspServer"/>
+    </extensions>
+</idea-plugin>

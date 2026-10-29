@@ -22,6 +22,7 @@ dependencies {
         intellijIdea("2026.2.3")
         bundledPlugin("com.intellij.java")
         pluginVerifier()
+        plugins("com.redhat.devtools.lsp4ij:0.21.0")
     }
 
     implementation("com.google.code.gson:gson:2.12.1")
