@@ -3,8 +3,8 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     id("java")
-    id("org.jetbrains.kotlin.jvm") version "2.2.21"
-    id("org.jetbrains.intellij.platform") version "2.10.5"
+    id("org.jetbrains.kotlin.jvm") version "2.4.21"
+    id("org.jetbrains.intellij.platform") version "2.19.0"
 }
 
 group = "com.razomy"
@@ -19,13 +19,13 @@ repositories {
 
 dependencies {
     intellijPlatform {
-        intellijIdeaCommunity("2025.2.5")
+        intellijIdea("2026.2.3")
         bundledPlugin("com.intellij.java")
         pluginVerifier()
     }
-    implementation(kotlin("stdlib-jdk8"))
-    implementation("com.google.code.gson:gson:2.10.1")
-    implementation("org.commonmark:commonmark:0.21.0")
+
+    implementation("com.google.code.gson:gson:2.12.1")
+    implementation("org.commonmark:commonmark:0.24.0")
 }
 
 intellijPlatform {
@@ -38,7 +38,7 @@ intellijPlatform {
 
 sourceSets["main"].java.srcDirs("src/main/gen")
 
-// 1. Устанавливаем единый Toolchain для всего проекта (Java 21)
+// Единый Toolchain для всего проекта (Java 21 — стандарт для IDEA начиная с версии 2024.2+)
 kotlin {
     jvmToolchain(21)
 }
@@ -56,8 +56,8 @@ tasks {
     }
 
     patchPluginXml {
-        sinceBuild.set("243")
-        untilBuild.set("300.*")
+        sinceBuild.set("243") // Начиная с 2024.3
+        untilBuild.set("270.*") // До 2025.1 включительно (или закомментируйте, чтобы не ограничивать верхнюю планку)
     }
 
     signPlugin {
