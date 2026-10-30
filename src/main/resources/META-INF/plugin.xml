@@ -24,7 +24,7 @@
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
     <depends>com.intellij.modules.platform</depends>
     <depends optional="true" config-file="razomy-native-lsp.xml">com.intellij.modules.lsp</depends>
-    <depends optional="true" config-file="razomy-lsp4ij.xml">com.redhat.devtools.lsp4ij</depends>
+    <depends config-file="razomy-lsp4ij.xml">com.redhat.devtools.lsp4ij</depends>
 
     <extensions defaultExtensionNs="com.intellij">
         <!-- ==================== RAZOMY NOTATION (.rn) ==================== -->

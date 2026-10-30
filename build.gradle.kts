@@ -8,7 +8,7 @@ plugins {
 }
 
 group = "com.razomy"
-version = "0.0-alpha.14"
+version = "0.0-alpha.15"
 
 repositories {
     mavenCentral()
