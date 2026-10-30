@@ -126,7 +126,7 @@
 
         <lang.parserDefinition language="RL" implementationClass="org.razomy.language.RazomyParserDefinition"/>
 
-        <internalFileTemplate name="Rala File"/>
+        <internalFileTemplate name="Rl File"/>
     </extensions>
 
     <actions>
@@ -259,7 +259,7 @@
 
         <action id="Razomy.NewFile"
                 class="org.razomy.language.CreateRazomyFileAction"
-                text="Rala File"
+                text="Rl File"
                 description="Create a new Razomy (.rl) file"
                 icon="/icons/rl.svg">
             <add-to-group group-id="NewGroup" anchor="after" relative-to-action="NewFile"/>

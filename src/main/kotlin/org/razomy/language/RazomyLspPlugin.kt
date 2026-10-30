@@ -814,12 +814,12 @@ class RazomyParserDefinition : ParserDefinition {
 }
 
 // =============================================================================
-// 7. СОЗДАНИЕ НОВОГО ФАЙЛА (New -> Rala File)
+// 7. СОЗДАНИЕ НОВОГО ФАЙЛА (New -> Rl File)
 // =============================================================================
 
 class CreateRazomyFileAction : CreateFileFromTemplateAction(
-    "Rala File", // Текст в меню New -> Rala File
-    "Create a new Rala (.rl) file",
+    "Rl File", // Текст в меню New -> Rl File
+    "Create a new Rl (.rl) file",
     RazomyIcons.FILE
 ), DumbAware {
 
@@ -829,14 +829,14 @@ class CreateRazomyFileAction : CreateFileFromTemplateAction(
         builder: CreateFileFromTemplateDialog.Builder
     ) {
         builder
-            .setTitle("New Rala File")
-            // "Rala File" — это имя шаблона из папки fileTemplates/internal/ (без расширения .rl.ft)
-            .addKind("Rala File", RazomyIcons.FILE, "Rala File")
+            .setTitle("New Rl File")
+            // "Rl File" — это имя шаблона из папки fileTemplates/internal/ (без расширения .rl.ft)
+            .addKind("Rl File", RazomyIcons.FILE, "Rl File")
     }
 
     override fun getActionName(
         directory: PsiDirectory?,
         newName: String,
         templateName: String?
-    ): String = "Create Rala File: $newName"
+    ): String = "Create Rl File: $newName"
 }
