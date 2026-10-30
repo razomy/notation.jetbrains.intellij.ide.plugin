@@ -264,6 +264,15 @@
                 icon="/icons/rl.svg">
             <add-to-group group-id="NewGroup" anchor="after" relative-to-action="NewFile"/>
         </action>
+
+        <action id="Razomy.ExportObjectToFile"
+                class="org.razomy.language.ExportRazomyObjectAction"
+                text="Export Object to .rl File"
+                description="Exports the Razomy object under caret to its own .rl file">
+            <add-to-group group-id="EditorPopupMenu" anchor="first"/>
+            <add-to-group group-id="RefactoringMenu" anchor="last"/>
+            <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt E"/>
+        </action>
     </actions>
 </idea-plugin>
 

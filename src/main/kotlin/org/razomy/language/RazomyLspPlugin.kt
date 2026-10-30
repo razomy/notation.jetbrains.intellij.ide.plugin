@@ -71,6 +71,233 @@ import com.intellij.psi.PsiDirectory
 // 1. ЯЗЫК, ИКОНКИ И ТИП ФАЙЛОВ RAZOMY (.rl)
 // =============================================================================
 
+
+// Дополнительные импорты (добавьте в шапку файла при необходимости):
+import com.intellij.codeInsight.intention.IntentionAction
+import com.intellij.openapi.command.WriteCommandAction
+import com.intellij.openapi.editor.Editor
+import com.intellij.openapi.fileEditor.FileEditorManager
+import com.intellij.openapi.ui.Messages
+import com.intellij.openapi.util.TextRange
+import com.intellij.openapi.vfs.VfsUtil
+
+// =============================================================================
+// 8. ЭКСПОРТ ОБЪЕКТА В ОТДЕЛЬНЫЙ ФАЙЛ ПО КЛИКУ НА ИМЯ (`<Name>.rl`)
+// =============================================================================
+
+object RazomyObjectExtractor {
+    data class ExtractedObject(
+        val name: String,
+        val startOffset: Int,
+        val endOffset: Int,
+        val fullText: String
+    )
+
+    /**
+     * Находит объект (Форму, Функцию, Тип или Привязку) под курсором и вычисляет
+     * точные границы его определения (включая сбалансированные блоки `{}`, `[]`, `()`).
+     */
+    fun findObjectAtCaret(editor: Editor, file: PsiFile): ExtractedObject? {
+        if (file.virtualFile?.extension != "rl") return null
+        val doc = editor.document
+        val text = doc.charsSequence
+        if (text.isEmpty()) return null
+
+        val offset = editor.caretModel.offset.coerceIn(0, text.length - 1)
+
+        // 1. Выделяем идентификатор под курсором
+        var idStart = offset
+        while (idStart > 0 && (text[idStart - 1].isLetterOrDigit() || text[idStart - 1] == '_')) {
+            idStart--
+        }
+        var idEnd = offset
+        while (idEnd < text.length && (text[idEnd].isLetterOrDigit() || text[idEnd] == '_')) {
+            idEnd++
+        }
+        if (idStart >= idEnd) return null
+
+        val name = text.subSequence(idStart, idEnd).toString()
+        if (name.first().isDigit()) return null
+
+        // Проверяем, что идентификатор стоит в начале строки/предложения (определение объекта)
+        val lineNum = doc.getLineNumber(idStart)
+        val lineStart = doc.getLineStartOffset(lineNum)
+        val prefixOnLine = text.subSequence(lineStart, idStart).toString().trim()
+        if (prefixOnLine.isNotEmpty() && prefixOnLine != "Public" && prefixOnLine != "Private" && prefixOnLine != "Bypass") {
+            return null
+        }
+
+        val declStart = if (prefixOnLine.isNotEmpty()) {
+            lineStart + text.subSequence(lineStart, idStart).indexOfFirst { !it.isWhitespace() }
+        } else {
+            idStart
+        }
+
+        // 2. Ищем конец всего объекта (с учетом многострочных скобок {}, [], () и пайпов)
+        var pos = idEnd
+        var braceDepth = 0
+        var bracketDepth = 0
+        var parenDepth = 0
+        var sawOpeningBlock = false
+        var inString: Char? = null
+
+        while (pos < text.length) {
+            val ch = text[pos]
+
+            if (inString != null) {
+                if (ch == '\\') {
+                    pos += 2
+                    continue
+                }
+                if (ch == inString) inString = null
+                pos++
+                continue
+            }
+
+            // Пропускаем строчный комментарий до конца строки
+            if (ch == '/' && pos + 1 < text.length && text[pos + 1] == '/') {
+                while (pos < text.length && text[pos] != '\n') pos++
+                continue
+            }
+
+            when (ch) {
+                '"', '\'' -> inString = ch
+                '{' -> { braceDepth++; sawOpeningBlock = true }
+                '}' -> {
+                    braceDepth = (braceDepth - 1).coerceAtLeast(0)
+                    if (sawOpeningBlock && braceDepth == 0 && bracketDepth == 0 && parenDepth == 0) {
+                        // Проверяем, нет ли после `}` хвоста или `[` (например, у функции `fn(a) [ ... ]`)
+                        var lookahead = pos + 1
+                        while (lookahead < text.length && (text[lookahead] == ' ' || text[lookahead] == '\t')) {
+                            lookahead++
+                        }
+                        if (lookahead >= text.length || text[lookahead] == '\n' || text[lookahead] == '\r') {
+                            pos++
+                            break
+                        }
+                    }
+                }
+                '[' -> { bracketDepth++; sawOpeningBlock = true }
+                ']' -> {
+                    bracketDepth = (bracketDepth - 1).coerceAtLeast(0)
+                    if (sawOpeningBlock && braceDepth == 0 && bracketDepth == 0 && parenDepth == 0) {
+                        pos++
+                        break
+                    }
+                }
+                '(' -> parenDepth++
+                ')' -> parenDepth = (parenDepth - 1).coerceAtLeast(0)
+                '\n' -> {
+                    if (braceDepth == 0 && bracketDepth == 0 && parenDepth == 0) {
+                        // Если строка заканчивается на `|` или `&` (многострочный Union), продолжаем на следующую строку
+                        val lineBeforeNewline = text.subSequence(declStart, pos).toString().trimEnd()
+                        if (!lineBeforeNewline.endsWith("|") && !lineBeforeNewline.endsWith("&")) {
+                            break
+                        }
+                    }
+                }
+            }
+            pos++
+        }
+
+        val fullText = text.subSequence(declStart, pos).toString().trim()
+        if (fullText.isEmpty()) return null
+
+        return ExtractedObject(name, declStart, pos, fullText)
+    }
+
+    fun exportToNewFile(project: Project, editor: Editor, file: PsiFile, extracted: ExtractedObject) {
+        val currentVFile = file.virtualFile ?: return
+        val parentDir = currentVFile.parent ?: return
+        val targetFileName = "${extracted.name}.rl"
+
+        val existingFile = parentDir.findChild(targetFileName)
+        if (existingFile != null) {
+            val overwrite = Messages.showYesNoDialog(
+                project,
+                "Файл '$targetFileName' уже существует. Перезаписать его?",
+                "Export Object to File",
+                Messages.getQuestionIcon()
+            )
+            if (overwrite != Messages.YES) return
+        }
+
+        var createdFile: VirtualFile? = null
+
+        WriteCommandAction.runWriteCommandAction(project, "Export '${extracted.name}' to $targetFileName", null, {
+            val newVFile = parentDir.findOrCreateChildData(this, targetFileName)
+            VfsUtil.saveText(newVFile, extracted.fullText + "\n")
+            createdFile = newVFile
+
+            // Заменяем тело объекта в исходном файле на импорт `_ <ИмяОбъекта>`
+            editor.document.replaceString(
+                extracted.startOffset,
+                extracted.endOffset,
+                "_ ${extracted.name}"
+            )
+        })
+
+        // Открываем только что созданный файл в редакторе
+        createdFile?.let {
+            FileEditorManager.getInstance(project).openFile(it, true)
+        }
+    }
+}
+
+/**
+ * 1) Intention Action (появляется по Alt+Enter при клике на имя объекта)
+ */
+class ExportRazomyObjectIntention : IntentionAction {
+    override fun getText(): String = "Export Razomy object to separate '.rl' file"
+    override fun getFamilyName(): String = "Razomy Refactoring"
+    override fun startInWriteAction(): Boolean = false
+
+    override fun isAvailable(project: Project, editor: Editor?, file: PsiFile?): Boolean {
+        if (editor == null || file == null) return false
+        val extracted = RazomyObjectExtractor.findObjectAtCaret(editor, file) ?: return false
+        return extracted.name.isNotEmpty()
+    }
+
+    override fun invoke(project: Project, editor: Editor?, file: PsiFile?) {
+        if (editor == null || file == null) return
+        val extracted = RazomyObjectExtractor.findObjectAtCaret(editor, file) ?: return
+        RazomyObjectExtractor.exportToNewFile(project, editor, file, extracted)
+    }
+}
+
+/**
+ * 2) Пункт контекстного меню правой кнопки мыши (Right Click -> Export '<Name>' to '<Name>.rl')
+ */
+class ExportRazomyObjectAction : AnAction(
+    "Export Object to Separate .rl File",
+    "Extract selected Razomy Form/Function into <Name>.rl",
+    RazomyIcons.FILE
+), DumbAware {
+
+    override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.EDT
+
+    override fun update(e: AnActionEvent) {
+        val editor = e.getData(CommonDataKeys.EDITOR)
+        val file = e.getData(CommonDataKeys.PSI_FILE)
+        val extracted = if (editor != null && file != null) {
+            RazomyObjectExtractor.findObjectAtCaret(editor, file)
+        } else null
+
+        e.presentation.isEnabledAndVisible = extracted != null
+        if (extracted != null) {
+            e.presentation.text = "Export '${extracted.name}' to '${extracted.name}.rl'"
+        }
+    }
+
+    override fun actionPerformed(e: AnActionEvent) {
+        val project = e.project ?: return
+        val editor = e.getData(CommonDataKeys.EDITOR) ?: return
+        val file = e.getData(CommonDataKeys.PSI_FILE) ?: return
+        val extracted = RazomyObjectExtractor.findObjectAtCaret(editor, file) ?: return
+        RazomyObjectExtractor.exportToNewFile(project, editor, file, extracted)
+    }
+}
+
 object RazomyIcons {
     @JvmField
     val FILE: Icon = IconLoader.getIcon("/icons/rl.svg", RazomyIcons::class.java)
